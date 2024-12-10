@@ -60,6 +60,7 @@ class Access_control(Pyboard):
                                       ).decode()
                             )
             self.micropython_version = float('{}.{}{}'.format(*v_tuple))
+
         except SerialException as e:
             print('Could not connect to pyboard')
             self.status['serial'] = False
@@ -84,10 +85,13 @@ class Access_control(Pyboard):
             print('Could not instantiate Access_control.')
             raise(e)
         try:
+            # This the main script that is run on the pyboard. It controls the pin i/o  for magment and RFID
             self.exec('from main import handler')
             self.exec_raw_no_follow('handler().run()')
             # print(self.eval('print(run)'))
+            pass
         except PyboardError as e:
+
             raise(e)
         # self.exec('run()')
         print("OK")

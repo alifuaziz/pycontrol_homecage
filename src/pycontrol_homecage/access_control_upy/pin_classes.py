@@ -1,3 +1,10 @@
+'''
+Classes that wrap around the pyb.Pin class to provide additional functionality with nice syntax
+- Signal pins 
+- Magnet pins
+'''
+
+
 import pyb
 
 
@@ -13,7 +20,7 @@ class signal_pin:
         self.enable_pin_2 = enable_pin_2
         self.sense_delay = sense_delay
         self.threshold = threshold
-        self._last_pin_check = pyb.millis()
+        self._last_pin_check = pyb.millis() # used to keep track of time passing.
         self.state = 0
         self.check_every = check_every
         self.measured_value = 0
@@ -56,7 +63,7 @@ class magnet_pin:
         self.has_demagged = False
 
     def value(self,set_value):
-        
+        # sets the value of the magnet pin taking into account the need to demagnetise
         if set_value==1:
             self.highside.value(1)
             self.lowside.value(0)

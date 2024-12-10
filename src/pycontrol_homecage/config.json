@@ -1,5 +1,5 @@
 {
-    "ROOT" : "path/for/data/to/be/saved",
-    "System_email": "example@gmail.com",
-    "System_password": "APP_PASSWORD_FOR_GMAIL"
+    "ROOT" : "C:/Users/alifa/OneDrive - Nexus365/Documents/Homecage Software Development/fork/pycontrol_homecage/data",
+    "System_email": "pycontrolhomecage@gmail.com",
+    "System_password": "fbrzvnykjezzydsj"
 }

@@ -46,6 +46,11 @@ class GUIApp(QtGui.QMainWindow):
 
 
     def _init_table_map(self):
+        '''
+        Dictionary of the names of tables
+        
+        This dict of tables can be called by the self._reset_tables() function to update the contents of these tables 
+        '''
         self.table_map = {
                           "system_tab.list_of_experiments": self.system_tab.list_of_experiments,
                           "system_tab.list_of_setups": self.system_tab.list_of_setups,
@@ -153,12 +158,16 @@ class GUIApp(QtGui.QMainWindow):
         self.experiment_tab.setEnabled(False)
 
     def _reset_tables(self):
-            update_table = database.update_table_queue.pop(0)
-            if update_table=="all":
-                for table in self.table_map.values():
-                    table.fill_table()
-            else:
-                self.table_map[update_table].fill_table()
+        '''
+        Function to handle the updating of tables in the database object. 
+        
+        '''
+        update_table = database.update_table_queue.pop(0)
+        if update_table=="all":
+            for table in self.table_map.values():
+                table.fill_table()
+        else:
+            self.table_map[update_table].fill_table()
 
 
         # self.system_tab.list_of_experiments.fill_table()

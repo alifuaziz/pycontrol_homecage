@@ -91,6 +91,7 @@ class cageTable(QtGui.QTableWidget):
 
             print_func = partial(print, flush=True)
             SC = system_controller(print_func=print_func, setup_id=setup_id)
+            print('Connecting to com:', com_, flush=True)
             board = Pycboard(com_, print_func=print_func, data_logger=SC)
 
             board.load_framework()
@@ -98,7 +99,9 @@ class cageTable(QtGui.QTableWidget):
             database.connected_boards.append(board)
             ac = Access_control(comAC_, print_func=print_func, data_logger=SC)
             time.sleep(0.05)
+            # System controller gets access to the pycontrol board (That runs the operant box task)
             SC.add_PYC(board)
+            # Add it also getes access to the access control board (That run the access control module)
             SC.add_AC(ac)
 
             ac.load_framework()

@@ -34,6 +34,8 @@ class PrintMessage:
     source : MessageSource
 
     def __post_init__(self):
+        '''Funtion that runns immediately after the init of the PrintMessage constructer. In this case it fills in the
+        appropriate attribute. '''
         self.time_str = str(self.time)
 
 

@@ -1,3 +1,13 @@
+'''
+This file has 2 important function 
+1. restart_experiment
+2. stop_experiment
+
+A lot of these functions are making sure the state of the experiment is correctly changed 
+
+'''
+
+
 from typing import List, Optional
 
 import pandas as pd
@@ -75,7 +85,7 @@ class experiment_tab(QtGui.QWidget):
                 mice_in_experiment = self._get_mice_in_experiment(exp_row)
                 setups = self._get_setups_in_experiment(exp_row)
 
-                self._update_mice(mice_in_exp=mice_in_experiment)
+                self._update_mice(mice_in_exp=mice_in_experiment) # Implicitly sets assigned to False (default kwarg is false)
                 self._update_setups(setups_in_exp=setups, experiment=None)
 
             self._reset_tables()
@@ -91,6 +101,13 @@ class experiment_tab(QtGui.QWidget):
         return eval(exp_row['Setups'].values[0])
 
     def _get_experiment_check_status(self) -> Optional[str]:
+        """
+        This function retrieves the name of the first experiment that is checked in a list of
+        experiments.
+        :return: The `_get_experiment_check_status` method returns the ID of the first checked
+        experiment from the list of experiments if there is at least one experiment checked. If no
+        experiments are checked, it returns `None`.
+        """
         isChecked = []
         checked_ids = []
         name_col = self.list_of_experiments.header_names.index("Name")

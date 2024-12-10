@@ -47,6 +47,9 @@ class Data_logger:
         self.data_file.write('E {}\n\n'.format(self.sm_info['events']))
 
     def close_files(self):
+        '''
+        Closes the behavioural data which is written to disk 
+        '''
         if self.data_file:
             self.data_file.close()
             self.data_file = None

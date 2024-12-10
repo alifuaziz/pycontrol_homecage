@@ -6,7 +6,7 @@ This module provides the Pyboard class, used to communicate with and
 control the pyboard over a serial USB connection.
 Example usage:
     import pyboard
-    pyb = pyboard.Pyboard('/dev/ttyACM0')
+    pyb = pyboard.Pyboard('/dev/c')
     pyb.enter_raw_repl()
     pyb.exec('pyb.LED(1).on()')
     pyb.exit_raw_repl()
@@ -336,6 +336,7 @@ class Pyboard:
         for f in files:
             file_path = os.path.join(folder_path, f)
             target_path = target_folder + '/' + f
+            print(f'\nfile_path:{file_path}', f'target_path:{target_path}')
             self.transfer_file(file_path, target_path)
             if show_progress:
                 self.print('.', end='')

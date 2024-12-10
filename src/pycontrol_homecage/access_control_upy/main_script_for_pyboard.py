@@ -1,3 +1,13 @@
+'''
+This file contains the main script that runs on the pyboard. 
+
+It contains the logic for when to open / close doors based on weight and RFID tag detection.
+This is done my instantiating a set of signal and magent pins that control the door reads and the door magnets.
+
+This file needs to be uploaded to the board by a file in com. 
+
+'''
+
 import sys
 import pyb
 from pyb import Pin
@@ -14,6 +24,7 @@ class handler():
         self.init = True
 
     def run(self):
+    
         myled = pyb.LED(1)
         myled2 = pyb.LED(2)
         myled.on()
@@ -57,7 +68,7 @@ class handler():
         TWO_MICE = 40
         NEWSTATE = True
         state = 'allow_entry'
-        build_msg = lambda x: 'start_' + x + '_end'
+        build_msg = lambda x: 'start_' + x + '_end' # function to wrap messages sent to the main computer from microcontroller
 
         com.write(build_msg('state:' + state))
         for mag in [0,1,2,3]:
@@ -77,7 +88,7 @@ class handler():
         millis_since_check_wait_close = None
         num_times_checked_for_error = 0  #first check is a variable that basically ensures that a mouse must be stuck for 2 sets of scale readings before an error state is raised
         try:
-
+    
             while True:
 
                 if state=='allow_entry':
@@ -259,7 +270,7 @@ class handler():
                         NEWSTATE = False
                     
                     for mag in range(4):
-                        if mag in [0,1,3]:
+                        if mag in [0,1,3]: # 2 is the magnet that is not closed, so the animal can leave.
                             MAGs[mag].value(1)
                         else:
                             MAGs[mag].value(0)

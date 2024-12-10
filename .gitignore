@@ -10,3 +10,4 @@ pyhomecage_conf.py
 *egg-info*
 .coverage
 *config.json
+data/*

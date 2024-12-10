@@ -39,6 +39,8 @@ class system_controller(Data_logger):
     def _handle_allow_entry(self) -> None:
         """ This resets the state of the dict that stores data about
             a mouse entering and exiting the system
+            
+            Done by re-instantiating the dictionary that will eventually be saved to a database
         """
         self.mouse_data = {'weight': None,
                            'RFID': None,
@@ -48,18 +50,26 @@ class system_controller(Data_logger):
                            }
 
     def add_AC(self, ac: Access_control) -> None:
-
+        '''
+        Add an access control object to the system handler object 
+        '''
         self.AC = ac
         self.has_AC = True
         self.check_active()
 
     def add_PYC(self, pyc: Pycboard) -> None:
-
+        '''
+        Add the pycontrol board to the system handler object
+        '''
         self.PYC = pyc
         self.has_PYC = True
         self.check_active()
 
     def check_active(self) -> None:
+        '''
+        Checking function that makes sure there is an access control board and pycontrol board assocaited with this system
+        '''
+        
         if (self.has_AC and self.has_PYC):
             self.active = True
 
@@ -70,7 +80,7 @@ class system_controller(Data_logger):
         self.AC.close()   # This closes the connection to AC board by pyboard class
 
     def check_for_data(self):
-        " check whether either AC or the PYC board have data to deliver "
+        """ check whether either AC or the PYC board have data to deliver """
         if self.active:
             self.AC.process_data()
             self.PYC.process_data()  # process data
@@ -91,10 +101,6 @@ class system_controller(Data_logger):
                                 MessageRecipient.direct_pyboard_dialog,
                                 MessageSource.PYCBoard
                                 )
-
-
-
-
 
     def process_data_AC(self, new_data):
 
@@ -140,13 +146,33 @@ class system_controller(Data_logger):
 
 
     def _handle_error_state(self) -> None:
-        self.PYC.stop_framework()
+        '''
+        Function that handles when an error state is returned from the microcontroller
+        
+        - Stops the pycontrol framework and and closes the files associated with it
+        
+        '''
+        
+        self.PYC.stop_framework() # stops the task board running
         time.sleep(.05)
         self.PYC.process_data()
         self.close_files()
 
     def process_ac_state(self, state: str, now: str) -> None:
-        """ Here do more global updates of stuff based on state """
+        """
+        This is the that receives the states from the access control system and calls the relevent functions in the main script 
+        to handle these states. 
+        
+        
+        :param state: The `state` parameter in the `process_ac_state` function represents the current
+        access control state of the system. It is a string that can have different values such as
+        'error_state', 'allow_entry', 'mouse_training', or 'allow_exit'. The function performs different
+        actions based on the value
+        :param now: The `now` parameter in the `process_ac_state` function is a string that represents
+        the current time when the function is called. It is used in the function to handle certain
+        actions based on the current state of the access control system
+        """
+        
 
         # update access control state in the database
         database.setup_df.loc[database.setup_df['COM'] == self.PYC.serial_port, 'AC_state'] = state
@@ -159,7 +185,7 @@ class system_controller(Data_logger):
 
         # first entry in this state is when the mouse first enters the apparatus
         elif state == 'mouse_training':
-            # This guards the state changing to to check_mouse_in_ac (i.e. when the mouse starts to leave)
+            # This guards the state changing to check_mouse_in_ac (i.e. when the mouse starts to leave)
             # but then then decides to back into training chamber so state changes back to 'mouse_training'
             mouse_just_entered = self.data_file is None
             if mouse_just_entered:
