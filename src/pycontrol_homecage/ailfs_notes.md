@@ -1,4 +1,7 @@
 # Notes
+> THE IDE I USED TO DEBUG IS THONNY It has pretty decent error messages yay!
+
+
 
 Goals of this program:
 
@@ -11,6 +14,15 @@ Goals of this program:
         '''Return states as a dictionary {state_name: state_ID}'''
         return eval(self.exec('fw.get_states()').decode().strip())
   This is a running a function on the pycontrol board itself.
+
+## How does the firmware communicate with the main script.
+
+- Pyboard info:
+- Whilst it is running the main script i guess that it can't be read... And if the framework is uploaded successfully they it will run automatically and cause data be to continuously sent from the pyboard back to the main computer.
+- ? how to read the output of the file
+
+- the [com](/com) folder is the folder which does a lot the logic that is involved in taking the information from the pyb and writing it down to disk. (thus the logic of this program)
+- A lot of the way the  gui interacts with the logic is by displaying it and adding the basic information (i.e. names / configurations of setups) to it. 
 
 
 ## Structure
@@ -47,6 +59,16 @@ All setups require two things:
 - Headings: ['','Mouse_ID', 'RFID', 'Sex', 'Age', 'Experiment', 'Task','Protocol', 'User',
                             'Start_date', 'Current_weight', 'Start_weight', 'is_training',
                             'is_assigned', 'training_log', 'Setup_ID']
+
+In the data/tasks directory, there are tasks (as .py files)
+These tasks are implemented as statemachines. 
+The mouse table will have a task associated with it.
+The task has variables that are associated with it that are set during the initialisation of the task
+
+- Variables for `mouse_df` include the following:
+  - `Persistant Variable`
+  - `Summary Variables`
+  - `set Variables`
 
 ### Experiment table
 
@@ -137,7 +159,7 @@ All setups require two things:
 - What does flush do? <https://stackoverflow.com/questions/7127075/what-exactly-is-file-flush-doing>
   - It basically handles the emptying of buffers from the data that is being written to disk. this must be because sometimes all the data is not handled in the way that you would want.
 
-### System controller(Data_logger)
+### System_handler(Data_logger)
 
 - description: This is a class that sits on top of access control and pycboard classes
         and controls data storage for the system as well as setting tasks when
@@ -158,6 +180,11 @@ All setups require two things:
 Most of the handling involves calling a function that writes appropriate data to the `database` dataframes 
 e.g. `_update_database_on_entry` writes which mouse (identified from an RFID) is `in_training`, its `weight`
 - this is the `mouse_df` and the `setup_df`
+
+
+- `process_data_AC`
+- This processes the state data that is being returned from the pyb.
+- 
 
 
 ### Pycboard

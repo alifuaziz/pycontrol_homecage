@@ -1,78 +1,92 @@
 import os
 
-from pyqtgraph.Qt import QtGui, QtCore
+from PyQt5.QtWidgets import (
+    QMainWindow, 
+    QTabWidget
+)
+from PyQt5 import QtCore
 
 from pycontrol_homecage.com.messages import MessageRecipient
-from pycontrol_homecage.gui_tabs import mouse_tab
-from pycontrol_homecage.gui_tabs import setups_tab
-from pycontrol_homecage.gui_tabs import protocol_tab
-from pycontrol_homecage.gui_tabs import system_tab
-from pycontrol_homecage.gui_tabs import experiment_tab
-from pycontrol_homecage.dialogs import login_dialog, add_user_dialog
+from pycontrol_homecage.gui_tabs import (
+    MouseOverViewTab,
+    SetupsOverviewTab,
+    ProtocolAssemblyTab,
+    SystemOverviewTab,
+    ExperimentOverviewTab,
+)
+from pycontrol_homecage.dialogs import LoginDialog, AddUserDialog
 import pycontrol_homecage.db as database
 
 
-class GUIApp(QtGui.QMainWindow):
-
+class GUIApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.GUI_filepath = os.path.dirname(os.path.abspath(__file__))
-        self.app = None  # Overwritten with QtGui.QApplication instance in main.
+        self.app = None  # Overwritten with QApplication instance in main.
         self.active_user = None
 
-        database.setup_df['connected'] = False
+        database.setup_df["connected"] = False
 
         self._init_tabs()
-        database.print_consumers[MessageRecipient.system_overview] = self.system_tab.write_to_log
+        database.print_consumers[MessageRecipient.system_overview] = (
+            self.system_tab.write_to_log
+        )
         self._add_tabs_to_widget()
         self._disable_gui_pre_login()
-       
 
-        self.login = login_dialog()
-        self.add_user = add_user_dialog()
+        self.login = LoginDialog()
+        self.add_user = AddUserDialog()
 
         self.system_tab.login_button.clicked.connect(self.change_user)
         self.system_tab.add_user_button.clicked.connect(self.add_user_)
         self.system_tab.logout_button.clicked.connect(self.logout_user)
 
-        self.setGeometry(10, 30, 700, 800)   # Left, top, width, height.
+        self.setGeometry(10, 30, 700, 800)  # Left, top, width, height.
         self.setCentralWidget(self.tab_widget)
         self.show()
 
         self._init_timer()
-        self.refresh()    # Refresh tasks and ports lists.
+        self.refresh()  # Refresh tasks and ports lists.
         self._init_table_map()
 
-
     def _init_table_map(self):
-        '''
+        """
         Dictionary of the names of tables
-        
-        This dict of tables can be called by the self._reset_tables() function to update the contents of these tables 
-        '''
+        This dict of tables can be called by the self._reset_tables() function to update the contents of these tables
+
+        TABLE MAP DICTIONARY
+        ====================
         self.table_map = {
-                          "system_tab.list_of_experiments": self.system_tab.list_of_experiments,
-                          "system_tab.list_of_setups": self.system_tab.list_of_setups,
-                          "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
-                          "mouse_tab.list_of_mice": self.mouse_tab.list_of_mice,
-                          "setup_tab.list_of_setups": self.setup_tab.list_of_setups,
-                          }
+            "system_tab.list_of_experiments": self.system_tab.list_of_experiments,
+            "system_tab.list_of_setups": self.system_tab.list_of_setups,
+            "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
+            "mouse_tab.list_of_mice": self.mouse_tab.list_of_mice,
+            "setup_tab.list_of_setups": self.setup_tab.list_of_setups,
+        }
+        """
+        self.table_map = {
+            "system_tab.list_of_experiments": self.system_tab.experiement_overview_table,
+            "system_tab.list_of_setups": self.system_tab.setup_table_widget,
+            "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
+            "mouse_tab.list_of_mice": self.mouse_tab.mouse_table_widget,
+            "setup_tab.list_of_setups": self.setup_tab.setup_table_widget,
+        }
 
     def _init_tabs(self) -> None:
-        self.mouse_tab = mouse_tab(self)
-        self.setup_tab = setups_tab(self)
-        self.protocol_tab = protocol_tab(self)
-        self.system_tab = system_tab(self)
-        self.experiment_tab = experiment_tab(self)
+        self.mouse_tab = MouseOverViewTab(self)
+        self.setup_tab = SetupsOverviewTab(self)
+        self.protocol_tab = ProtocolAssemblyTab(self)
+        self.system_tab = SystemOverviewTab(self)
+        self.experiment_tab = ExperimentOverviewTab(self)
 
     def _add_tabs_to_widget(self) -> None:
-        self.tab_widget = QtGui.QTabWidget(self)
-        self.tab_widget.addTab(self.system_tab, 'System Overview')
-        self.tab_widget.addTab(self.experiment_tab, 'Experiments')
-        self.tab_widget.addTab(self.mouse_tab, 'Mouse Overview')
-        self.tab_widget.addTab(self.setup_tab, 'Setup Overview')
-        self.tab_widget.addTab(self.protocol_tab, 'Protocols')
+        self.tab_widget = QTabWidget(self)
+        self.tab_widget.addTab(self.system_tab, "System Overview")
+        self.tab_widget.addTab(self.experiment_tab, "Experiments")
+        self.tab_widget.addTab(self.mouse_tab, "Mouse Overview")
+        self.tab_widget.addTab(self.setup_tab, "Setup Overview")
+        self.tab_widget.addTab(self.protocol_tab, "Protocols")
 
     def _disable_gui_pre_login(self) -> None:
         self.mouse_tab.setEnabled(False)
@@ -104,6 +118,7 @@ class GUIApp(QtGui.QMainWindow):
             self.print_dispatch()
 
     def refresh_tabs(self) -> None:
+        """Refresh all tabs in the GUI"""
         self.setup_tab._refresh()
         self.system_tab._refresh()
         self.experiment_tab._refresh()
@@ -114,7 +129,9 @@ class GUIApp(QtGui.QMainWindow):
         self.login.exec_()
         self.active_user = self.login.userID
         if self.active_user:
-            self.setWindowTitle('Logged in as {}'.format(self.active_user))
+            self.setWindowTitle(
+                "pyControlHomecage: logged in as {}".format(self.active_user)
+            )
             self.mouse_tab.setEnabled(True)
             self.setup_tab.setEnabled(True)
             self.protocol_tab.setEnabled(True)
@@ -123,9 +140,14 @@ class GUIApp(QtGui.QMainWindow):
             self.system_tab.experiment_groupbox.setEnabled(True)
             self.experiment_tab.setEnabled(True)
 
+            # Login button update
+            self.system_tab.logout_button.setEnabled(True)
 
     def print_dispatch(self) -> None:
-        """ This function iterates over the list of print statements and dispatches them to the approprirate receivers
+        """
+        This function iterates over the list of print statements and dispatches them to the approprirate receivers
+
+        Note: database.print_consumers is a callable function (which is why line 136 works to print data)
         """
         dispatched = []  # These are the messages that are dispatched
         for mix, msg in enumerate(list(database.message_queue)):
@@ -143,11 +165,11 @@ class GUIApp(QtGui.QMainWindow):
 
     def add_user_(self) -> None:
         self.add_user.exec_()
-        self.login = login_dialog()
+        self.login = LoginDialog()
 
     def logout_user(self):
         self.active_user = None
-        self.setWindowTitle('Not logged in')
+        self.setWindowTitle("Not logged in")
         self.mouse_tab.setEnabled(False)
         self.setup_tab.setEnabled(False)
         self.protocol_tab.setEnabled(False)
@@ -157,21 +179,19 @@ class GUIApp(QtGui.QMainWindow):
         self.system_tab.user_groupbox.setEnabled(True)
         self.experiment_tab.setEnabled(False)
 
+        # Enable / disable login buttons appropriately
+        self.system_tab.logout_button.setEnabled(False)
+        self.system_tab.login_button.setEnabled(True)
+        self.system_tab.add_user_button.setEnabled(True)
+
     def _reset_tables(self):
-        '''
-        Function to handle the updating of tables in the database object. 
-        
-        '''
+        """
+        Function to handle the updating of tables in the database object.
+        """
+        # Update the tablse in order of the update tables queue.
         update_table = database.update_table_queue.pop(0)
-        if update_table=="all":
+        if update_table == "all":
             for table in self.table_map.values():
                 table.fill_table()
         else:
             self.table_map[update_table].fill_table()
-
-
-        # self.system_tab.list_of_experiments.fill_table()
-        # self.system_tab.list_of_setups.fill_table()
-        # self.experiment_tab.list_of_experiments.fill_table()
-        # self.mouse_tab.list_of_mice.fill_table()
-        # self.setup_tab.list_of_setups.fill_table()

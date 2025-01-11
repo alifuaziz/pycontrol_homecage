@@ -2,7 +2,7 @@ from pyqtgraph import Qt
 from pyqtgraph.Qt import QtGui
 
 
-class protocol_table(QtGui.QTableWidget):
+class ProtocolTable(QtGui.QTableWidget):
 
     def __init__(self, tab, nRows: int = None, parent=None):
 

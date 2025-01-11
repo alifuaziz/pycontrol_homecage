@@ -1,7 +1,7 @@
 from pyqtgraph.Qt import QtGui
 
 
-class mouse_adder_table(QtGui.QTableWidget):
+class MouseAdderTable(QtGui.QTableWidget):
     """ This table contains information about all mice currently running in the
         system """
     def __init__(self, GUI, parent=None):

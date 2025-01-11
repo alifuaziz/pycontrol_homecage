@@ -7,9 +7,9 @@ from pycontrol_homecage.utils import get_tasks
 import pycontrol_homecage.db as database
 
 
-class new_experiment_cageTable(QtGui.QTableWidget):
-
-    """This table is used when configuring a new experiment """
+class NewExperimentSetupTable(QtGui.QTableWidget):
+    """Table Widget that is used in the `Start New Experiement` dialog. It is used for displaying the setups
+    There are three tables in this dialog. The other two are defined in the `new_experiment_dialog` class."""
 
     def __init__(self, GUI, tab, parent=None):
         super(QtGui.QTableWidget, self).__init__(1, 12, parent=parent)
@@ -131,4 +131,4 @@ class new_experiment_cageTable(QtGui.QTableWidget):
 
                 self.tab.add_mouse_button.setEnabled(False)
 
-        self.tab.MLT.fill_table()
+        self.tab.mouse_list_table.fill_table()

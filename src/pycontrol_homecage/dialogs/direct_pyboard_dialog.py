@@ -4,14 +4,14 @@ from pycontrol_homecage.utils import get_tasks
 import pycontrol_homecage.db as database
 from pycontrol_homecage.com.messages import MessageRecipient
 
-class direct_pyboard_dialog(QtGui.QDialog):
+class DirectPyboardDialog(QtGui.QDialog):
     """ In this dialog, the idea is that you can directly run scripts on
         the pyboard. This is useful for e.g. flushing solenoids or testing
         a task.
      """
 
     def __init__(self, setup_id, parent=None):
-        super(direct_pyboard_dialog, self).__init__(parent)
+        super(DirectPyboardDialog, self).__init__(parent)
         self.setGeometry(10, 30, 500, 200)  # Left, top, width, height.
         self.setup_id = setup_id
         self.selected_task = 'None'

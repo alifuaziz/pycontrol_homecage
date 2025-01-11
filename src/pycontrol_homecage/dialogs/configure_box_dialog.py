@@ -4,11 +4,11 @@ from pyqtgraph.Qt import QtGui
 import pycontrol_homecage.db as database
 from pycontrol_homecage.com.messages import MessageRecipient
 
-class configure_box_dialog(QtGui.QDialog):
-    """ Dialog window that allows you to upload harware definitions etc """ 
+class ConfigureBoxDialog(QtGui.QDialog):
+    """Dialog window that allows you to upload harware definitions etc """ 
 
     def __init__(self, setup_id, parent=None):
-        super(configure_box_dialog, self).__init__(parent)
+        super(ConfigureBoxDialog, self).__init__(parent)
         self.setGeometry(10, 30, 500, 200) # Left, top, width, height.
         self.setup_id = setup_id
         layoutH = QtGui.QHBoxLayout(self)

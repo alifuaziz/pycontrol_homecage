@@ -1,11 +1,11 @@
 from pyqtgraph.Qt import QtGui
 
 
-class cage_summary_dialog(QtGui.QDialog):
+class CageSummaryDialog(QtGui.QDialog):
 
     def __init__(self, parent=None):
 
-        super(cage_summary_dialog, self).__init__(parent)
+        super(CageSummaryDialog, self).__init__(parent)
 
         self.setGeometry(10, 30, 300, 200)  # Left, top, width, height.
 

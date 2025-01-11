@@ -1,5 +1,5 @@
 '''
-This file contains the main script that runs on the pyboard. 
+This file contains the main script that runs on the access control pyboard. 
 
 It contains the logic for when to open / close doors based on weight and RFID tag detection.
 This is done my instantiating a set of signal and magent pins that control the door reads and the door magnets.

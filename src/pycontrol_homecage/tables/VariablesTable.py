@@ -7,8 +7,10 @@ from pycontrol_homecage.utils import (TableCheckbox, cbox_set_item, cbox_update_
                                       null_resize)
 
 
-class variables_table(QtGui.QTableWidget):
-    " Table that tracks what variables a mouse currently running in a task has"
+class VariablesTable(QtGui.QTableWidget):
+    """
+    Table that tracks what variables a mouse currently running in a task has 
+    """
 
     def __init__(self, parent=None):
         super(QtGui.QTableWidget, self).__init__(1, 7, parent=parent)

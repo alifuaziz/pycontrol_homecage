@@ -21,4 +21,4 @@ class uRFID:
             ID = int(read_bytes[-13:-1])
             return ID
         except ValueError:
-            return
+            return 

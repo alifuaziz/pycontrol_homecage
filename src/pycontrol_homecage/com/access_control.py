@@ -9,7 +9,7 @@ from .pyboard import Pyboard, PyboardError
 
 import pycontrol_homecage.db as database
 from pycontrol_homecage.com.messages import MessageRecipient, MessageSource, emit_print_message
-
+# from pycontrol_homecage.com.system_handler import system_controller
 
 class Access_control(Pyboard):
     # Class that runs on the main computer to provide an API for inferfacting with
@@ -19,7 +19,7 @@ class Access_control(Pyboard):
 
         self.serial_port = serial_port
         self.print = print_func        # Function used for print statements.
-        self.data_logger = data_logger
+        self.data_logger = data_logger # This is set to the system_controller. Ideally this would be done on initalisation, however this could lead to a circular depenadncy
         self._init_variables()
 
         self._init_logger()
@@ -36,8 +36,15 @@ class Access_control(Pyboard):
                        }
 
     def _init_logger(self) -> None:
-
-        name_ = database.setup_df.loc[database.setup_df['COM_AC'] == self.serial_port, 'Setup_ID'].values[0]
+        '''
+        This function opens the file which the data from the pyboard is written to. The self.process_data() function then
+        writes the data that is returned the host computer to 
+        '''
+        try: 
+            name_ = database.setup_df.loc[database.setup_df['COM_AC'] == self.serial_port, 'Setup_ID'].values[0]
+        except IndexError:
+            available_controls = database.setup_df['COM_AC'].tolist()
+            raise IndexError(f"No entry found in setups_df for COM_AC = {self.serial_port}. Available access controls: {available_controls}")
         now = datetime.now().strftime('-%Y-%m-%d-%H%M%S')
         self.logger_dir = database.paths['AC_logger_dir']
         self.logger_path = os.path.join(self.logger_dir, name_ + '_' + now + '.txt')
@@ -66,14 +73,43 @@ class Access_control(Pyboard):
             self.status['serial'] = False
             raise(e)
 
+    def load_test_framework(self) -> None:
+        ''' 
+        Script for generating artificial signals
+        
+        This function mirrors the normal `load_framework` function.
+        '''
+        
+        self.print('\nTransfering `state_signal_generator` to the python board.')
+        
+        # Load signal generator
+        self.transfer_file(os.path.join(database.paths["access_control_dir"], 'state_signal_generator.py'), 'state_signal_generator.py')
+        
+        try: 
+            self.exec_raw_no_follow("import state_signal_generator")
+        except PyboardError as e:
+            raise e
+        
+        self.print('OK')
+            
     def load_framework(self) -> None:
-        '''Copy the pyControl framework folder to the board.'''
+        '''
+        Copy the pyControl framework folder to the board. Then run the main script that runs the firmware on the board. 
+        
+        
+        The commands run on the board are: 
+        from access_control_upy.access_control_1_0 import Access_control_upy
+        access_control = Access_control_upy()
+                
+        '''
 
         self.print('\nTransfering access control framework to pyboard.', end='')
 
         self.transfer_folder(database.paths["access_control_dir"], file_type='py', show_progress=True)    # upload access control framework
         self.transfer_file(os.path.join(database.paths["access_control_dir"], 'main_script_for_pyboard.py'), 'main.py')
 
+        # Access Control Hardware
+        
         try:
             self.exec('from access_control_upy.access_control_1_0 import Access_control_upy')
         except PyboardError as e:
@@ -84,6 +120,10 @@ class Access_control(Pyboard):
         except PyboardError as e:
             print('Could not instantiate Access_control.')
             raise(e)
+        
+        
+        # Handler Class 
+        
         try:
             # This the main script that is run on the pyboard. It controls the pin i/o  for magment and RFID
             self.exec('from main import handler')
@@ -96,8 +136,24 @@ class Access_control(Pyboard):
         # self.exec('run()')
         print("OK")
 
+    def print_data(self):
+        '''Another testing function by Alif. 
+        This will read the output of the serial port of the access control to the host computer.
+        '''
+        # print(self.serial.inWaiting())
+        if self.serial.inWaiting() > 0 : 
+            read = str(self.serial.read(self.serial.inWaiting()))
+
+            messages = re.findall('start_(.*?)_end', read)
+            for msg in messages:
+                with open('access_control_testing_log.txt', 'a') as f:
+                    f.write(msg + '_' + datetime.now().strftime('-%Y-%m-%d-%H%M%S')+'\n')
+
+
     def process_data(self):
-        """ Here process data from buffer to update dataframes """
+        """ Here process data from buffer to update dataframes 
+        This is not where the data updates anything about the states of the 
+        """
         # Just send each message as being 16 characters long. That way
         # can just check padding. Should be fine
 
@@ -107,7 +163,9 @@ class Access_control(Pyboard):
             read = str(self.serial.read(self.serial.inWaiting()))
 
             messages = re.findall('start_(.*?)_end', read)
+            print(f'messages:{messages}')
             for msg in messages:
+                print(f'msg:{msg}')
                 with open(self.logger_path, 'a') as f:
                     f.write(msg + '_' + datetime.now().strftime('-%Y-%m-%d-%H%M%S')+'\n')
 
@@ -115,11 +173,18 @@ class Access_control(Pyboard):
                 # This is a horrible information flow. The point is simply to print
                 # into the calibrate dialog
                 if 'cal' in msg:
+                    '''
+                    datbase.print_consumers is a list of callable functions. They are specifically being used to print to 
+                    different parts of the GUI depending on what the recipient of the message should be.
+                    The reason for the if statement below is that these print functions are only used if they are defined during the initalisation.
+                    If they are not then the `emit_print_message` function can not work. 
+                    '''
 
                     # if self.GUI.setup_tab.callibrate_dialog:
                     #     self.GUI.setup_tab.callibrate_dialog.print_msg(msg)
                     # if self.GUI.setup_tab.configure_box_dialog:
                     #     self.GUI.setup_tab.configure_box_dialog.print_msg(msg)
+                    
                     if MessageRecipient.calibrate_dialog in database.print_consumers:
                         emit_print_message(print_text=msg,
                                            target=MessageRecipient.calibrate_dialog,
@@ -130,7 +195,9 @@ class Access_control(Pyboard):
                                            target=MessageRecipient.configure_box_dialog,
                                            data_source=MessageSource.ACBoard
                                            )
-
+                    
+                    
+                # The message is passed to another function to be 'processed'
                 self.data_logger.process_data_AC(messages)
 
     def loadcell_tare(self):

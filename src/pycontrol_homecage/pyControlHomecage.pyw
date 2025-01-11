@@ -4,7 +4,7 @@ from functools import partial
 
 from pyqtgraph.Qt import QtGui
 
-from pycontrol_homecage.main_gui import GUIApp
+from pycontrol_homecage.gui_tabs.main_gui import GUIApp
 from pycontrol_homecage.utils import get_path
 from pycontrol_homecage.utils import custom_excepthook
 

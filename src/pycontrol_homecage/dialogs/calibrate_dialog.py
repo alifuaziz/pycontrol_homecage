@@ -1,19 +1,25 @@
+# GUI
 from pyqtgraph.Qt import QtGui
-
-
-from pycontrol_homecage.com.messages import MessageRecipient
+# repo
 import pycontrol_homecage.db as database
+from pycontrol_homecage.com.messages import MessageRecipient
+from pycontrol_homecage.com.access_control import Access_control
 
+class CalibrationDialog(QtGui.QDialog):
+    """
+    Simple dialog box that allows you to tare and callibrate the scales of the access control module. 
+    - This is primarily just an wrapper around the functions of the Access_control pyboard, with an output 
+    that writes to a the dialog box itself. 
+    Parameter
+    ==============
+    Access_control: A wrapper around the pyboard class that has specific functions for 
+    """
 
-class calibrate_dialog(QtGui.QDialog):
+    def __init__(self, access_control_pyboard: Access_control =None):
 
-    """ Simple dialog that allows you to tare and callibrate the scales"""
+        super(CalibrationDialog, self).__init__(None)
 
-    def __init__(self, ac=None):
-
-        super(calibrate_dialog, self).__init__(None)
-
-        self.ac = ac
+        self.access_control = access_control_pyboard
         self.reject = self._done
 
         self.setGeometry(10, 30, 400, 200)  # Left, top, width, height.
@@ -22,7 +28,6 @@ class calibrate_dialog(QtGui.QDialog):
         self._setup_calibration_weight_lineedit()
         self._set_dialog_layout()
         database.print_consumers[MessageRecipient.calibrate_dialog] = self.print_msg
-
 
 
     def _setup_buttons(self) -> None:
@@ -60,21 +65,21 @@ class calibrate_dialog(QtGui.QDialog):
 
     def tare(self) -> None:
         """ Tell access control module to tare the scales"""
-        self.ac.serial.write(b'tare')
+        self.access_control.serial.write(b'tare')
 
     def callibrate(self) -> None:
         """ Tell access control module to callibrate the scales"""
         cw = self.calibration_weight.text()
         str_ = 'calibrate:' + cw
-        self.ac.serial.write(str_.encode())
+        self.access_control.serial.write(str_.encode())
 
-        # write to
+        # write to 
         self.log_textbox.moveCursor(QtGui.QTextCursor.End)
         self.log_textbox.insertPlainText('Target calibration weight: ' + str(cw) + 'g\n')
         self.log_textbox.moveCursor(QtGui.QTextCursor.End)
 
     def weigh(self) -> None:
-        self.ac.serial.write(b'weigh')
+        self.access_control.serial.write(b'weigh')
 
     def _done(self) -> None:
 

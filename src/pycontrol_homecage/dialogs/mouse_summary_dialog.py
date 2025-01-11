@@ -1,11 +1,11 @@
 from pyqtgraph.Qt import QtGui
 
 
-class mouse_summary_dialog(QtGui.QDialog):
+class MouseSummaryDialog(QtGui.QDialog):
 
     def __init__(self, parent=None):
 
-        super(mouse_summary_dialog, self).__init__(parent)
+        super(MouseSummaryDialog, self).__init__(parent)
 
         self.setGeometry(10, 30, 300, 200)  # Left, top, width, height.
 

@@ -1,42 +1,40 @@
-from pyqtgraph.Qt import QtGui
+from PyQt5 import QtWidgets, QtGui
 import random
 import smtplib
 import ssl
 from string import ascii_lowercase
-# from pycontrol_homecage.emailer import send_email probably best to port to here eventually
 
 from pycontrol_homecage.utils import get_users, get_pyhomecage_email, get_path
 
 
-class add_user_dialog(QtGui.QDialog):
+class AddUserDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
-
-        super(add_user_dialog, self).__init__(parent)
+        super(AddUserDialog, self).__init__(parent)
 
         self.setGeometry(10, 30, 300, 200)  # Left, top, width, height.
-        self.label = QtGui.QLabel("""You must create an account linked to an email that you frequently check.
+        self.label = QtWidgets.QLabel("""You must create an account linked to an email that you frequently check.
                                 The homecage system will send you daily updated about your subjects which 
                                 MUST be checked to ensure there are no welfare concerns. Therefore we will
                                 do an email confirmation thing to register
                             """)
-        self.textName = QtGui.QLineEdit("User Name")
-        self.textEmail = QtGui.QLineEdit("User email")
-        self.addUserButton = QtGui.QPushButton('Send code', self)
+        self.textName = QtWidgets.QLineEdit("User Name")
+        self.textEmail = QtWidgets.QLineEdit("User email")
+        self.addUserButton = QtWidgets.QPushButton('Send code', self)
         self.addUserButton.clicked.connect(self.send_code)
 
-        self.confirm_email = QtGui.QLineEdit("Enter code")
-        self.confirmCodeButton = QtGui.QPushButton('Confirm', self)
+        self.confirm_email = QtWidgets.QLineEdit("Enter code")
+        self.confirmCodeButton = QtWidgets.QPushButton('Confirm', self)
         self.confirmCodeButton.clicked.connect(self.handleLogin)
         self.users = get_users()
 
-        layout = QtGui.QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
 
-        hlayout = QtGui.QHBoxLayout()
+        hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(self.textName)
         hlayout.addWidget(self.textEmail)
         hlayout.addWidget(self.addUserButton)
 
-        hlayout2 = QtGui.QHBoxLayout(self)
+        hlayout2 = QtWidgets.QHBoxLayout(self)
         hlayout2.addWidget(self.confirm_email)
         hlayout2.addWidget(self.confirmCodeButton)
         layout.addWidget(self.label)
@@ -44,7 +42,7 @@ class add_user_dialog(QtGui.QDialog):
         layout.addLayout(hlayout2)
 
     def send_code(self):
-        """ Send verifiation code to users email address"""
+        """ Send verification code to users email address"""
 
         # stores in class variable to allow confirmation of code
         self.code = self._construct_code()
@@ -69,7 +67,7 @@ class add_user_dialog(QtGui.QDialog):
         smtp_server = "smtp.gmail.com"
         context = ssl.create_default_context()
 
-        # Open conext and send email
+        # Open context and send email
         with smtplib.SMTP(smtp_server, port) as server:
             server.ehlo()  # Can be omitted
             server.starttls(context=context)
@@ -89,7 +87,6 @@ class add_user_dialog(QtGui.QDialog):
     def handleLogin(self):
         self.users = get_users()
         if str(self.confirm_email.text()) == str(self.code):
-            # !!!!!!!!!!   FIX TO IGNORE CASE   !!!!!!!!!!!!!!!!!
             if self.user.lower() not in [i.lower() for i in self.users]:
                 with open(get_path("users.txt"), 'a') as file:
                     user_details = "user_data:{'"+str(self.user) + "':' " + str(self.receiver_email) + "'}"

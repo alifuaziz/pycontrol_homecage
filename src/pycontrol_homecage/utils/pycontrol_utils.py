@@ -5,7 +5,8 @@ from serial.tools import list_ports
 from pycontrol_homecage.utils import get_path
 
 def get_tasks() -> List[str]:
-    """ Function to read available tasks from the tasks folder """
+    """Function to read available tasks from the tasks folder 
+    Returns a list of the .py files that are in the `/data/tasks` folder"""
 
     tasks = [t.split('.')[0] for t in os.listdir(get_path("tasks")) if t[-3:] == '.py']
     return tasks
@@ -39,6 +40,6 @@ def get_variables_and_values_from_taskfile(pth: str) -> dict[str, str]:
 
 
 def find_setups():
-
+    """Looks for pyboards in the list of comports on the computer"""
     ports = list(set([c[0] for c in list_ports.comports() if ('Pyboard' in c[1]) or ('USB Serial Device' in c[1])]))
     return ports

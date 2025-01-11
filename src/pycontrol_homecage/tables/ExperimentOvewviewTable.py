@@ -6,7 +6,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 import pycontrol_homecage.db as database
 
 
-class experiment_overview_table(QtGui.QTableWidget):
+class ExperimentOverviewTable(QtGui.QTableWidget):
     " Table for system tab that shows all experiments currently running"
 
     def __init__(self, only_active: bool = False, parent=None):
@@ -64,7 +64,7 @@ class experiment_overview_table(QtGui.QTableWidget):
         """
         selected_experiments = []
         for rowN in range(self.rowCount()):
-            if self(rowN, 0).checkState() == 2:  # 2 is checked state
+            if self.item(rowN, 0).checkState() == 2:  # 2 is checked state
                 expName = self.item(rowN, self.header_names.index('Name')).text()
                 selected_experiments.append(expName)
 
