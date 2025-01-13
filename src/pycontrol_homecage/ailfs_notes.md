@@ -1,7 +1,6 @@
 # Notes
+>
 > THE IDE I USED TO DEBUG IS THONNY It has pretty decent error messages yay!
-
-
 
 Goals of this program:
 
@@ -15,15 +14,14 @@ Goals of this program:
         return eval(self.exec('fw.get_states()').decode().strip())
   This is a running a function on the pycontrol board itself.
 
-## How does the firmware communicate with the main script.
+## How does the firmware communicate with the main script
 
 - Pyboard info:
 - Whilst it is running the main script i guess that it can't be read... And if the framework is uploaded successfully they it will run automatically and cause data be to continuously sent from the pyboard back to the main computer.
 - ? how to read the output of the file
 
 - the [com](/com) folder is the folder which does a lot the logic that is involved in taking the information from the pyb and writing it down to disk. (thus the logic of this program)
-- A lot of the way the  gui interacts with the logic is by displaying it and adding the basic information (i.e. names / configurations of setups) to it. 
-
+- A lot of the way the  gui interacts with the logic is by displaying it and adding the basic information (i.e. names / configurations of setups) to it.
 
 ## Structure
 
@@ -38,11 +36,11 @@ All setups require two things:
 ## Queues
 
 - table update queue
-  - The following line of code adds the nane of the table that needs to be updated to an 'update queue' that is then handled (and updated) in the `main_gui.py` method (`GUIApp.refresh()` function)   
+  - The following line of code adds the nane of the table that needs to be updated to an 'update queue' that is then handled (and updated) in the `main_gui.py` method (`GUIApp.refresh()` function)
   - database.update_table_queue.append("setup_tab.list_of_setups")
 
 - message_queue
--   
+-
 
 - com: communication between the main computer and the microcontrollers (pycontrol and access control)
 - access_control_upy: the firmware that goes onto the micropython board
@@ -61,7 +59,7 @@ All setups require two things:
                             'is_assigned', 'training_log', 'Setup_ID']
 
 In the data/tasks directory, there are tasks (as .py files)
-These tasks are implemented as statemachines. 
+These tasks are implemented as statemachines.
 The mouse table will have a task associated with it.
 The task has variables that are associated with it that are set during the initialisation of the task
 
@@ -177,15 +175,14 @@ The task has variables that are associated with it that are set during the initi
       s
       A new mouse enters: this resets the dict of attributes that is associated with the handler.
 
-Most of the handling involves calling a function that writes appropriate data to the `database` dataframes 
+Most of the handling involves calling a function that writes appropriate data to the `database` dataframes
 e.g. `_update_database_on_entry` writes which mouse (identified from an RFID) is `in_training`, its `weight`
-- this is the `mouse_df` and the `setup_df`
 
+- this is the `mouse_df` and the `setup_df`
 
 - `process_data_AC`
 - This processes the state data that is being returned from the pyb.
-- 
-
+-
 
 ### Pycboard
 

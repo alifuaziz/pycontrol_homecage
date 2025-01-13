@@ -1,11 +1,11 @@
-from pyqtgraph.Qt import QtGui
+from PyQt5.QtWidgets import QDialog, QLineEdit, QVBoxLayout
 
 
-class BoxConnectionDialog(QtGui.QDialog):
+class BoxConnectionDialog(QDialog):
 
     def __init__(self, parent=None):
         super(BoxConnectionDialog, self).__init__(parent)
-        self.textbox = QtGui.QLineEdit(self)
+        self.textbox = QLineEdit(self)
         self.textbox.setText("You must be connected to the setup to update it")
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self.textbox)

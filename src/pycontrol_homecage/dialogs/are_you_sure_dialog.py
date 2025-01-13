@@ -1,30 +1,30 @@
-from pyqtgraph.Qt import QtGui
+from PyQt5.QtWidgets import QDialog, QPushButton, QLabel, QHBoxLayout, QVBoxLayout
 from pycontrol_homecage.utils import get_users
 
 
-class AreYouSureDialog(QtGui.QDialog):
+class AreYouSureDialog(QDialog):
     def __init__(self, parent=None):
         super(AreYouSureDialog, self).__init__(parent)
 
         self.setGeometry(10, 30, 300, 100)  # Left, top, width, height.
         self.users = get_users()
 
-        self.yesButton = QtGui.QPushButton("Yes", self)
-        self.noButton = QtGui.QPushButton("No", self)
+        self.yesButton = QPushButton("Yes", self)
+        self.noButton = QPushButton("No", self)
 
         self.yesButton.clicked.connect(self.handleYes)
         self.noButton.clicked.connect(self.handleNo)
 
-        self.Question = QtGui.QLabel()
+        self.Question = QLabel()
         self.Question.setText("Are you sure?")
         self._set_dialog_layout()
 
     def _set_dialog_layout(self) -> None:
-        self.buttonLayout = QtGui.QHBoxLayout()
+        self.buttonLayout = QHBoxLayout()
         self.buttonLayout.addWidget(self.noButton)
         self.buttonLayout.addWidget(self.yesButton)
 
-        layoutV = QtGui.QVBoxLayout(self)
+        layoutV = QVBoxLayout(self)
         layoutV.addWidget(self.Question)
         layoutV.addLayout(self.buttonLayout)
 

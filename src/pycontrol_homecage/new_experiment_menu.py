@@ -286,7 +286,7 @@ class new_experiment_dialog(QtGui.QDialog):
             self.protocol_combo.setEnabled(True)
             self.exp_GOButton.setEnabled(False)
             self.global_task = True
-        elif self.shared_protocol.isChecked() == False:
+        elif self.shared_protocol.isChecked() is False:
             self.protocol_combo.setEnabled(False)
             self.exp_GOButton.setEnabled(True)
             self.global_task = False
@@ -378,11 +378,11 @@ class new_experiment_dialog(QtGui.QDialog):
         # print(self.expName.text(),self.protocol_combo.currentIndex())
         if (self.expName.text() != "") and (
             (self.protocol_combo.currentIndex() != 0)
-            or (self.shared_protocol.isChecked() == False)
+            or (self.shared_protocol.isChecked() is False)
         ):
             self.setup_groupbox.setEnabled(True)
             self.exp_name_groupbox.setEnabled(False)
-            if self.shared_protocol.isChecked() == True:
+            if self.shared_protocol.isChecked() is True:
                 self.set_protocol = self.protocol_combo.currentText()
             else:
                 self.set_protocol = None

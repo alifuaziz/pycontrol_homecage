@@ -1,17 +1,16 @@
 import time
 from typing import List
 
-from pyqtgraph import Qt
-from pyqtgraph.Qt import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 import pycontrol_homecage.db as database
 
 
-class ExperimentOverviewTable(QtGui.QTableWidget):
+class ExperimentOverviewTable(QtWidgets.QTableWidget):
     " Table for system tab that shows all experiments currently running"
 
     def __init__(self, only_active: bool = False, parent=None):
 
-        super(QtGui.QTableWidget, self).__init__(1, 7, parent=parent)
+        super(QtWidgets.QTableWidget, self).__init__(1, 7, parent=parent)
 
         self.header_names = ['Select', 'Name', 'Setups', 'User', 
                              'Active', 'Protocol', 'Subjects',
@@ -26,7 +25,7 @@ class ExperimentOverviewTable(QtGui.QTableWidget):
 
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.select_col_ix = self.header_names.index("Select")
 
     def fill_table(self):
@@ -46,11 +45,11 @@ class ExperimentOverviewTable(QtGui.QTableWidget):
                     try:
                         cHeader = self.header_names[col_index]
 
-                        self.setItem(row_index, col_index, Qt.QtWidgets.QTableWidgetItem(str(row[cHeader])))
+                        self.setItem(row_index, col_index, QtWidgets.QTableWidgetItem(str(row[cHeader])))
                     except KeyError:
                         pass
 
-                chkBoxItem = QtGui.QTableWidgetItem()
+                chkBoxItem = QtWidgets.QTableWidgetItem()
                 chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
                 chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
                 self.setItem(row_index, self.select_col_ix, chkBoxItem)

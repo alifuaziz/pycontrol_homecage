@@ -1,14 +1,14 @@
 import numpy as np
-from pyqtgraph import Qt
-from pyqtgraph.Qt import QtCore, QtGui
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
 
 
-class MouseListTable(QtGui.QTableWidget):
+class MouseListTable(QTableWidget):
     """This table contains information about all mice currently running in the
     system"""
 
     def __init__(self, tab, parent=None):
-        super(QtGui.QTableWidget, self).__init__(1, 17, parent=parent)
+        super(QTableWidget, self).__init__(1, 17, parent=parent)
         self.header_names = [
             "",
             "Mouse_ID",
@@ -32,7 +32,7 @@ class MouseListTable(QtGui.QTableWidget):
         self.tab = tab
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
         self.fill_table()
 
     def fill_table(self):
@@ -51,10 +51,10 @@ class MouseListTable(QtGui.QTableWidget):
                 self.setItem(
                     row_index,
                     col_index + 1,
-                    Qt.QtWidgets.QTableWidgetItem(str(row[col_index])),
+                    QTableWidgetItem(str(row[col_index])),
                 )
 
-            chkBoxItem = QtGui.QTableWidgetItem()
+            chkBoxItem = QTableWidgetItem()
             chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
             self.setItem(row_index, 0, chkBoxItem)

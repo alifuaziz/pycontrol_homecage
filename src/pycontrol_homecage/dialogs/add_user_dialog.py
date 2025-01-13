@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets
 import random
 import smtplib
 import ssl
@@ -19,11 +19,11 @@ class AddUserDialog(QtWidgets.QDialog):
                             """)
         self.textName = QtWidgets.QLineEdit("User Name")
         self.textEmail = QtWidgets.QLineEdit("User email")
-        self.addUserButton = QtWidgets.QPushButton('Send code', self)
+        self.addUserButton = QtWidgets.QPushButton("Send code", self)
         self.addUserButton.clicked.connect(self.send_code)
 
         self.confirm_email = QtWidgets.QLineEdit("Enter code")
-        self.confirmCodeButton = QtWidgets.QPushButton('Confirm', self)
+        self.confirmCodeButton = QtWidgets.QPushButton("Confirm", self)
         self.confirmCodeButton.clicked.connect(self.handleLogin)
         self.users = get_users()
 
@@ -42,7 +42,7 @@ class AddUserDialog(QtWidgets.QDialog):
         layout.addLayout(hlayout2)
 
     def send_code(self):
-        """ Send verification code to users email address"""
+        """Send verification code to users email address"""
 
         # stores in class variable to allow confirmation of code
         self.code = self._construct_code()
@@ -58,10 +58,9 @@ class AddUserDialog(QtWidgets.QDialog):
         message = self._construct_email(self.code)
         self.send_email(message, sender_email, password, self.receiver_email)
 
-    def send_email(self, message: str, sender_email: str,
-                   password: str, receiver_email: str
-                   ) -> None:
-
+    def send_email(
+        self, message: str, sender_email: str, password: str, receiver_email: str
+    ) -> None:
         # Email setup
         port = 587  # For starttls
         smtp_server = "smtp.gmail.com"
@@ -77,9 +76,9 @@ class AddUserDialog(QtWidgets.QDialog):
 
     def _construct_code(self) -> str:
         letters = ascii_lowercase
-        return ''.join(random.choice(letters) for _ in range(20))
+        return "".join(random.choice(letters) for _ in range(20))
 
-    def _construct_email(self, code: str) -> str:
+    def _construct_email(self) -> str:
         message = """\
         Subject: Pyhomecage email confirmation code""" + str(self.code)
         return message
@@ -88,7 +87,13 @@ class AddUserDialog(QtWidgets.QDialog):
         self.users = get_users()
         if str(self.confirm_email.text()) == str(self.code):
             if self.user.lower() not in [i.lower() for i in self.users]:
-                with open(get_path("users.txt"), 'a') as file:
-                    user_details = "user_data:{'"+str(self.user) + "':' " + str(self.receiver_email) + "'}"
-                    file.writelines('\n'+user_details)
+                with open(get_path("users.txt"), "a") as file:
+                    user_details = (
+                        "user_data:{'"
+                        + str(self.user)
+                        + "':' "
+                        + str(self.receiver_email)
+                        + "'}"
+                    )
+                    file.writelines("\n" + user_details)
         self.accept()

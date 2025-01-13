@@ -18,13 +18,14 @@ from pycontrol_homecage.dialogs import LoginDialog, AddUserDialog
 import pycontrol_homecage.db as database
 
 
-class GUIApp(QMainWindow):
+class MainGUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.GUI_filepath = os.path.dirname(os.path.abspath(__file__))
         self.app = None  # Overwritten with QApplication instance in main.
         self.active_user = None
+        self.setWindowTitle('pyControlHomeCage: Please log in')
 
         database.setup_df["connected"] = False
 
@@ -74,10 +75,10 @@ class GUIApp(QMainWindow):
         }
 
     def _init_tabs(self) -> None:
-        self.mouse_tab = MouseOverViewTab(self)
-        self.setup_tab = SetupsOverviewTab(self)
-        self.protocol_tab = ProtocolAssemblyTab(self)
-        self.system_tab = SystemOverviewTab(self)
+        self.mouse_tab      = MouseOverViewTab(self)
+        self.setup_tab      = SetupsOverviewTab(self)
+        self.protocol_tab   = ProtocolAssemblyTab(self)
+        self.system_tab     = SystemOverviewTab(self)
         self.experiment_tab = ExperimentOverviewTab(self)
 
     def _add_tabs_to_widget(self) -> None:
@@ -104,6 +105,13 @@ class GUIApp(QMainWindow):
         self.refresh_timer.start(100)
 
     def refresh(self) -> None:
+        """
+        Primary Refresh Function of the GUI. 
+        
+        1. Checks for data from the pyboards currently running
+        2. Refreshes the GUi tabs. 
+        3. Prints any messages that have entered the message queue
+        """
         for k, SC in database.controllers.items():
             SC.check_for_data()
 
@@ -186,7 +194,7 @@ class GUIApp(QMainWindow):
 
     def _reset_tables(self):
         """
-        Function to handle the updating of tables in the database object.
+        Function to handle the updating of tables from the database object.
         """
         # Update the tablse in order of the update tables queue.
         update_table = database.update_table_queue.pop(0)

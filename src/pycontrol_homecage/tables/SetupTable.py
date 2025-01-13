@@ -1,25 +1,29 @@
 import time
 from functools import partial
 
-from pyqtgraph import Qt
-from pyqtgraph.Qt import QtCore, QtGui
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import (
+    QTableWidget,
+    QTableWidgetItem,
+    QPushButton,
+)
 from serial import SerialException
 import pandas as pd
 
 from pycontrol_homecage.com.access_control import Access_control
 from pycontrol_homecage.com.pycboard import PyboardError, Pycboard
 from pycontrol_homecage.com.system_handler import system_controller
-from pycontrol_homecage.com.messages import MessageRecipient
+# from pycontrol_homecage.com.messages import MessageRecipient
 from pycontrol_homecage.dialogs import CalibrationDialog
 from pycontrol_homecage.utils import find_setups
 import pycontrol_homecage.db as database
 
 
-class SetupTable(QtGui.QTableWidget):
+class SetupTable(QTableWidget):
     """This table contains information about the setups currently"""
 
     def __init__(self, tab=None):
-        super(QtGui.QTableWidget, self).__init__(1, 12, parent=None)
+        super(QTableWidget, self).__init__(1, 12, parent=None)
         self.header_names = [
             "Select",
             "Setup_ID",
@@ -42,7 +46,7 @@ class SetupTable(QtGui.QTableWidget):
         self.tab = tab
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
 
         self.select_col_ix = self.header_names.index("Select")
         self.connect_col_ix = self.header_names.index(
@@ -70,7 +74,7 @@ class SetupTable(QtGui.QTableWidget):
 
         self.setCellWidget(row_index, self.connect_col_ix, button)
 
-        chkBoxItem = QtGui.QTableWidgetItem()
+        chkBoxItem = QTableWidgetItem()
         chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
         chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
         self.setItem(row_index, self.select_col_ix, chkBoxItem)
@@ -82,7 +86,7 @@ class SetupTable(QtGui.QTableWidget):
                 self.setItem(
                     row_index,
                     col_index,
-                    Qt.QtWidgets.QTableWidgetItem(str(row[cHeader])),
+                    QTableWidgetItem(str(row[cHeader])),
                 )
             except KeyError:
                 pass
@@ -97,7 +101,7 @@ class SetupTable(QtGui.QTableWidget):
         else:
             buttonText = "Connect"
 
-        button = QtGui.QPushButton(buttonText)
+        button = QPushButton(buttonText)
         button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
         button.clicked.connect(self.connect)
         return button

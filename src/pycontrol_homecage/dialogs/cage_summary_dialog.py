@@ -1,7 +1,7 @@
-from pyqtgraph.Qt import QtGui
+from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout
 
 
-class CageSummaryDialog(QtGui.QDialog):
+class CageSummaryDialog(QDialog):
 
     def __init__(self, parent=None):
 
@@ -9,8 +9,8 @@ class CageSummaryDialog(QtGui.QDialog):
 
         self.setGeometry(10, 30, 300, 200)  # Left, top, width, height.
 
-        self.textName = QtGui.QLabel(self)
+        self.textName = QLabel(self)
         self.textName.setText("Bleep bloop all sorts of summary information about")
 
-        layout = QtGui.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.addWidget(self.textName)

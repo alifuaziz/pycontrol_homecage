@@ -1,12 +1,11 @@
-from pyqtgraph import Qt
-from pyqtgraph.Qt import QtGui
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
 
 
-class ProtocolTable(QtGui.QTableWidget):
+class ProtocolTable(QTableWidget):
 
     def __init__(self, tab, nRows: int = None, parent=None):
 
-        super(QtGui.QTableWidget, self).__init__(1, 6, parent=parent)
+        super(QTableWidget, self).__init__(1, 6, parent=parent)
         self.set_headers()
         if nRows:
             self.setRowCount(nRows)
@@ -18,12 +17,12 @@ class ProtocolTable(QtGui.QTableWidget):
 
         self.header_names = ['Stage', 'Task', 'Tracked', 'Threshold(s)', 'Default(s)', 'Delete']
         self.setHorizontalHeaderLabels(self.header_names)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
         self.set_resizemode_for_headers()
 
     def set_resizemode_for_headers(self):
         for h_ix in range(len(self.header_names)-1):
-            self.horizontalHeader().setResizeMode(h_ix, QtGui.QHeaderView.Stretch)
+            self.horizontalHeader().setSectionResizeMode(h_ix, QHeaderView.Stretch)
 
     def fill_table(self, dat):
         " Here pass prot_dict"
@@ -32,9 +31,9 @@ class ProtocolTable(QtGui.QTableWidget):
 
         self.clear()
         self.setHorizontalHeaderLabels(self.header_names)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
         for i in range(1, len(self.header_names)-1):
-            self.horizontalHeader().setResizeMode(i, QtGui.QHeaderView.Stretch)
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
 
         if self.nRows:
             self.setRowCount(self.nRows)
@@ -51,9 +50,9 @@ class ProtocolTable(QtGui.QTableWidget):
 
         for k in dat.keys():
             if ('thresh' in k) or ('default' in k):
-                Vtmp = Qt.QtWidgets.QTableWidgetItem(self._translate(dat[k]))
+                Vtmp = QTableWidgetItem(self._translate(dat[k]))
             else:
-                Vtmp = Qt.QtWidgets.QTableWidgetItem(str(dat[k]))
+                Vtmp = QTableWidgetItem(str(dat[k]))
 
             if k == 'threshV':
                 self.setItem(row, self.header_names.index('Threshold(s)'), Vtmp)
@@ -79,10 +78,10 @@ class ProtocolTable(QtGui.QTableWidget):
 
         self.clear()
         self.setHorizontalHeaderLabels(self.header_names)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
 
         for i in range(1, len(self.header_names)-1):
-            self.horizontalHeader().setResizeMode(i, QtGui.QHeaderView.Stretch)
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
 
         if self.nRows:
             self.setRowCount(self.nRows)

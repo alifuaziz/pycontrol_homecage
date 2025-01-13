@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QPlainTextEdit,
     QMessageBox,
-    QMainWindow
+    QMainWindow,
 )
 from PyQt5.QtGui import QFont, QTextCursor
 
@@ -21,7 +21,7 @@ import pycontrol_homecage.db as database
 
 
 class SystemOverviewTab(QWidget):
-    def __init__(self, parent:QMainWindow=None):
+    def __init__(self, parent: QMainWindow = None):
         super(QWidget, self).__init__(parent)
 
         self.GUI = self.parent()
@@ -53,6 +53,7 @@ class SystemOverviewTab(QWidget):
             "Add a new account. This requires email verification."
         )
         self.logout_button = QPushButton("Logout")
+        self.logout_button.setEnabled(False)
         self._set_user_layout()
 
     def _set_user_layout(self) -> None:
@@ -214,9 +215,7 @@ class SystemOverviewTab(QWidget):
                 pass
 
         # Create a dialog
-        self.new_experiment_config: new_experiment_dialog = new_experiment_dialog(
-            self.GUI
-        )
+        self.new_experiment_config = new_experiment_dialog(self.GUI)
         self.new_experiment_config.exec_()
 
     def end_experiment(self):

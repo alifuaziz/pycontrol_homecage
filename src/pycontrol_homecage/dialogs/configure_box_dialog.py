@@ -69,18 +69,6 @@ class ConfigureBoxDialog(QtGui.QDialog):
         layoutH.addWidget(self.log_textbox)
         database.print_consumers[MessageRecipient.configure_box_dialog] = self.print_msg
 
-    def _set_layout(self) -> None:
-        layout = QtGui.QVBoxLayout()
-
-        layout.addWidget(self.buttonWeigh)
-        layout.addWidget(self.buttonTare)
-        layout.addWidget(self.calibration_weight)
-        layout.addWidget(self.buttonCal)
-        layout.addWidget(self.buttonDone)
-
-        layoutH.addLayout(layout2)
-        layoutH.addLayout(layout)
-        layoutH.addWidget(self.log_textbox)
 
     def load_ac_framework(self):
 

@@ -1,18 +1,17 @@
 from functools import partial
 
-from pyqtgraph import Qt
-from pyqtgraph.Qt import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pycontrol_homecage.utils import get_tasks
 import pycontrol_homecage.db as database
 
 
-class MouseTable(QtGui.QTableWidget):
+class MouseTable(QtWidgets.QTableWidget):
     """This table contains information about all mice currently running in the
     system"""
 
     def __init__(self, GUI, parent=None):
-        super(QtGui.QTableWidget, self).__init__(1, 15, parent=parent)
+        super(QtWidgets.QTableWidget, self).__init__(1, 15, parent=parent)
         self.header_names = [
             "",
             "Mouse_ID",
@@ -35,7 +34,7 @@ class MouseTable(QtGui.QTableWidget):
         self.GUI = GUI
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(Qt.QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.loaded = False
 
         self.fill_table()
@@ -58,7 +57,7 @@ class MouseTable(QtGui.QTableWidget):
                 if col_name in self.header_names:
                     table_col_ix = self.header_names.index(df_cols[col_index])
                     if col_name == "Task":
-                        task_combo = QtGui.QComboBox()
+                        task_combo = QtWidgets.QComboBox()
                         task_combo.activated.connect(
                             partial(self.update_task_combo, task_combo)
                         )
@@ -81,34 +80,26 @@ class MouseTable(QtGui.QTableWidget):
                         self.setItem(
                             row_index,
                             table_col_ix,
-                            Qt.QtWidgets.QTableWidgetItem(str(row[col_index])),
+                            QtWidgets.QTableWidgetItem(str(row[col_index])),
                         )
-            # items = [QtGui.QStandardItem(field)for field in row]
-            # print(items)
-            # self.model.appendRow(items)
-            chkBoxItem = QtGui.QTableWidgetItem()
+            chkBoxItem = QtWidgets.QTableWidgetItem()
             chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
             self.setItem(row_index, 0, chkBoxItem)
 
-    def update_task_combo(self, combo: QtGui.QComboBox) -> None:
+    def update_task_combo(self, combo: QtWidgets.QComboBox) -> None:
         cTask = combo.currentText()
         combo.clear()
         combo.addItems([cTask] + get_tasks())
 
-    def change_mouse_task(self, combo: QtGui.QComboBox) -> None:
+    def change_mouse_task(self, combo: QtWidgets.QComboBox) -> None:
         """Change what task mouse is doing within the mouse_df"""
 
-        # if self.loaded:  #workaround (sorry)
-
-        # print('UPDATED TASK VIA TABLE')
         database.mouse_df.loc[database.mouse_df["RFID"] == combo.RFID, "Task"] = (
             combo.currentText()
         ) 
-        # need to update the table of the individual mouses training record as well??
-        # To implement: get the mouse with the RFID (combo.RFID) Update the task column in this to be correct
         
         # Save the updated dataframe to disk
         database.mouse_df.to_csv(database.mouse_df.file_location)
-        # fill the able again since the data has been updated
+        # fill the table again since the data has been updated
         self.fill_table()

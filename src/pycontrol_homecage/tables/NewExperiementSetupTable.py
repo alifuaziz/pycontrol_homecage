@@ -1,18 +1,17 @@
 import os
-from pyqtgraph import Qt
-from pyqtgraph.Qt import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pycontrol_homecage.com.pyboard import _djb2_file
 from pycontrol_homecage.utils import get_tasks
-import pycontrol_homecage.db as database
+# import pycontrol_homecage.db as database
 
 
-class NewExperimentSetupTable(QtGui.QTableWidget):
+class NewExperimentSetupTable(QtWidgets.QTableWidget):
     """Table Widget that is used in the `Start New Experiement` dialog. It is used for displaying the setups
     There are three tables in this dialog. The other two are defined in the `new_experiment_dialog` class."""
 
     def __init__(self, GUI, tab, parent=None):
-        super(QtGui.QTableWidget, self).__init__(1, 12, parent=parent)
+        super(QtWidgets.QTableWidget, self).__init__(1, 12, parent=parent)
         self.header_names = ['Show mice', 'Shared Protocol', 'Protocol',
                              'COM', 'COM_AC', 'Setup_ID',
                              'in_use', 'connected', 'User', 'Experiment',
@@ -26,7 +25,7 @@ class NewExperimentSetupTable(QtGui.QTableWidget):
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
 
-        self.setSelectionBehavior(Qt.QtWidgets.QTableView.SelectRows)
+        self.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.cellChanged.connect(self.show_mice_in_setup)
 
         self.selected_setups = []
@@ -52,15 +51,15 @@ class NewExperimentSetupTable(QtGui.QTableWidget):
 
             for col_index in range(self.columnCount()-3):
 
-                self.setItem(row_index, col_index+3, Qt.QtWidgets.QTableWidgetItem(str(row[col_index])))
+                self.setItem(row_index, col_index+3, QtWidgets.QTableWidgetItem(str(row[col_index])))
 
             # These should be set just as one for each column
-            chkBoxItem = QtGui.QTableWidgetItem()
+            chkBoxItem = QtWidgets.QTableWidgetItem()
             chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
             self.setItem(row_index, 0, chkBoxItem)
 
-            chkBoxItem = QtGui.QTableWidgetItem()
+            chkBoxItem = QtWidgets.QTableWidgetItem()
             if self.tab.global_task:
 
                 chkBoxItem.setFlags(QtCore.Qt.ItemIsEnabled)
@@ -70,12 +69,12 @@ class NewExperimentSetupTable(QtGui.QTableWidget):
 
             self.setItem(row_index, 1, chkBoxItem)
 
-            protocols = QtGui.QComboBox()
+            protocols = QtWidgets.QComboBox()
 
             self.available_tasks = get_tasks()
             protocols.addItems(['Select Task'] + self.available_tasks)
             protocols.setEnabled(False)
-            # QtGui.QTableWidgetItem()
+            # QtWidgets.QTableWidgetItem()
             if self.tab.global_task:
                 protocols.setEnabled(False)
                 protocols.clear()
