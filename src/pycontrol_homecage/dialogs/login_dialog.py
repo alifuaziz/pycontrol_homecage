@@ -15,14 +15,22 @@ class LoginDialog(QDialog):
 
         self.userID = None
         self.login_button = QPushButton('Login', self)
+        self.login_button.setEnabled(False)  # Initially disable the button
         self.login_button.clicked.connect(self.handle_login)
         self.combo = QComboBox()
         self.users = get_users()
         self.combo.addItems(['Select User'] + self.users)
+        self.combo.currentIndexChanged.connect(self.update_login_button)  # Connect signal to slot
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.combo)
         layout.addWidget(self.login_button)
+
+    def update_login_button(self):
+        if self.combo.currentText() == 'Select User':
+            self.login_button.setEnabled(False)
+        else:
+            self.login_button.setEnabled(True)
 
     def handle_login(self):
         if self.combo.currentText() != 'Select User':

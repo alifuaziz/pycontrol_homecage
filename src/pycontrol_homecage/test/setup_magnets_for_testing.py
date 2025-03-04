@@ -1,0 +1,39 @@
+import pyb
+from pyb import Pin
+from access_control_upy.access_control_1_0 import Access_control_upy
+import time
+from access_control_upy.pin_classes import signal_pin, magnet_pin
+
+myled = pyb.LED(1)
+myled2 = pyb.LED(2)
+myled.on()
+micros = pyb.Timer(2, prescaler=83, period=0x3FFFFFFF)  # just a microsecond timer
+
+enable_pin_1 = pyb.Pin("X11", pyb.Pin.OUT)  # Enables/disables the drivers on the + side of doors 1 & 2.
+enable_pin_2 = pyb.Pin("X12", pyb.Pin.OUT)  # Enables/disables the drivers on the + side of doors 3 & 4.
+enable_pin_1.value(1)  # Enable drivers.
+enable_pin_2.value(1)
+
+highside_pins = [
+    pyb.Pin(p, pyb.Pin.OUT) for p in ("Y3", "Y5", "Y12", "X6")
+]  # Controls whether + side of door is driven to 12V or 0V.
+lowside_pins = [
+    pyb.Pin(p, pyb.Pin.OUT) for p in ("Y4", "Y6", "Y11", "X5")
+]  # Controls whether - side of door is driven to 12V or 0V.
+signal_pins = [pyb.ADC(p) for p in ("X1", "X2", "X3", "X4")]  # Pins used to sense voltage on + side of doors.
+
+for i in range(4):  # Drive both sides of all doors to 0V.
+    highside_pins[i].value(0)
+    lowside_pins[i].value(0)
+
+P_read_en1 = signal_pin(signal_pins[0], enable_pin_1, enable_pin_2)
+P_read_en2 = signal_pin(signal_pins[1], enable_pin_1, enable_pin_2)
+P_read_ex1 = signal_pin(signal_pins[2], enable_pin_1, enable_pin_2)
+P_read_ex2 = signal_pin(signal_pins[3], enable_pin_1, enable_pin_2)
+
+P_mag_en1 = magnet_pin(highside_pins[0], lowside_pins[0])
+P_mag_en2 = magnet_pin(highside_pins[1], lowside_pins[1])
+P_mag_ex1 = magnet_pin(highside_pins[2], lowside_pins[2])
+P_mag_ex2 = magnet_pin(highside_pins[3], lowside_pins[3])
+
+MAGs = [P_mag_en1, P_mag_en2, P_mag_ex1, P_mag_ex2]

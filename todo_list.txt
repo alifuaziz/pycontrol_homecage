@@ -4,7 +4,8 @@
 5. When updating checkboxes in the variables table need to include a check for what state the checkboxes are in at the time
 6. Remove mouse from experiment
 
+- hardware: 
+- magents work
+rfid?  order  the radio
 
-Done stuff
-
-3. Fix login bug [X]
+loadcell

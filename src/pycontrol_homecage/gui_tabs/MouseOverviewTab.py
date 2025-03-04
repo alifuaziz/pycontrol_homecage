@@ -116,9 +116,7 @@ class MouseOverViewTab(QWidget):
         """This function updates variables in the mousetable for future use
         REMEMBER TO CHECK TYPES OF DICT ELEMENTS ONCE THIS IS RUNNING!!!!
         """
-        self.variables_table.setEnabled(
-            False
-        )  # after update of variables table, turn this off
+        self.variables_table.setEnabled(False)  # after update of variables table, turn this off
 
         all_variables = self.variables_table.variables_list()
         unique_mice = list(set([i["subject"] for i in all_variables]))
@@ -146,21 +144,19 @@ class MouseOverViewTab(QWidget):
                 [
                     (str(i["name"]), i["value"].strip())
                     for i in all_variables
-                    if (
-                        (i["subject"] == ms_rfid) and not (i["persistent"]) and i["set"]
-                    )
+                    if ((i["subject"] == ms_rfid) and not (i["persistent"]) and i["set"])
                 ]
             )
 
-            database.mouse_df.loc[
-                database.mouse_df["RFID"] == float(ms_rfid), "summary_variables"
-            ] = json.dumps(summary_variables_dict)
-            database.mouse_df.loc[
-                database.mouse_df["RFID"] == float(ms_rfid), "persistent_variables"
-            ] = json.dumps(persistent_variables_dict)
-            database.mouse_df.loc[
-                database.mouse_df["RFID"] == float(ms_rfid), "set_variables"
-            ] = json.dumps(set_variables_dict)
+            database.mouse_df.loc[database.mouse_df["RFID"] == float(ms_rfid), "summary_variables"] = json.dumps(
+                summary_variables_dict
+            )
+            database.mouse_df.loc[database.mouse_df["RFID"] == float(ms_rfid), "persistent_variables"] = json.dumps(
+                persistent_variables_dict
+            )
+            database.mouse_df.loc[database.mouse_df["RFID"] == float(ms_rfid), "set_variables"] = json.dumps(
+                set_variables_dict
+            )
 
             database.mouse_df.to_csv(database.mouse_df.file_location)
 
@@ -185,8 +181,7 @@ class MouseOverViewTab(QWidget):
                     [
                         str(i)
                         for i in database.mouse_df.loc[
-                            database.mouse_df["Experiment"]
-                            == self.vars_combo_sel.currentText(),
+                            database.mouse_df["Experiment"] == self.vars_combo_sel.currentText(),
                             "RFID",
                         ].values
                     ]
@@ -196,9 +191,7 @@ class MouseOverViewTab(QWidget):
 
         self.variables_table.set_available_subjects(RFIDs)
         for sel_RFID in RFIDs:
-            mouseRow = database.mouse_df.loc[
-                database.mouse_df["RFID"] == float(sel_RFID)
-            ]
+            mouseRow = database.mouse_df.loc[database.mouse_df["RFID"] == float(sel_RFID)]
             # print(mouseRow)
             mouseTask = mouseRow["Task"].values[0] + ".py"
 
@@ -217,13 +210,9 @@ class MouseOverViewTab(QWidget):
             task_dir = database.paths["task_dir"]
             task_path = os.path.join(task_dir, mouseTask)
             self.default_variables = get_variables_and_values_from_taskfile(task_path)
-            self.variable_names = list(
-                set(self.default_variables.keys())
-            )  # get_variables_from_taskfile(task_path)
+            self.variable_names = list(set(self.default_variables.keys()))  # get_variables_from_taskfile(task_path)
             self.variables_table.set_variable_names(self.variable_names)
-            self.variables_table.set_variable_names_by_subject(
-                sel_RFID, self.variable_names
-            )
+            self.variables_table.set_variable_names_by_subject(sel_RFID, self.variable_names)
             # if you are showing all variables
             if self.show_all_vars_checkbox.isChecked():
                 # for all variables
@@ -285,23 +274,17 @@ class MouseOverViewTab(QWidget):
             sure.exec_()
             if sure.GO:
                 for ch_ in isChecked:
-                    database.mouse_df.loc[
-                        database.mouse_df["RFID"] == ch_, "in_system"
-                    ] = False
+                    database.mouse_df.loc[database.mouse_df["RFID"] == ch_, "in_system"] = False
                     database.mouse_df.to_csv(database.mouse_df.file_location)
 
                     self.mouse_table_widget.fill_table()
 
-                dialog = InformationDialog(
-                    info_text=f"Mouse of RFID:{isChecked} has been remove. Goodbye o/"
-                )
+                dialog = InformationDialog(info_text=f"Mouse of RFID:{isChecked} has been remove. Goodbye o/")
                 dialog.exec()
 
         else:
             # Raise dialog box that no boxes have been checked.
-            dialog = InformationDialog(
-                info_text="No rows were selected. Select rows to remove them."
-            )
+            dialog = InformationDialog(info_text="No rows were selected. Select rows to remove them.")
             dialog.exec()
 
     def update_mouse(self):
@@ -326,9 +309,7 @@ class MouseOverViewTab(QWidget):
             sd.exec_()
         else:
             # Raise dialog box that no boxes have been checked.
-            dialog = InformationDialog(
-                info_text="No rows were selected. Select rows to get summary"
-            )
+            dialog = InformationDialog(info_text="No rows were selected. Select rows to get summary")
             dialog.exec()
 
     def _refresh(self):

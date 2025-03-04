@@ -49,8 +49,8 @@ ROOT = os.path.abspath(config["ROOT"])
 
 # we can explicitly make assignments on it
 this.controllers = {}
-this.connected_boards = []
-this.connected_access_controls = []
+this.connected_access_controls = {}
+this.connected_pycontrol_boards = {}
 this.updated = False
 this.update_table_queue = []
 this.message_queue = []

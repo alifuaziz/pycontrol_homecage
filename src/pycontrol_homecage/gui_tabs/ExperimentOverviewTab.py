@@ -19,8 +19,9 @@ import pycontrol_homecage.db as database
 
 
 class ExperimentOverviewTab(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        super(QtWidgets.QWidget, self).__init__(parent)
+    def __init__(self, MainGUI: QtWidgets.QMainWindow = None):
+        super(QtWidgets.QWidget, self).__init__(MainGUI)
+        self.MainGUI = MainGUI
         self._init_buttons()
         self._set_button_layout()
         self.list_of_experiments = ExperimentOverviewTable(only_active=False)
@@ -29,16 +30,14 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
 
     def _init_buttons(self) -> None:
         self.new_experiment_button = QtWidgets.QPushButton("Start new Experiment")
-        self.new_experiment_button.setToolTip(
-            "Start a new experiment by adding mice to the connected setups"
-        )
+        self.new_experiment_button.setToolTip("Start a new experiment by adding mice to the connected setups")
         self.new_experiment_button.clicked.connect(self.new_experiment)
         self.restart_experiment_button = QtWidgets.QPushButton("Restart Experiment")
         self.restart_experiment_button.clicked.connect(self.restart_experiment)
         self.stop_experiment_button = QtWidgets.QPushButton("Stop Experiment")
         self.stop_experiment_button.clicked.connect(self.stop_experiment)
         self.stop_experiment_button.setToolTip(
-            "Button for stopping one experiment at a time. It stops the first one selected only"
+            "Button for stopping one experiment at a time. It only stops the first selected experiment"
         )
 
     def _set_button_layout(self) -> None:
@@ -66,25 +65,23 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
         selected_experiment = self._get_experiment_check_status()
 
         if selected_experiment:
-            sure = AreYouSureDialog()
+            sure = AreYouSureDialog(
+                question_text=f"Are you sure you want to restart experiment: {selected_experiment}?"
+            )
             sure.exec_()
             if sure.GO:
-                # Update the experiment to be updated.
-                exp_row = database.exp_df.loc[
-                    database.exp_df.exp_df["Name"] == selected_experiment
-                ]
-                self._update_experiment_status(
-                    experiment_name=selected_experiment, status=True
-                )
+                # Get the selected experiment row
+                exp_row = database.exp_df.loc[database.exp_df["Name"] == selected_experiment]
+                # Update the experiment to be running
+                self._update_experiment_status(experiment_name=selected_experiment, running=True)
                 # Update the mice to be assigned to the experiment.
                 mice_in_experiment = self._get_mice_in_experiment(exp_row=exp_row)
                 self._update_mice(mice_in_exp=mice_in_experiment, assigned=True)
                 # Update the setup(s) so that it is assigned to the experiement
                 setups = self._get_setups_in_experiment(exp_row=exp_row)
-                self._update_setups(
-                    setups_in_exp=setups, experiment=selected_experiment
-                )
-                self._reset_tables()
+                self._update_setups(setups_in_exp=setups, experiment=selected_experiment)
+        database.update_table_queue.append("experiment_tab.list_of_experiments")
+        # self._refresh_tables()
 
     def stop_experiment(self):
         """
@@ -94,14 +91,12 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
 
         # cannot abort multiple experiments simultaneously
         if selected_experiment:
-            sure = AreYouSureDialog()
+            sure = AreYouSureDialog(question_text=f"Are you sure you want to stop experiment: {selected_experiment}?")
             sure.exec_()
             if sure.GO:
                 # Update the experiment df to deactivate it
-                exp_row = database.exp_df.loc[
-                    database.exp_df["Name"] == selected_experiment
-                ]
-                self._update_experiment_status(selected_experiment, False)
+                exp_row = database.exp_df.loc[database.exp_df["Name"] == selected_experiment]
+                self._update_experiment_status(experiment_name=selected_experiment, running=False)
                 # Update the mice in the experiment to not be assigned to an experiment.
                 mice_in_experiment = self._get_mice_in_experiment(exp_row)
                 self._update_mice(mice_in_exp=mice_in_experiment, assigned=False)
@@ -109,20 +104,26 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
                 setups = self._get_setups_in_experiment(exp_row)
                 self._update_setups(setups_in_exp=setups, experiment=None)
 
-            self._reset_tables()
+        # add a database to update queue
+        database.update_table_queue.append("experiment_tab.list_of_experiments")
+        # self._refresh_tables()
 
-    def _update_experiment_status(self, experiment_name: str, status: bool) -> None:
+    def _update_experiment_status(self, experiment_name: str, running: bool) -> None:
         """
-        Update experiement dataframe to reflect if these experiment is active or not.
+        Update experiment dataframe to reflect if the experiment is active or not.
 
         Params
         =======
         experiment_name: str
-        status: bool
+        running: bool
         """
-        database.exp_df.loc[database.exp_df["Name"] == experiment_name, "Active"] = (
-            status
-        )
+
+        if not isinstance(running, bool):
+            raise TypeError(f"The argument 'running' must be a bool. It is currently '{type(running)}'")
+
+        database.exp_df.loc[database.exp_df["Name"] == experiment_name, "Active"] = running
+        # write to disk
+        database.exp_df.to_csv(database.exp_df.file_location)
 
     def _get_mice_in_experiment(self, exp_row: pd.Series) -> List[str]:
         """Returns a list of mice in an experiement as a list of strings"""
@@ -153,8 +154,9 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
 
         return checked_ids[0] if checked_ids else None
 
-    def _reset_tables(self):
-        self.parent._reset_tables()
+    def _refresh_tables(self):
+        """Calls the MainGUI's refresh table function"""
+        self.MainGUI._refresh_tables()
 
     def _update_mice(self, mice_in_exp: List[str], assigned: bool = False):
         """Update the mice in the `mouse_df` to be assigned to an experiment. Save that dataframe to disk
@@ -165,12 +167,8 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
         """
         for mouse in mice_in_exp:
             # Update status of mouse
-            database.mouse_df.loc[
-                database.mouse_df["Mouse_ID"] == mouse, "is_assigned"
-            ] = assigned
-            database.mouse_df.loc[
-                database.mouse_df["Mouse_ID"] == mouse, "in_system"
-            ] = assigned
+            database.mouse_df.loc[database.mouse_df["Mouse_ID"] == mouse, "is_assigned"] = assigned
+            database.mouse_df.loc[database.mouse_df["Mouse_ID"] == mouse, "in_system"] = assigned
             # Save to disk
             database.mouse_df.to_csv(database.mouse_df.file_location)
 
@@ -180,13 +178,9 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
         """
         for setup in setups_in_exp:
             # Update which experiment is the setup is assigned to.
-            database.setup_df.loc[
-                database.setup_df["Setup_ID"] == setup, "Experiment"
-            ] = experiment
+            database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "Experiment"] = experiment
             # If the setup has an experiment, then it is also in use.
-            database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "in_use"] = (
-                experiment is not None
-            )
+            database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "in_use"] = experiment is not None
             database.setup_df.to_csv(database.setup_df.file_location)
 
     def _refresh(self):

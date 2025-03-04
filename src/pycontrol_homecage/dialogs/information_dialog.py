@@ -3,7 +3,7 @@ import sys
 
 class InformationDialog(QDialog):
     """
-    pyqtgraph dialog box for displaying information text
+    Information Dialog box that can display arb. text
     """
     def __init__(self, info_text, parent=None):
         super().__init__(parent)

@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 
 import pandas as pd
+from PyQt5 import QtWidgets, QtCore
 from pyqtgraph import Qt
 from pyqtgraph.Qt import QtGui
 
@@ -13,13 +14,13 @@ from pycontrol_homecage.tables import (
     VariablesTable,
 )
 import pycontrol_homecage.db as database
+from . import InformationDialog
 
-
-class new_experiment_dialog(QtGui.QDialog):
+class NewExperimentDialog(QtWidgets.QDialog):
     """This Class represents a dialog that is used to configure the details of a new experiment"""
 
     def __init__(self, GUI, parent=None):
-        super(new_experiment_dialog, self).__init__(parent)
+        super(NewExperimentDialog, self).__init__(parent)
 
         self.GUI = GUI
         self.setGeometry(100, 30, 1300, 600)  # Left, top, width, height.
@@ -69,34 +70,34 @@ class new_experiment_dialog(QtGui.QDialog):
         self.global_task = True
         self.running_protocol = False
 
-        self.left_column = QtGui.QVBoxLayout()
+        self.left_column = QtWidgets.QVBoxLayout()
 
         # Data related to experiment
-        self.exp_name_groupbox = QtGui.QGroupBox("Status")
+        self.exp_name_groupbox = QtWidgets.QGroupBox("Status")
 
-        self.expLabel = QtGui.QLabel()
+        self.expLabel = QtWidgets.QLabel()
         self.expLabel.setText("Experiment Name:")
 
-        self.expName = QtGui.QLineEdit()
+        self.expName = QtWidgets.QLineEdit()
 
-        self.protVtask = QtGui.QCheckBox("Run Protocol")
+        self.protVtask = QtWidgets.QCheckBox("Run Protocol")
         self.protVtask.setChecked(False)
         self.protVtask.stateChanged.connect(self._prot_or_task)
 
-        self.shared_protocol = QtGui.QCheckBox("Share Protocol")
+        self.shared_protocol = QtWidgets.QCheckBox("Share Protocol")
         self.shared_protocol.setChecked(True)
         self.shared_protocol.stateChanged.connect(self._enable_prot_sel)
 
-        self.protocol_combo = QtGui.QComboBox()
+        self.protocol_combo = QtWidgets.QComboBox()
         self.available_tasks = get_tasks()
         self.protocol_combo.addItems(["Select Task"] + self.available_tasks)
 
-        self.exp_GOButton = QtGui.QPushButton()  # First stage of specifying experiment whereby set name and (potentially) protocol
+        self.exp_GOButton = QtWidgets.QPushButton()  # First stage of specifying experiment whereby set name and (potentially) protocol
         self.exp_GOButton.setText("Set")
         self.exp_GOButton.clicked.connect(self.set_name)
 
-        self.name_layout = QtGui.QHBoxLayout()
-        self.name_layout2 = QtGui.QHBoxLayout()
+        self.name_layout = QtWidgets.QHBoxLayout()
+        self.name_layout2 = QtWidgets.QHBoxLayout()
         self.name_layout.addWidget(self.expLabel)
         self.name_layout.addWidget(self.expName)
         self.name_layout.addWidget(self.shared_protocol)
@@ -105,23 +106,23 @@ class new_experiment_dialog(QtGui.QDialog):
         self.name_layout2.addWidget(self.protocol_combo)
         self.name_layout2.addWidget(self.exp_GOButton)
 
-        self.nameVlayout = QtGui.QVBoxLayout()
+        self.nameVlayout = QtWidgets.QVBoxLayout()
         self.nameVlayout.addLayout(self.name_layout)
         self.nameVlayout.addLayout(self.name_layout2)
         self.exp_name_groupbox.setLayout(self.nameVlayout)
 
         # Column to add setups to the experiment
-        self.setup_groupbox = QtGui.QGroupBox("Setups")
+        self.setup_groupbox = QtWidgets.QGroupBox("Setups")
 
-        self.setups_column = QtGui.QVBoxLayout()
+        self.setups_column = QtWidgets.QVBoxLayout()
 
         # populate this column
 
         # Controls for adding a setup to an experiment
-        self.CAT = QtGui.QGroupBox("Add Setup")
-        self.cat_layout = QtGui.QHBoxLayout()
+        self.CAT = QtWidgets.QGroupBox("Add Setup")
+        self.cat_layout = QtWidgets.QHBoxLayout()
 
-        self.setup_combo = QtGui.QComboBox()
+        self.setup_combo = QtWidgets.QComboBox()
         self.available_setups = [
             rw["Setup_ID"]
             for kk, rw in database.setup_df.iterrows()
@@ -130,11 +131,11 @@ class new_experiment_dialog(QtGui.QDialog):
         self.setup_combo.addItems(["Select Setup"] + self.available_setups)
         self.setup_combo.currentTextChanged.connect(self.on_scb_changed)
 
-        self.add_button = QtGui.QPushButton()
+        self.add_button = QtWidgets.QPushButton()
         self.add_button.setText("Add Setup")
         self.add_button.setEnabled(False)
-        self.prot_label = Qt.QtWidgets.QLabel("Protocol:          ")  # protocol label
-        self.exp_label = Qt.QtWidgets.QLabel("Experiemnt:         ")  # experiment label
+        self.prot_label = QtWidgets.QLabel("Protocol:          ")  # protocol label
+        self.exp_label = QtWidgets.QLabel("Experiemnt:         ")  # experiment label
 
         self.cat_layout.addWidget(self.setup_combo)
         self.cat_layout.addWidget(self.exp_label)
@@ -162,24 +163,24 @@ class new_experiment_dialog(QtGui.QDialog):
         ###############################################################
         ###############################################################
 
-        ####################################################
-        #############      Mouse Adder Box      ############
-        ####################################################
+        #####################################################
+        #############      Mouse Adder Box      #############
+        #####################################################
 
-        self.MAT = QtGui.QGroupBox("Add Mouse")
+        self.MAT = QtWidgets.QGroupBox("Add Mouse")
 
-        self.mat_layout = QtGui.QVBoxLayout()
-        self.matL1 = QtGui.QHBoxLayout()
-        self.matL2 = QtGui.QHBoxLayout()
+        self.mat_layout = QtWidgets.QVBoxLayout()
+        self.matL1 = QtWidgets.QHBoxLayout()
+        self.matL2 = QtWidgets.QHBoxLayout()
 
-        self.mouse_name_label = QtGui.QLabel("Mouse_ID:")
-        self.mouse_name = QtGui.QLineEdit("")
+        self.mouse_name_label = QtWidgets.QLabel("Mouse_ID:")
+        self.mouse_name = QtWidgets.QLineEdit("")
 
-        self.RFID_label = QtGui.QLabel("RFID:")
-        self.RFID = QtGui.QLineEdit("")
+        self.RFID_label = QtWidgets.QLabel("RFID:")
+        self.RFID = QtWidgets.QLineEdit("")
 
-        self.sex_label = QtGui.QLabel("Sex:")
-        self.sex = QtGui.QComboBox()
+        self.sex_label = QtWidgets.QLabel("Sex:")
+        self.sex = QtWidgets.QComboBox()
         self.sex.addItems(
             [
                 "F",
@@ -187,34 +188,34 @@ class new_experiment_dialog(QtGui.QDialog):
             ]
         )
 
-        self.age_label = QtGui.QLabel("Age (weeks):")
-        self.age = QtGui.QLineEdit("")
+        self.age_label = QtWidgets.QLabel("Age (weeks):")
+        self.age = QtWidgets.QLineEdit("")
 
-        self.weight_label = QtGui.QLabel("Weight (g):")
-        self.weight = QtGui.QLineEdit("")
+        self.weight_label = QtWidgets.QLabel("Weight (g):")
+        self.weight = QtWidgets.QLineEdit("")
 
-        self.add_mouse_button = QtGui.QPushButton("Add Mouse")
+        self.add_mouse_button = QtWidgets.QPushButton("Add Mouse")
         self.add_mouse_button.clicked.connect(self.add_mouse)
 
-        self.mouse_prot = QtGui.QComboBox()
+        self.mouse_prot = QtWidgets.QComboBox()
         self.mouse_prot.addItems(["Select Task"] + self.available_tasks)
 
         ###############################################################
         ###############################################################
 
-        ####################################################
-        ###########      Set Variables Table      ##########
-        ####################################################
+        #####################################################
+        ###########      Set Variables Table      ###########
+        #####################################################
         self.filter_categories = ["Setup", "Mouse"]
-        self.vars_filter_checkbox = QtGui.QCheckBox("Filter mice")
+        self.vars_filter_checkbox = QtWidgets.QCheckBox("Filter mice")
 
-        self.vars_combo_type = QtGui.QComboBox()
+        self.vars_combo_type = QtWidgets.QComboBox()
         self.vars_combo_type.addItems(["Filter by"] + self.filter_categories)
 
-        self.vars_combo_ID = QtGui.QComboBox()
+        self.vars_combo_ID = QtWidgets.QComboBox()
         self.vars_combo_ID.addItems(["Filter by"] + self.filter_categories)
 
-        # self.vars_hlayout1 = QtGui.QHBoxLayout(self)
+        # self.vars_hlayout1 = QtWidgets.QHBoxLayout(self)
         # self.vars_hlayout1.addWidget(self.vars_filter_checkbox)
         # self.vars_hlayout1.addWidget(self.vars_combo_type)
         # self.vars_hlayout1.addWidget(self.vars_combo_ID)
@@ -246,8 +247,8 @@ class new_experiment_dialog(QtGui.QDialog):
         self.mat_layout.addLayout(self.matL2)
         self.MAT.setLayout(self.mat_layout)
 
-        self.MICE = QtGui.QGroupBox("Mouse Overview")
-        self.mice_column = QtGui.QVBoxLayout()
+        self.MICE = QtWidgets.QGroupBox("Mouse Overview")
+        self.mice_column = QtWidgets.QVBoxLayout()
         self.mouse_list_table = MouseListTable(tab=self)
 
         self.mice_column.addWidget(self.MAT)
@@ -256,26 +257,26 @@ class new_experiment_dialog(QtGui.QDialog):
         self.mice_column.addWidget(self.mouse_var_table)
         self.MICE.setLayout(self.mice_column)
 
-        ####################################################
-        #############      Run Experiments      ############
-        ####################################################
+        #####################################################
+        #############      Run Experiments      #############
+        #####################################################
 
-        self.runGroup = QtGui.QGroupBox("Run")
-        self.run_layout = QtGui.QHBoxLayout()
-        self.run_button = QtGui.QPushButton("Run Protocol")
+        self.runGroup = QtWidgets.QGroupBox("Run")
+        self.run_layout = QtWidgets.QHBoxLayout()
+        self.run_button = QtWidgets.QPushButton("Run Protocol")
         self.run_button.clicked.connect(self.run_experiment)
         self.run_layout.addWidget(self.run_button)
         self.runGroup.setLayout(self.run_layout)
 
-        self.right_column = QtGui.QVBoxLayout()
+        self.right_column = QtWidgets.QVBoxLayout()
         self.right_column.addWidget(self.MICE)
         self.right_column.addWidget(self.runGroup)
 
-        self.all_columns = QtGui.QHBoxLayout()
+        self.all_columns = QtWidgets.QHBoxLayout()
         self.all_columns.addLayout(self.left_column)
         self.all_columns.addLayout(self.right_column)
 
-        self.vLayout = QtGui.QVBoxLayout(self)
+        self.vLayout = QtWidgets.QVBoxLayout(self)
         self.vLayout.addLayout(self.name_layout)
         self.vLayout.addLayout(self.all_columns)
 
@@ -297,7 +298,7 @@ class new_experiment_dialog(QtGui.QDialog):
         try:
             NEW_RFID = int(self.RFID.text())
         except ValueError:
-            QtGui.QMessageBox.warning(self, "Input Error", "RFID must be an integer.")
+            QtWidgets.QMessageBox.warning(self, "Input Error", "RFID must be an integer.")
             return
 
         # get information from the GUI
@@ -314,14 +315,14 @@ class new_experiment_dialog(QtGui.QDialog):
             new_mouse_data["Mouse_ID"] in self.df_mouse_tmp["Mouse_ID"].values
             or new_mouse_data["Mouse_ID"] in database.mouse_df["Mouse_ID"].values
         ):
-            QtGui.QMessageBox.warning(self, "Input Error", "Mouse ID already exists.")
+            QtWidgets.QMessageBox.warning(self, "Input Error", "Mouse ID already exists.")
             return
         # Check RFID is allowed
         if (
             new_mouse_data["RFID"] in self.df_mouse_tmp["RFID"].values
             or new_mouse_data["RFID"] in database.mouse_df["RFID"].values
         ):
-            QtGui.QMessageBox.warning(self, "Input Error", "RFID already exists.")
+            QtWidgets.QMessageBox.warning(self, "Input Error", "RFID already exists.")
             return
 
         entry_nr = len(self.df_mouse_tmp)
@@ -362,13 +363,13 @@ class new_experiment_dialog(QtGui.QDialog):
         if self.protVtask.isChecked():
             self.running_protocol = True
             self.protocol_combo.clear()
-            self.available_tasks = [i for i in os.listdir(protocol_dir) if ".prot" in i]
+            self.available_tasks = [i for i in os.listdir(database.paths["protocol_dir"]) if ".prot" in i]
             self.protocol_combo.addItems(["Select Protocol"] + self.available_tasks)
 
         else:
             self.running_protocol = False
             self.protocol_combo.clear()
-            self.available_tasks = get_tasks(self.GUI.GUI_filepath)
+            self.available_tasks = get_tasks()
             self.protocol_combo.addItems(["Select Task"] + self.available_tasks)
 
     def on_scb_changed(self):
@@ -391,6 +392,9 @@ class new_experiment_dialog(QtGui.QDialog):
             self.prot_label.setText("Protocol: {}".format(self.set_protocol))
             self.exp_label.setText("Experiment: {}".format(self.set_experiment_name))
             # self.CAT._update_exp_params(self.set_protocol,self.set_experiment_name)
+        else:
+            info=InformationDialog("Name not valid")
+            info.exec_()
 
     def add_cage(self):
         if self.setup_combo.currentIndex() != 0:
@@ -465,7 +469,7 @@ class new_experiment_dialog(QtGui.QDialog):
 
             # update experiment information
             entry_nr = len(database.exp_df)
-            database.exp_df.append(pd.Series(), ignore_index=True)
+            database.exp_df = pd.concat([database.exp_df, pd.Series(dtype="float64").to_frame().T], ignore_index=True)
             database.exp_df.loc[entry_nr, "Name"] = self.set_experiment_name
             database.exp_df.loc[entry_nr, "Setups"] = repr(
                 self.df_setup_tmp["Setup_ID"].tolist()

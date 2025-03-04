@@ -223,10 +223,10 @@ class system_controller(Data_logger):
         Steps of this function:
         - Gets the correct mouse row from the the `mouse_df` table
         - Gets the `Mouse_ID` from the mouse row
-        - Gets the `Protocal` from the mouse row
+        - Gets the `Protocol` from the mouse row. This protocal is either a task or a protocol.
 
         If the mouse is assigned (? a task)
-        Then the task is run, else: the mouse protocal is run.
+        Then the task is run, else: the mouse protocol is run.
 
         The entry time and the task are assigned to the `self.mouse_data`
 
@@ -242,12 +242,13 @@ class system_controller(Data_logger):
             raise Exception(
                 f"Error: No mouse found with the given RFID ({self.mouse_data['RFID']}) in the database."
             )
-        # Get the mouse ID and protocol from the mouse row.
+        # Get the mouse ID and protocol frpom the mouse row.
         mouse_ID, prot = mouse_row[["Mouse_ID", "Protocol"]].values[0]
 
         # if a task has been assigned to this mouse
         if mouse_row["is_assigned"].values[0]:
             # if the current protocol is a task do so.
+            # This Syntax of the names of the protocols means that "task" is in all teh task protocols. ".prot" is in all the protocols
             if "task" in prot:
                 task = self.start_running_mouse_task(mouse_info_row=mouse_row)
             else:
@@ -271,7 +272,7 @@ class system_controller(Data_logger):
         """
         When a mouse enters the training chamber, update the setup_df and the
         mouse_df to reflect this in the following way
-        
+
         mouse_df
         - Current weight of the mouse (int)
         - If the mouse is currentl trianing  (bool)
@@ -295,7 +296,7 @@ class system_controller(Data_logger):
     def start_running_mouse_task(self, mouse_info_row: pd.Series) -> None:
         """
         Runs Mouse task from the information in the `mouse_info_row`
-        
+
         Args:
             mouse_info (pd.Series): Row of the database.mouse_df that corresponds the mouse that entered the experiment room
         """
@@ -328,31 +329,60 @@ class system_controller(Data_logger):
                         self.PYC.set_variable(k[2:], eval(v))
 
     def run_mouse_protocol(self, mouse_info_row: pd.Series) -> str:
+        """
+        - Get the protocol, mouse id, current stage of the protocol from the mouse_info_row
+        - Load in the protocol dataframe / mouse log dataframe
+        
+        - Check wether the stage of the protocol should be changed. 
+            - The stage is the row index of the .prot file. 
+        - 
+        """
+        
         # If running a real protocol, handle (potential) update of protocol.
         newStage = False
-        stage = mouse_info_row["Stage"].values[0]
-        with open(os.path.join(get_path("protocols"), prot), "r") as f:
-            mouse_prot = json.loads(f.read())
+        try:
+            stage = int(mouse_info_row["Stage"].values[0])
+        except ValueError:
+                # info
+                print("ERROR:Stage not valid!!")
+        prot = mouse_info_row["Protocol"].values[0]
+        mouse_ID=mouse_info_row["Mouse_ID"].values[0]
+        
+        protocol_path = os.path.join(get_path("prot"), prot)
+        mouse_prot = pd.read_csv(protocol_path, index_col=0)
 
         # read last stage of training
         logPth = os.path.join(get_path("mice"), mouse_ID + ".csv")
-        df_mouseLog = pd.read_csv(logPth)
+        mouse_df_log = pd.read_csv(logPth)
 
-        if len(df_mouseLog) > 0:
-            df_mouseLog = df_mouseLog.iloc[-1]
+        # Protocol Stage row
+        current_protocol_stage = mouse_prot.iloc[stage]
 
-            v_ = eval(df_mouseLog["Variables"])
 
-            # handle moving to next stage
-            if mouse_prot[str(stage)]["threshV"]:
-                for k, thresh in mouse_prot[str(stage)]["threshV"]:
-                    print(float(v_[k]), float(thresh), float(v_[k]) >= float(thresh))
-                    if float(v_[k]) >= float(thresh):
+        ####################### LOGIC FOR CHECKING IF STAGE SHOULD BE INCREASED #################
+        ######### This logic is not tested as I do not know how to get things into the log for the mouse
+        # If the number of columns is more that 0:
+        if len(mouse_df_log) > 0:
+            # Get the final row of the dataframe (since this is the most up to date one.)
+            mouse_df_log = mouse_df_log.iloc[-1]
+            # Turn the string of a dict that is saved in the log into a variables dictionary
+            pycontrol_variables_dict = eval(mouse_df_log["Variables"])
+
+            if not pd.isnull(current_protocol_stage["threshV"]):
+                # Load in the String of list of lists                
+                for k, thresh in eval(mouse_prot.loc[str(stage), "threshV"]):
+                    print(float(pycontrol_variables_dict[k]), float(thresh), float(pycontrol_variables_dict[k]) >= float(thresh))
+                    if float(pycontrol_variables_dict[k]) >= float(thresh):
                         newStage = True
                         stage += 1
 
-        task = mouse_prot[str(stage)]["task"]
+        ########################################################################################
+        
+        updated_stage_row = mouse_prot.iloc[stage]
 
+        task = updated_stage_row["task"]
+
+        # Updates the mouse_df to reflect any changes in the task stage or the mouse is in.
         database.mouse_df.loc[
             database.mouse_df["RFID"] == self.mouse_data["RFID"], "Task"
         ] = task
@@ -364,20 +394,24 @@ class system_controller(Data_logger):
 
         # handle setting varibles
 
-        for k, defV in mouse_prot[str(stage)]["defaultV"]:
+        for k, defV in eval(updated_stage_row["defaultV"]):
+            # Persistant veriables. They are set the same for every instance of the pycontrol statemachine
             self.PYC.set_variable(k, float(defV))
 
-        if len(df_mouseLog) > 0:
-            if not newStage:
-                for k in mouse_prot[str(stage)]["trackV"]:
-                    self.PYC.set_variable(k, float(v_[k]))
+        if len(mouse_df_log) > 0:
+            if not newStage: # newStage is False
+                for k in updated_stage_row["trackV"]:
+                    # Updated variables. They are changed based on the behaviour of the animal.
+                    self.PYC.set_variable(k, float(pycontrol_variables_dict[k]))
         return task
 
     def open_data_file_(self, mouse_info: pd.Series, now: str) -> None:
         """Overwrite method of data logger class
 
         Opens a datafile and writes information about the mouse's experimental information to it.
-
+        
+        The importing of the pyContorl data comes from the old dataformat. 
+        https://pycontrol.readthedocs.io/en/latest/user-guide/pycontrol-data/#old-data-format
         """
         mouse_ID = mouse_info["Mouse_ID"].values[0]
         exp = mouse_info["Experiment"].values[0]
@@ -404,10 +438,10 @@ class system_controller(Data_logger):
         self.data_file.write("E {}\n\n".format(self.sm_info["events"]))
 
     def _save_taskFile_run(self, fullpath_to_datafile: str, task: str) -> None:
+        """Duplicate the file that was run for a given task (in case there are changes to the task file)"""
         # read the task file uploaded to pyboard
         with open(os.path.join(get_path("tasks"), task + ".py"), "r") as f_:
             dat_ = f_.readlines()
-
             # save it to a new file
             with open(fullpath_to_datafile[:-4] + "_taskFile.txt", "w") as f_backup:
                 f_backup.writelines(dat_)

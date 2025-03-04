@@ -43,11 +43,11 @@ class MouseTable(QtWidgets.QTableWidget):
     def fill_table(self):
         """
         Fill the table with information from the `database.mouse_df`
-        
+
         There is special behaviour for column: `Task` where there is a combox box that needs its behaviour defined.
-        For the other columns they are filled in as strings. 
+        For the other columns they are filled in as strings.
         """
-        
+
         self.setRowCount(len(database.mouse_df))
         df_cols = database.mouse_df.columns
 
@@ -58,23 +58,17 @@ class MouseTable(QtWidgets.QTableWidget):
                     table_col_ix = self.header_names.index(df_cols[col_index])
                     if col_name == "Task":
                         task_combo = QtWidgets.QComboBox()
-                        task_combo.activated.connect(
-                            partial(self.update_task_combo, task_combo)
-                        )
+                        task_combo.activated.connect(partial(self.update_task_combo, task_combo))
                         task_combo.installEventFilter(self)
                         task_combo.RFID = row["RFID"]
                         print(database.mouse_df["RFID"])
-                        cTask = database.mouse_df.loc[
-                            database.mouse_df["RFID"] == row["RFID"], "Task"
-                        ].values[0]
+                        cTask = database.mouse_df.loc[database.mouse_df["RFID"] == row["RFID"], "Task"].values[0]
 
                         task_combo.addItems([cTask] + get_tasks())
 
                         self.setCellWidget(row_index, table_col_ix, task_combo)
 
-                        task_combo.currentTextChanged.connect(
-                            partial(self.change_mouse_task, task_combo)
-                        )
+                        task_combo.currentTextChanged.connect(partial(self.change_mouse_task, task_combo))
 
                     else:
                         self.setItem(
@@ -95,10 +89,8 @@ class MouseTable(QtWidgets.QTableWidget):
     def change_mouse_task(self, combo: QtWidgets.QComboBox) -> None:
         """Change what task mouse is doing within the mouse_df"""
 
-        database.mouse_df.loc[database.mouse_df["RFID"] == combo.RFID, "Task"] = (
-            combo.currentText()
-        ) 
-        
+        database.mouse_df.loc[database.mouse_df["RFID"] == combo.RFID, "Task"] = combo.currentText()
+
         # Save the updated dataframe to disk
         database.mouse_df.to_csv(database.mouse_df.file_location)
         # fill the table again since the data has been updated

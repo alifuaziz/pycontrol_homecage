@@ -72,12 +72,8 @@ class VariablesTable(QTableWidget):
         summary = TableCheckbox()
         set_var = TableCheckbox()
 
-        set_var.checkbox.stateChanged.connect(
-            partial(self.setVar_changed, self.n_variables)
-        )
-        persistent.checkbox.stateChanged.connect(
-            partial(self.persistent_changed, self.n_variables)
-        )
+        set_var.checkbox.stateChanged.connect(partial(self.setVar_changed, self.n_variables))
+        persistent.checkbox.stateChanged.connect(partial(self.persistent_changed, self.n_variables))
         remove_button = QPushButton("remove")
         ind = QPersistentModelIndex(self.model().index(self.n_variables, 2))
         remove_button.clicked.connect(lambda: self.remove_variable(ind.row()))
@@ -141,18 +137,12 @@ class VariablesTable(QTableWidget):
             if v_name != "select variable" and s_name:
                 self.assigned[v_name].append(s_name)
         # Update the variables available:
-        fully_asigned_variables = [
-            v_n for v_n in self.assigned.keys() if "all" in self.assigned[v_n]
-        ]
+        fully_asigned_variables = [v_n for v_n in self.assigned.keys() if "all" in self.assigned[v_n]]
         if self.subjects_in_group:
             fully_asigned_variables += [
-                v_n
-                for v_n in self.assigned.keys()
-                if set(self.assigned[v_n]) == set(self.subjects_in_group)
+                v_n for v_n in self.assigned.keys() if set(self.assigned[v_n]) == set(self.subjects_in_group)
             ]
-        self.available_variables = sorted(
-            list(set(self.variable_names) - set(fully_asigned_variables)), key=str.lower
-        )
+        self.available_variables = sorted(list(set(self.variable_names) - set(fully_asigned_variables)), key=str.lower)
         # Update the available options in the variable and subject comboboxes.
 
         for v in range(self.n_variables):
@@ -165,9 +155,7 @@ class VariablesTable(QTableWidget):
                     self.cellWidget(v, 1).addItems(["all"])
                     self.assigned[v_name] = ["all"]
                     self.available_variables.remove(v_name)
-                cbox_update_options(
-                    self.cellWidget(v, 1), self.available_subjects(v_name, s_name)
-                )
+                cbox_update_options(self.cellWidget(v, 1), self.available_subjects(v_name, s_name))
 
     def set_available_subjects(self, subjects: List[str]):
         self.subjects_in_group = subjects
@@ -181,9 +169,7 @@ class VariablesTable(QTableWidget):
             self.variable_names.extend(variable_names)
             self.variable_names = list(set(self.variable_names))
 
-    def set_variable_names_by_subject(
-        self, subject: str, variable_names: List[str]
-    ) -> None:
+    def set_variable_names_by_subject(self, subject: str, variable_names: List[str]) -> None:
         """Allow tracking of which subject has which variables available
         to them in principle
         """
@@ -196,9 +182,7 @@ class VariablesTable(QTableWidget):
         if (not self.assigned[v_name]) or self.assigned[v_name] == [s_name]:
             available_subjects = ["all"] + sorted(self.subjects_in_group)
         else:
-            available_subjects = sorted(
-                list(set(self.subjects_in_group) - set(self.assigned[v_name]))
-            )
+            available_subjects = sorted(list(set(self.subjects_in_group) - set(self.assigned[v_name])))
         return available_subjects
 
     def variables_list(self) -> list[dict]:

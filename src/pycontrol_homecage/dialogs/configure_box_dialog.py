@@ -5,7 +5,7 @@ import pycontrol_homecage.db as database
 from pycontrol_homecage.com.messages import MessageRecipient
 
 class ConfigureBoxDialog(QtGui.QDialog):
-    """Dialog window that allows you to upload harware definitions etc """ 
+    """Dialog window that allows you to upload hardware definitions etc """ 
 
     def __init__(self, setup_id, parent=None):
         super(ConfigureBoxDialog, self).__init__(parent)

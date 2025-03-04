@@ -1,13 +1,10 @@
 import os
 
-from PyQt5.QtWidgets import (
-    QMainWindow, 
-    QTabWidget
-)
+from PyQt5.QtWidgets import QMainWindow, QTabWidget
 from PyQt5 import QtCore
 
 from pycontrol_homecage.com.messages import MessageRecipient
-from pycontrol_homecage.gui_tabs import (
+from . import (
     MouseOverViewTab,
     SetupsOverviewTab,
     ProtocolAssemblyTab,
@@ -25,14 +22,12 @@ class MainGUI(QMainWindow):
         self.GUI_filepath = os.path.dirname(os.path.abspath(__file__))
         self.app = None  # Overwritten with QApplication instance in main.
         self.active_user = None
-        self.setWindowTitle('pyControlHomeCage: Please log in')
+        self.setWindowTitle("pyControlHomeCage: Please log in")
 
         database.setup_df["connected"] = False
 
         self._init_tabs()
-        database.print_consumers[MessageRecipient.system_overview] = (
-            self.system_tab.write_to_log
-        )
+        database.print_consumers[MessageRecipient.system_overview] = self.system_tab.write_to_log
         self._add_tabs_to_widget()
         self._disable_gui_pre_login()
 
@@ -43,7 +38,7 @@ class MainGUI(QMainWindow):
         self.system_tab.add_user_button.clicked.connect(self.add_user_)
         self.system_tab.logout_button.clicked.connect(self.logout_user)
 
-        self.setGeometry(10, 30, 700, 800)  # Left, top, width, height.
+        self.setGeometry(10, 30, 900, 800)  # Left, top, width, height.
         self.setCentralWidget(self.tab_widget)
         self.show()
 
@@ -54,7 +49,7 @@ class MainGUI(QMainWindow):
     def _init_table_map(self):
         """
         Dictionary of the names of tables
-        This dict of tables can be called by the self._reset_tables() function to update the contents of these tables
+        This dict of tables can be called by the self._refresh_tables() function to update the contents of these tables
 
         TABLE MAP DICTIONARY
         ====================
@@ -75,10 +70,10 @@ class MainGUI(QMainWindow):
         }
 
     def _init_tabs(self) -> None:
-        self.mouse_tab      = MouseOverViewTab(self)
-        self.setup_tab      = SetupsOverviewTab(self)
-        self.protocol_tab   = ProtocolAssemblyTab(self)
-        self.system_tab     = SystemOverviewTab(self)
+        self.mouse_tab = MouseOverViewTab(self)
+        self.setup_tab = SetupsOverviewTab(self)
+        self.protocol_tab = ProtocolAssemblyTab(self)
+        self.system_tab = SystemOverviewTab(self)
         self.experiment_tab = ExperimentOverviewTab(self)
 
     def _add_tabs_to_widget(self) -> None:
@@ -106,10 +101,10 @@ class MainGUI(QMainWindow):
 
     def refresh(self) -> None:
         """
-        Primary Refresh Function of the GUI. 
-        
+        Primary Refresh Function of the GUI.
+
         1. Checks for data from the pyboards currently running
-        2. Refreshes the GUi tabs. 
+        2. Refreshes the GUi tabs.
         3. Prints any messages that have entered the message queue
         """
         for k, SC in database.controllers.items():
@@ -120,7 +115,7 @@ class MainGUI(QMainWindow):
 
         self.refresh_tabs()
         if database.update_table_queue:
-            self._reset_tables()
+            self._refresh_tables()
 
         if database.message_queue:
             self.print_dispatch()
@@ -137,9 +132,7 @@ class MainGUI(QMainWindow):
         self.login.exec_()
         self.active_user = self.login.userID
         if self.active_user:
-            self.setWindowTitle(
-                "pyControlHomecage: logged in as {}".format(self.active_user)
-            )
+            self.setWindowTitle("pyControlHomecage: logged in as {}".format(self.active_user))
             self.mouse_tab.setEnabled(True)
             self.setup_tab.setEnabled(True)
             self.protocol_tab.setEnabled(True)
@@ -192,14 +185,17 @@ class MainGUI(QMainWindow):
         self.system_tab.login_button.setEnabled(True)
         self.system_tab.add_user_button.setEnabled(True)
 
-    def _reset_tables(self):
+    def _refresh_tables(self):
         """
         Function to handle the updating of tables from the database object.
         """
         # Update the tablse in order of the update tables queue.
-        update_table = database.update_table_queue.pop(0)
-        if update_table == "all":
-            for table in self.table_map.values():
-                table.fill_table()
-        else:
-            self.table_map[update_table].fill_table()
+        try:
+            update_table = database.update_table_queue.pop(0)
+            if update_table == "all":
+                for table in self.table_map.values():
+                    table.fill_table()
+            else:
+                self.table_map[update_table].fill_table()
+        except IndexError as error:
+            print(error)

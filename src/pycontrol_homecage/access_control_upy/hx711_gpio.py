@@ -1,6 +1,7 @@
 from machine import Pin, enable_irq, disable_irq
 import time
 
+
 class HX711:
     # Class for controlling HX711 loadcell amplifier from Micropython pyboard.
     # Adapted from https://github.com/robert-hh/hx711-lopy
@@ -17,7 +18,7 @@ class HX711:
         self.time_constant = 0.25
         self.filtered = 0
 
-        self.set_gain(gain);
+        self.set_gain(gain)
 
     def set_gain(self, gain):
         if gain == 128:
@@ -52,7 +53,7 @@ class HX711:
         result >>= self.GAIN
 
         # check sign
-        if result > 0x7fffff:
+        if result > 0x7FFFFF:
             result -= 0x1000000
 
         return result
@@ -64,14 +65,14 @@ class HX711:
         return sum / times
 
     def weigh(self, times=3):
-        return (self.read_average(times) - self.OFFSET) / self.SCALE 
+        return (self.read_average(times) - self.OFFSET) / self.SCALE
 
     def tare(self, times=15):
         # Set the 0 value.
         self.OFFSET = self.read_average(times)
 
     def calibrate(self, weight=1, times=15):
-        # Calibrate the scale using a known weight, must be done after scale has beenn tared.
+        # Calibrate the scale using a known weight, must be done after scale has been tared.
         self.SCALE = (self.read_average(times) - self.OFFSET) / weight
 
     def power_down(self):

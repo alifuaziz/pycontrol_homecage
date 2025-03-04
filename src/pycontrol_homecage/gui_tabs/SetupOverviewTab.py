@@ -24,7 +24,7 @@ from pycontrol_homecage.dialogs import (
     InformationDialog,
 )
 from pycontrol_homecage.tables import SetupTable
-from pycontrol_homecage.utils import find_setups
+from pycontrol_homecage.utils import find_pyboards
 import pycontrol_homecage.db as database
 
 
@@ -78,9 +78,7 @@ class SetupsOverviewTab(QWidget):
         self.update_cage_button.clicked.connect(self.update_setup)
 
         self.check_beh_hardware_button = QPushButton("Access task pyboard")
-        self.check_beh_hardware_button.clicked.connect(
-            self.access_selected_task_pyboard
-        )
+        self.check_beh_hardware_button.clicked.connect(self.access_selected_task_pyboard)
 
         self.cage_summary_button = QPushButton("Get setup Summary")
         self.cage_summary_button.clicked.connect(self.get_summary)
@@ -125,9 +123,7 @@ class SetupsOverviewTab(QWidget):
         if checked_setup_ix:
             checked_setup_ix = checked_setup_ix[0]
             setup_col = self.setup_table_widget.header_names.index("Setup_ID")
-            checked_setup_id = self.setup_table_widget.item(
-                checked_setup_ix, setup_col
-            ).text()
+            checked_setup_id = self.setup_table_widget.item(checked_setup_ix, setup_col).text()
             for k, G in database.controllers.items():
                 if k == checked_setup_id:
                     self.direct_pyboard_dialog = DirectPyboardDialog(k)
@@ -135,9 +131,7 @@ class SetupsOverviewTab(QWidget):
                     self.direct_pyboard_dialog.exec_()
                     # del database.print_consumers[MessageRecipient.direct_pyboard_box_dialog]
         else:
-            info = InformationDialog(
-                info_text="You must edit one setup at a time. You have selected 0 or >1 setup."
-            )
+            info = InformationDialog(info_text="You must edit one setup at a time. You have selected 0 or >1 setup.")
             info.exec()
 
     def _is_single_setup_selected(self) -> List[int]:
@@ -151,9 +145,7 @@ class SetupsOverviewTab(QWidget):
         for row in range(self.setup_table_widget.rowCount()):
             # Check if the row is checked
             row_checked = (
-                self.setup_table_widget.item(
-                    row, self.setup_table_widget.select_col_ix
-                ).checkState()
+                self.setup_table_widget.item(row, self.setup_table_widget.select_column_idx).checkState()
                 == QtCore.Qt.Checked
             )
             # Append to list
@@ -175,25 +167,19 @@ class SetupsOverviewTab(QWidget):
 
         for row in range(self.setup_table_widget.rowCount()):
             isChecked.append(
-                self.setup_table_widget.item(
-                    row, self.setup_table_widget.select_col_ix
-                ).checkState()
+                self.setup_table_widget.item(row, self.setup_table_widget.select_column_idx).checkState()
                 == QtCore.Qt.Checked
             )
 
         if len(database.controllers) == 0:
             #
-            info = InformationDialog(
-                info_text="You must be connected to a setup to update it"
-            )
+            info = InformationDialog(info_text="You must be connected to a setup to update it")
 
         if sum(isChecked) == 1:
             # Updating selected setups
             checked_row = isChecked.index(1)
             setup_col = self.setup_table_widget.header_names.index("Setup_ID")
-            checked_setup_id = self.setup_table_widget.item(
-                checked_row, setup_col
-            ).text()
+            checked_setup_id = self.setup_table_widget.item(checked_row, setup_col).text()
             for k, G in database.controllers.items():
                 if k == checked_setup_id:
                     #
@@ -215,9 +201,7 @@ class SetupsOverviewTab(QWidget):
         entry_nr = len(database.setup_df)
 
         # add a check to see that something about the cage has been filled in
-        if not (
-            self.cat_combo_box.currentIndex() == 0 or self.setup_name.text() is None
-        ):
+        if not (self.cat_combo_box.currentIndex() == 0 or self.setup_name.text() is None):
             # first fill row with NA
             database.setup_df.loc[entry_nr] = ["none"] * len(database.setup_df.columns)
 
@@ -231,7 +215,7 @@ class SetupsOverviewTab(QWidget):
             # get the name of the setup
             database.setup_df.loc[entry_nr, "Setup_ID"] = self.setup_name.text()
 
-        # self.parent()._reset_tables()
+        # self.parent()._refresh_tables()
         database.update_table_queue = ["all"]
 
         database.setup_df.to_csv(database.setup_df.file_location)
@@ -244,12 +228,8 @@ class SetupsOverviewTab(QWidget):
             self.cact_combo_box.clear()
             ports = [
                 i
-                for i in find_setups()
-                if i
-                not in (
-                    database.setup_df["COM"].tolist()
-                    + database.setup_df["COM_AC"].tolist()
-                )
+                for i in find_pyboards()
+                if i not in (database.setup_df["COM"].tolist() + database.setup_df["COM_AC"].tolist())
             ]
 
             self.cat_combo_box.addItems(["Select Training Setup"] + list(ports))
@@ -265,16 +245,11 @@ class SetupsOverviewTab(QWidget):
         """
         ports = [
             i
-            for i in find_setups()
-            if i
-            not in (
-                database.setup_df["COM"].tolist() + database.setup_df["COM_AC"].tolist()
-            )
+            for i in find_pyboards()
+            if i not in (database.setup_df["COM"].tolist() + database.setup_df["COM_AC"].tolist())
         ]
         prev = ["Select Training Setup"] + list(ports)
-        new_prop_cat = [
-            self.cat_combo_box.itemText(i) for i in range(self.cat_combo_box.count())
-        ]
+        new_prop_cat = [self.cat_combo_box.itemText(i) for i in range(self.cat_combo_box.count())]
         return new_prop_cat != prev
 
     def remove_selected_setups(self):
@@ -282,10 +257,7 @@ class SetupsOverviewTab(QWidget):
         isChecked = []
         for row in range(self.setup_table_widget.rowCount()):
             isChecked.append(
-                self.setup_table_widget.item(
-                    row, self.setup_table_widget.select_col_ix
-                ).checkState()
-                == 2
+                self.setup_table_widget.item(row, self.setup_table_widget.select_column_idx).checkState() == 2
             )
 
         if any(isChecked):
@@ -294,9 +266,7 @@ class SetupsOverviewTab(QWidget):
             if sure.GO:
                 fl = database.setup_df.file_location
 
-                database.setup_df = database.setup_df.drop(
-                    database.setup_df.index[isChecked]
-                )
+                database.setup_df = database.setup_df.drop(database.setup_df.index[isChecked])
                 database.setup_df.file_location = fl
 
                 self.setup_table_widget.fill_table()
@@ -317,3 +287,6 @@ class SetupsOverviewTab(QWidget):
             sd = CageSummaryDialog()
             sd.show()
             sd.exec_()
+        else:
+            info = InformationDialog(info_text="No setups were selected to get a summary")
+            info.exec()

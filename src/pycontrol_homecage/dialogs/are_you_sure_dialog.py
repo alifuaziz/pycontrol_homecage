@@ -3,7 +3,7 @@ from pycontrol_homecage.utils import get_users
 
 
 class AreYouSureDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, question_text="Are you sure?"):
         super(AreYouSureDialog, self).__init__(parent)
 
         self.setGeometry(10, 30, 300, 100)  # Left, top, width, height.
@@ -16,7 +16,7 @@ class AreYouSureDialog(QDialog):
         self.noButton.clicked.connect(self.handleNo)
 
         self.Question = QLabel()
-        self.Question.setText("Are you sure?")
+        self.Question.setText(question_text)
         self._set_dialog_layout()
 
     def _set_dialog_layout(self) -> None:

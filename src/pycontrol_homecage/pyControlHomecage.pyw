@@ -31,9 +31,9 @@ def check_module(module_name):
 check_module("PyQt5")
 check_module("pyqtgraph")
 check_module("serial")
+check_module("pandas")
 
 from PyQt5.QtWidgets import QApplication
-
 from pycontrol_homecage.gui_tabs.MainGUI import MainGUI
 from pycontrol_homecage.utils import get_path
 from pycontrol_homecage.utils import custom_excepthook

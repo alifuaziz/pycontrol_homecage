@@ -38,9 +38,7 @@ class MouseListTable(QTableWidget):
     def fill_table(self):
         self.clear()
         self.setHorizontalHeaderLabels(self.header_names)
-        df = self.tab.df_mouse_tmp.loc[
-            self.tab.df_mouse_tmp["Setup_ID"].isin(self.tab.CLT.selected_setups)
-        ]
+        df = self.tab.df_mouse_tmp.loc[self.tab.df_mouse_tmp["Setup_ID"].isin(self.tab.CLT.selected_setups)]
         df.index = np.arange(len(df))
 
         df.reset_index(drop=True)

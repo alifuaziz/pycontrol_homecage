@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from pycontrol_homecage.com.pyboard import _djb2_file
 from pycontrol_homecage.utils import get_tasks
+
 # import pycontrol_homecage.db as database
 
 
@@ -12,10 +13,22 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
 
     def __init__(self, GUI, tab, parent=None):
         super(QtWidgets.QTableWidget, self).__init__(1, 12, parent=parent)
-        self.header_names = ['Show mice', 'Shared Protocol', 'Protocol',
-                             'COM', 'COM_AC', 'Setup_ID',
-                             'in_use', 'connected', 'User', 'Experiment',
-                             'Protocol', 'Mouse_training', 'Door', 'n_mice']
+        self.header_names = [
+            "Show mice",
+            "Shared Protocol",
+            "Protocol",
+            "COM",
+            "COM_AC",
+            "Setup_ID",
+            "in_use",
+            "connected",
+            "User",
+            "Experiment",
+            "Protocol",
+            "Mouse_training",
+            "Door",
+            "n_mice",
+        ]
 
         self.GUI = GUI
         self.tab = tab
@@ -31,12 +44,12 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
         self.selected_setups = []
 
     def run_task(self) -> None:
-        ""
+        """"""
         setup, task = self.sender().name
 
         board_ix = [i for i, brd in enumerate(self.GUI.connected_boards) if brd.serial_port == setup]
 
-        self.task_hash = _djb2_file(os.path.join(self.GUI.GUI_filepath, 'tasks', task + '.py'))
+        self.task_hash = _djb2_file(os.path.join(self.GUI.GUI_filepath, "tasks", task + ".py"))
         self.GUI.connected_boards[int(board_ix[0])].setup_state_machine(task, uploaded=False)
         self.GUI.connected_boards[int(board_ix[0])].start_framework()
 
@@ -49,9 +62,9 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
         for row_index, row in self.tab.df_setup_tmp.iterrows():
             self.share_task_in_setup.append(False)
 
-            for col_index in range(self.columnCount()-3):
+            for col_index in range(self.columnCount() - 3):
 
-                self.setItem(row_index, col_index+3, QtWidgets.QTableWidgetItem(str(row[col_index])))
+                self.setItem(row_index, col_index + 3, QtWidgets.QTableWidgetItem(str(row[col_index])))
 
             # These should be set just as one for each column
             chkBoxItem = QtWidgets.QTableWidgetItem()
@@ -72,7 +85,7 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
             protocols = QtWidgets.QComboBox()
 
             self.available_tasks = get_tasks()
-            protocols.addItems(['Select Task'] + self.available_tasks)
+            protocols.addItems(["Select Task"] + self.available_tasks)
             protocols.setEnabled(False)
             # QtWidgets.QTableWidgetItem()
             if self.tab.global_task:
@@ -104,7 +117,7 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
                     self.cellWidget(row, 2).setEnabled(False)
                     self.share_task_in_setup[row] = False
                     self.tab.mouse_prot.clear()
-                    self.tab.mouse_prot.addItems(['Select Task'] + self.tab.available_tasks)
+                    self.tab.mouse_prot.addItems(["Select Task"] + self.tab.available_tasks)
                     self.tab.mouse_prot.setEnabled(True)
         else:
 

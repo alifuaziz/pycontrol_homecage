@@ -54,3 +54,15 @@ def cbox_set_item(cbox, item_name, insert=False) -> bool:
             return True
         else:
             return False
+
+def validate_lineedit_number(lineedit, button):
+    """Function for checking if a lineedit widget textfield contains a valid number.
+    If it does not, the button will be non-clickable"""
+    try:
+        # value = float(lineedit.text())
+        value = lineedit
+        button.setEnabled(True)
+        return value
+    except ValueError:
+        button.setEnabled(False)
+        return None

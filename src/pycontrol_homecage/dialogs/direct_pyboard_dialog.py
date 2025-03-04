@@ -25,13 +25,13 @@ class DirectPyboardDialog(QDialog):
         self.setGeometry(10, 30, 500, 200)  # Left, top, width, height.
         self.setup_id = setup_id
         self.selected_task = "None"
-        layoutH = QHBoxLayout(self)
 
-        #
+        # POint to PYC board
         self.PYC = database.controllers[self.setup_id].PYC
         self.reject = self._done
 
-        # self.setGeometry(10, 30, 400, 200) # Left, top, width, height.
+        # Layout
+        layoutH = QHBoxLayout(self)
         self.task_combo = QComboBox()
         self.task_combo.addItems(["None"] + get_tasks())
 
@@ -59,7 +59,6 @@ class DirectPyboardDialog(QDialog):
 
     def start_stop(self):
         """Button that allows you to start and stop task"""
-
         if self.start_stop_button.text() == "Start":
             self.selected_task = self.task_combo.currentText()
             if self.task_combo.currentText() != "None":
@@ -79,7 +78,7 @@ class DirectPyboardDialog(QDialog):
         self.accept()  # close the dialog
 
     def print_msg(self, msg: str):
-        "function to accept data from the system handler"
+        """Function to accept data from the system handler"""
         self.log_textbox.moveCursor(QTextCursor.End)
         self.log_textbox.insertPlainText(str(msg) + "\n")
         self.log_textbox.moveCursor(QTextCursor.End)

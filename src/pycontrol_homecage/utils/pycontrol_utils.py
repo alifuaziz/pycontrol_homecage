@@ -9,7 +9,7 @@ def get_variables_from_taskfile(pth: str) -> List[str]:
 
     variables = re.findall(r"(v\.[^\s ]*) {0,2}=", txt)
     variables = list(set(variables))
-    return variables
+    return variables if variables else None
 
 
 def get_variables_and_values_from_taskfile(pth: str) -> dict[str, str]:
@@ -29,7 +29,7 @@ def get_variables_and_values_from_taskfile(pth: str) -> dict[str, str]:
     return var_dict
 
 
-def find_setups():
+def find_pyboards() -> List[str]:
     """Looks for pyboards in the list of comports on the computer"""
     ports = list(
         set(
