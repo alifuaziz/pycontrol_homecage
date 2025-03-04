@@ -41,8 +41,7 @@ from pycontrol_homecage.utils import custom_excepthook
 
 def initialise_excepthook() -> None:
     """Initialise a custom excepthook that prints errors to a log
-       in addition to shutting down the program
-    """
+       in addition to shutting down the program"""
     setup_dir= get_path("setups")
     sys._excepthook = sys.excepthook
 

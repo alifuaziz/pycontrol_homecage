@@ -13,9 +13,9 @@ import pandas as pd
 from PyQt5 import QtWidgets
 
 
-from pycontrol_homecage.tables import ExperimentOverviewTable
-from pycontrol_homecage.dialogs import AreYouSureDialog, InformationDialog
-import pycontrol_homecage.db as database
+from tables import ExperimentOverviewTable
+from dialogs import AreYouSureDialog, InformationDialog
+import db as database
 
 
 class ExperimentOverviewTab(QtWidgets.QWidget):
