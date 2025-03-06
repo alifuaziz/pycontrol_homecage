@@ -43,7 +43,6 @@ class SetupsOverviewTab(QWidget):
         # Name the setup you want to add
         self.setup_name_label = QLabel("Setup Name:")
         self.setup_name = QLineEdit()
-
         # press button to add setup
         self.add_cage_button = QPushButton("Add setup")
         self.add_cage_button.clicked.connect(self.add_cage)
@@ -86,10 +85,8 @@ class SetupsOverviewTab(QWidget):
         # Global Layout
         self.Vlayout = QVBoxLayout(self)
         self.Vlayout.addWidget(self.CAT, 1)
-
         self.Vlayout.addWidget(self.cage_table_label, 1)
         self.Vlayout.addLayout(self.cage_manager_layout, 1)
-
         self.Vlayout.addWidget(self.scrollable_cage, 15)
 
     def access_selected_task_pyboard(self) -> None:
@@ -98,12 +95,12 @@ class SetupsOverviewTab(QWidget):
 
         self._is_any_setup_connected()
 
-        checked_setup_ix = self._is_single_setup_selected()
+        checked_setup_idx = self._is_single_setup_selected()
 
-        if checked_setup_ix:
-            checked_setup_ix = checked_setup_ix[0]
+        if checked_setup_idx:
+            checked_setup_idx = checked_setup_idx[0]
             setup_col = self.setup_table_widget.header_names.index("Setup_ID")
-            checked_setup_id = self.setup_table_widget.item(checked_setup_ix, setup_col).text()
+            checked_setup_id = self.setup_table_widget.item(checked_setup_idx, setup_col).text()
             for k, G in database.controllers.items():
                 if k == checked_setup_id:
                     self.direct_pyboard_dialog = DirectPyboardDialog(k)
@@ -250,7 +247,7 @@ class SetupsOverviewTab(QWidget):
                 database.setup_df.file_location = fl
 
                 self.setup_table_widget.fill_table()
-                self.GUI.system_tab.setup_table_widget.fill_table()
+                # self.GUI.system_tab.setup_table_widget.fill_table()
         else:
             info = InformationDialog(info_text="No setups were selected to be removed")
             info.exec()
