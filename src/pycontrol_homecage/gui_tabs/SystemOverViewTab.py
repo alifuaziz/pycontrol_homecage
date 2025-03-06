@@ -27,20 +27,7 @@ class SystemOverviewTab(QWidget):
         self.GUI = self.parent()
         self.plot_isactive = False
 
-        self._init_user_groupbox()
-
-        self._init_experiment_groupbox()
-
-        self._init_setup_groupbox()
-
-        self._init_log_groupbox()
-        # ------------------------------------ #
-        # -------- Vertical stacking  -------- #
-        # ------------------------------------ #
-
-        self._set_global_layout()
-
-    def _init_user_groupbox(self):
+        # Initialise User Groupbox
         self.user_groupbox = QGroupBox("Users")
 
         self.user_label = QLabel()
@@ -52,45 +39,37 @@ class SystemOverviewTab(QWidget):
         self.add_user_button.setToolTip("Add a new account. This requires email verification.")
         self.logout_button = QPushButton("Logout")
         self.logout_button.setEnabled(False)
-        self._set_user_layout()
 
-    def _set_user_layout(self) -> None:
         self.Hlayout_users = QHBoxLayout()
         self.Hlayout_users.addWidget(self.login_button)
         self.Hlayout_users.addWidget(self.add_user_button)
         self.Hlayout_users.addWidget(self.logout_button)
         self.user_groupbox.setLayout(self.Hlayout_users)
 
-    def _init_experiment_groupbox(self):
+        # Initialise Experiment Groupbox
         self.experiment_groupbox = QGroupBox("Active Experiments")
         self.scrollable_experiments = QScrollArea()
         self.scrollable_experiments.setWidgetResizable(True)
         self.experiement_overview_table: ExperimentOverviewTable = ExperimentOverviewTable(only_active=True)
         self.scrollable_experiments.setWidget(self.experiement_overview_table)
 
-        self._init_experiment_buttons()
-
-        self._set_experiment_layout()
-
-    def _init_experiment_buttons(self):
+        # Initialise the New Experiment Buttons
         self.start_experiment_button = QPushButton("Start New Experiment")
         self.start_experiment_button.clicked.connect(self.start_new_experiment)
 
         self.end_experiment_button = QPushButton("End Experiment")
         self.end_experiment_button.clicked.connect(self.end_experiment)
 
-    def _set_experiment_layout(self):
+        # Set the layout of these buttons
         self.Hlayout_exp_buttons = QHBoxLayout()
         self.Hlayout_exp_buttons.addWidget(self.start_experiment_button)
         self.Hlayout_exp_buttons.addWidget(self.end_experiment_button)
-
         self.Vlayout_exp = QVBoxLayout(self)
         self.Vlayout_exp.addLayout(self.Hlayout_exp_buttons)
         self.Vlayout_exp.addWidget(self.scrollable_experiments)
-
         self.experiment_groupbox.setLayout(self.Vlayout_exp)
 
-    def _init_setup_groupbox(self) -> None:
+        # Initialise the setups groupbox
         self.setup_groupbox = QGroupBox("Setups")
         self.scrollable_setups = QScrollArea()
         self.scrollable_setups.setWidgetResizable(True)
@@ -109,9 +88,7 @@ class SystemOverviewTab(QWidget):
         self.setup_label = QLabel()
         self.setup_label.setText("Setups")
 
-        self._set_setup_layout()
-
-    def _set_setup_layout(self) -> None:
+        # Set the layout of the setup groupbox
         self.Hlayout_setup_buttons = QHBoxLayout()
         self.Hlayout_setup_buttons.addWidget(self.show_setup_plot)
         self.Hlayout_setup_buttons.addWidget(self.filter_setup_combo)
@@ -122,7 +99,7 @@ class SystemOverviewTab(QWidget):
         self.Vlayout_setup.addWidget(self.scrollable_setups)
         self.setup_groupbox.setLayout(self.Vlayout_setup)
 
-    def _init_log_groupbox(self) -> None:
+        # Initliase the log groupbox
         self.log_groupbox = QGroupBox("Log")
 
         self.log_active = QCheckBox("Print to log")
@@ -137,9 +114,7 @@ class SystemOverviewTab(QWidget):
         self.log_textbox.setMaximumBlockCount(500)
         self.log_textbox.setFont(QFont("Courier", 12))
         self.log_textbox.setReadOnly(True)
-        self._set_log_layout()
-
-    def _set_log_layout(self) -> None:
+        # Set the Log groupbox layout
         self.log_hlayout = QHBoxLayout()
         self.log_hlayout.addWidget(self.log_active)
         self.log_hlayout.addWidget(self.filter_exp)
@@ -150,13 +125,14 @@ class SystemOverviewTab(QWidget):
         self.log_layout.addWidget(self.log_textbox)
         self.log_groupbox.setLayout(self.log_layout)
 
-    def _set_global_layout(self) -> None:
+        # Set the Global Layout for the page
         self.Vlayout = QVBoxLayout(self)
-
         self.Vlayout.addWidget(self.user_groupbox)
         self.Vlayout.addWidget(self.experiment_groupbox)
         self.Vlayout.addWidget(self.setup_groupbox)
         self.Vlayout.addWidget(self.log_groupbox)
+
+    # Button Function calls ---------------------------------------------------------------------
 
     def open_calibration_dialog(self) -> None:
         """
@@ -251,6 +227,8 @@ class SystemOverviewTab(QWidget):
         self.GUI.experiment_tab.list_of_experiments.fill_table()
         self.GUI.setup_tab.setup_table_widget.fill_table()
 
+    # Functions for writing to GUI ----------------------------------------------------------------------------------------
+
     def write_to_log(self, msg, from_sys=None):
         if self.log_active.isChecked():
             if type(msg) is str:
@@ -266,6 +244,8 @@ class SystemOverviewTab(QWidget):
                         self.log_textbox.moveCursor(QTextCursor.End)
         else:
             pass
+
+    # Required refresh function ---------------------------------------------------------------------------------------------
 
     def _refresh(self):
         pass

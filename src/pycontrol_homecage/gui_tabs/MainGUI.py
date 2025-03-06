@@ -23,12 +23,34 @@ class MainGUI(QMainWindow):
         self.app = None  # Overwritten with QApplication instance in main.
         self.active_user = None
         self.setWindowTitle("pyControlHomeCage: Please log in")
+        self.setGeometry(10, 30, 900, 800)  # Left, top, width, height.
 
         database.setup_df["connected"] = False
 
-        self._init_tabs()
+        # Initialise tabs
+        self.mouse_tab = MouseOverViewTab(self)
+        self.setup_tab = SetupsOverviewTab(self)
+        self.protocol_tab = ProtocolAssemblyTab(self)
+        self.system_tab = SystemOverviewTab(self)
+        self.experiment_tab = ExperimentOverviewTab(self)
+        # Add tabs to tab widget
+        self.tab_widget = QTabWidget(self)
+        self.tab_widget.addTab(self.system_tab, "System Overview")
+        self.tab_widget.addTab(self.experiment_tab, "Experiments")
+        self.tab_widget.addTab(self.mouse_tab, "Mouse Overview")
+        self.tab_widget.addTab(self.setup_tab, "Setup Overview")
+        self.tab_widget.addTab(self.protocol_tab, "Protocols")
+        # Dict of table references
+        self.table_map = {
+            "system_tab.list_of_experiments": self.system_tab.experiement_overview_table,
+            "system_tab.list_of_setups": self.system_tab.setup_table_widget,
+            "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
+            "mouse_tab.list_of_mice": self.mouse_tab.mouse_table_widget,
+            "setup_tab.list_of_setups": self.setup_tab.setup_table_widget,
+        }
+
         database.print_consumers[MessageRecipient.system_overview] = self.system_tab.write_to_log
-        self._add_tabs_to_widget()
+
         self._disable_gui_pre_login()
 
         self.login = LoginDialog()
@@ -38,51 +60,11 @@ class MainGUI(QMainWindow):
         self.system_tab.add_user_button.clicked.connect(self.add_user_)
         self.system_tab.logout_button.clicked.connect(self.logout_user)
 
-        self.setGeometry(10, 30, 900, 800)  # Left, top, width, height.
         self.setCentralWidget(self.tab_widget)
         self.show()
 
         self._init_timer()
         self.refresh()  # Refresh tasks and ports lists.
-        self._init_table_map()
-
-    def _init_table_map(self):
-        """
-        Dictionary of the names of tables
-        This dict of tables can be called by the self._refresh_tables() function to update the contents of these tables
-
-        TABLE MAP DICTIONARY
-        ====================
-        self.table_map = {
-            "system_tab.list_of_experiments": self.system_tab.list_of_experiments,
-            "system_tab.list_of_setups": self.system_tab.list_of_setups,
-            "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
-            "mouse_tab.list_of_mice": self.mouse_tab.list_of_mice,
-            "setup_tab.list_of_setups": self.setup_tab.list_of_setups,
-        }
-        """
-        self.table_map = {
-            "system_tab.list_of_experiments": self.system_tab.experiement_overview_table,
-            "system_tab.list_of_setups": self.system_tab.setup_table_widget,
-            "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
-            "mouse_tab.list_of_mice": self.mouse_tab.mouse_table_widget,
-            "setup_tab.list_of_setups": self.setup_tab.setup_table_widget,
-        }
-
-    def _init_tabs(self) -> None:
-        self.mouse_tab = MouseOverViewTab(self)
-        self.setup_tab = SetupsOverviewTab(self)
-        self.protocol_tab = ProtocolAssemblyTab(self)
-        self.system_tab = SystemOverviewTab(self)
-        self.experiment_tab = ExperimentOverviewTab(self)
-
-    def _add_tabs_to_widget(self) -> None:
-        self.tab_widget = QTabWidget(self)
-        self.tab_widget.addTab(self.system_tab, "System Overview")
-        self.tab_widget.addTab(self.experiment_tab, "Experiments")
-        self.tab_widget.addTab(self.mouse_tab, "Mouse Overview")
-        self.tab_widget.addTab(self.setup_tab, "Setup Overview")
-        self.tab_widget.addTab(self.protocol_tab, "Protocols")
 
     def _disable_gui_pre_login(self) -> None:
         self.mouse_tab.setEnabled(False)
