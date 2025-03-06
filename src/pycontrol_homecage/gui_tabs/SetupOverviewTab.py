@@ -37,12 +37,6 @@ class SetupsOverviewTab(QWidget):
 
         # initialise each of the tab regions then bind them
         # to the overall layout
-        self._init_add_setup()
-        self._init_update_setup()
-        self._init_setup_table()
-        self._set_global_tab_layout()
-
-    def _init_add_setup(self) -> None:
         self.CAT = QGroupBox("Add Setup")  # the main container
         self.cat_layout = QHBoxLayout()  # main layout class
 
@@ -56,10 +50,6 @@ class SetupsOverviewTab(QWidget):
 
         self.cat_combo_box = QComboBox()  # select operant chamber pyboard
         self.cact_combo_box = QComboBox()  # select access control pyboard
-
-        self._set_add_setup_layout()
-
-    def _set_add_setup_layout(self) -> None:
         self.cat_layout.addWidget(self.setup_name_label)
         self.cat_layout.addWidget(self.setup_name)
         self.cat_layout.addWidget(self.cat_combo_box)
@@ -68,42 +58,32 @@ class SetupsOverviewTab(QWidget):
 
         self.CAT.setLayout(self.cat_layout)
 
-    def _init_update_setup(self) -> None:
-        self.cage_manager_layout = QHBoxLayout()  # main layout container
-
+        # Main Layout Container
+        self.cage_manager_layout = QHBoxLayout()
         self.remove_cage_button = QPushButton("Remove setup")
         self.remove_cage_button.clicked.connect(self.remove_selected_setups)
-
         self.update_cage_button = QPushButton("Update Connected setup")
         self.update_cage_button.clicked.connect(self.update_setup)
-
         self.check_beh_hardware_button = QPushButton("Access task pyboard")
         self.check_beh_hardware_button.clicked.connect(self.access_selected_task_pyboard)
-
         self.cage_summary_button = QPushButton("Get setup Summary")
         self.cage_summary_button.clicked.connect(self.get_summary)
-
-        self._set_update_setup_layout()
-
-    def _set_update_setup_layout(self) -> None:
+        # Add to layout
         self.cage_manager_layout.addWidget(self.remove_cage_button)
         self.cage_manager_layout.addWidget(self.update_cage_button)
         self.cage_manager_layout.addWidget(self.check_beh_hardware_button)
         self.cage_manager_layout.addWidget(self.cage_summary_button)
 
-    def _init_setup_table(self) -> None:
         # define container for the cageTable
         self.scrollable_cage = QScrollArea()
         self.scrollable_cage.setWidgetResizable(True)
         self.scrollable_cage.horizontalScrollBar().setEnabled(False)
-
         self.cage_table_label = QLabel()
         self.cage_table_label.setText("List of setups")
-
         self.setup_table_widget = SetupTable(tab=self)
         self.scrollable_cage.setWidget(self.setup_table_widget)
 
-    def _set_global_tab_layout(self) -> None:
+        # Global Layout
         self.Vlayout = QVBoxLayout(self)
         self.Vlayout.addWidget(self.CAT, 1)
 

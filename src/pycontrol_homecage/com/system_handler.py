@@ -86,14 +86,10 @@ class system_controller(Data_logger):
             self.write_to_file(new_data)
 
         # self.GUI.print_msg(new_data, ac_pyc='pyc')
-        emit_print_message(
-            new_data, MessageRecipient.system_overview, MessageSource.PYCBoard
-        )
+        emit_print_message(new_data, MessageRecipient.system_overview, MessageSource.PYCBoard)
 
         if MessageRecipient.direct_pyboard_dialog in database.print_consumers:
-            emit_print_message(
-                new_data, MessageRecipient.direct_pyboard_dialog, MessageSource.PYCBoard
-            )
+            emit_print_message(new_data, MessageRecipient.direct_pyboard_dialog, MessageSource.PYCBoard)
 
     def process_data_AC(self, new_data):
         """Here process the data from the access control system to
@@ -114,18 +110,12 @@ class system_controller(Data_logger):
         # the time at which the data was received
         now = datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
-        exp_running_now = database.setup_df.loc[
-            #          pycontrol comport == pycontrol board serial port
-            database.setup_df["COM"] == self.PYC.serial_port
-        ]["Experiment"].values
-        #
+        exp_running_now = database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port]["Experiment"].values
 
         # if exp_running_now != 'none':  # YW 11/02/21 NOT SURE WHY THIS CHECK IS HERE
         for msg in new_data:
             # Message to print the message to the system overview.
-            emit_print_message(
-                msg, MessageRecipient.system_overview, MessageSource.ACBoard
-            )
+            emit_print_message(msg, MessageRecipient.system_overview, MessageSource.ACBoard)
 
             if "cal" in msg:
                 # THis was handled in the function call above.
@@ -164,9 +154,7 @@ class system_controller(Data_logger):
         to handle these states.
         """
         # update access control state in the database
-        database.setup_df.loc[
-            database.setup_df["COM"] == self.PYC.serial_port, "AC_state"
-        ] = state
+        database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "AC_state"] = state
 
         if state == "error_state":
             self._handle_error_state()
@@ -219,6 +207,7 @@ class system_controller(Data_logger):
 
     def _handle_mouse_training(self, now: str) -> None:
         """This function is called to start the Pycontrol framework for this animal.
+        This is run on mouse training beginning.
 
         Steps of this function:
         - Gets the correct mouse row from the the `mouse_df` table
@@ -234,14 +223,10 @@ class system_controller(Data_logger):
 
         # need an exception here for cases where RFID is incorrectly typed in
         # Get the correct row from the mouse_df, which corresponds to the mouse that entered the access control
-        mouse_row = database.mouse_df.loc[
-            database.mouse_df["RFID"] == self.mouse_data["RFID"]
-        ]
+        mouse_row = database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"]]
         # Raise an exception if mouse_row is empty
         if mouse_row.empty:
-            raise Exception(
-                f"Error: No mouse found with the given RFID ({self.mouse_data['RFID']}) in the database."
-            )
+            raise Exception(f"Error: No mouse found with the given RFID ({self.mouse_data['RFID']}) in the database.")
         # Get the mouse ID and protocol frpom the mouse row.
         mouse_ID, prot = mouse_row[["Mouse_ID", "Protocol"]].values[0]
 
@@ -269,29 +254,10 @@ class system_controller(Data_logger):
             # self.GUI.system_tab.list_of_setups.fill_table()
 
     def _update_database_on_entry(self, mouse_weight: float, mouse_ID: str) -> None:
-        """
-        When a mouse enters the training chamber, update the setup_df and the
-        mouse_df to reflect this in the following way
-
-        mouse_df
-        - Current weight of the mouse (int)
-        - If the mouse is currentl trianing  (bool)
-        setup_df
-        - Which mouse is currently trianing in the step (str)
-
-        Args:
-            mouse_weight (float)
-            mouse_ID (str)
-        """
-        database.mouse_df.loc[
-            database.mouse_df["RFID"] == self.mouse_data["RFID"], "Current_weight"
-        ] = self.mouse_data["weight"]
-        database.mouse_df.loc[
-            database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"
-        ] = True
-        database.setup_df.loc[
-            database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"
-        ] = mouse_ID
+        """Update Mouse dataframe"""
+        database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "Current_weight"] = mouse_weight
+        database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"] = True
+        database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"] = mouse_ID
 
     def start_running_mouse_task(self, mouse_info_row: pd.Series) -> None:
         """
@@ -320,9 +286,7 @@ class system_controller(Data_logger):
                     self.PYC.set_variable(k[2:], eval(v))
         # Set the `persistent_variables` for the task
         if not pd.isnull(mouse_info_row["persistent_variables"].values):
-            persistent_variables = eval(
-                mouse_info_row["persistent_variables"].values[0]
-            )
+            persistent_variables = eval(mouse_info_row["persistent_variables"].values[0])
             if persistent_variables:
                 for k, v in persistent_variables.items():
                     if v != "auto":
@@ -332,22 +296,22 @@ class system_controller(Data_logger):
         """
         - Get the protocol, mouse id, current stage of the protocol from the mouse_info_row
         - Load in the protocol dataframe / mouse log dataframe
-        
-        - Check wether the stage of the protocol should be changed. 
-            - The stage is the row index of the .prot file. 
-        - 
+
+        - Check wether the stage of the protocol should be changed.
+            - The stage is the row index of the .prot file.
+        -
         """
-        
+
         # If running a real protocol, handle (potential) update of protocol.
         newStage = False
         try:
             stage = int(mouse_info_row["Stage"].values[0])
         except ValueError:
-                # info
-                print("ERROR:Stage not valid!!")
+            # info
+            print("ERROR:Stage not valid!!")
         prot = mouse_info_row["Protocol"].values[0]
-        mouse_ID=mouse_info_row["Mouse_ID"].values[0]
-        
+        mouse_ID = mouse_info_row["Mouse_ID"].values[0]
+
         protocol_path = os.path.join(get_path("prot"), prot)
         mouse_prot = pd.read_csv(protocol_path, index_col=0)
 
@@ -357,7 +321,6 @@ class system_controller(Data_logger):
 
         # Protocol Stage row
         current_protocol_stage = mouse_prot.iloc[stage]
-
 
         ####################### LOGIC FOR CHECKING IF STAGE SHOULD BE INCREASED #################
         ######### This logic is not tested as I do not know how to get things into the log for the mouse
@@ -369,26 +332,26 @@ class system_controller(Data_logger):
             pycontrol_variables_dict = eval(mouse_df_log["Variables"])
 
             if not pd.isnull(current_protocol_stage["threshV"]):
-                # Load in the String of list of lists                
+                # Load in the String of list of lists
                 for k, thresh in eval(mouse_prot.loc[str(stage), "threshV"]):
-                    print(float(pycontrol_variables_dict[k]), float(thresh), float(pycontrol_variables_dict[k]) >= float(thresh))
+                    print(
+                        float(pycontrol_variables_dict[k]),
+                        float(thresh),
+                        float(pycontrol_variables_dict[k]) >= float(thresh),
+                    )
                     if float(pycontrol_variables_dict[k]) >= float(thresh):
                         newStage = True
                         stage += 1
 
         ########################################################################################
-        
+
         updated_stage_row = mouse_prot.iloc[stage]
 
         task = updated_stage_row["task"]
 
         # Updates the mouse_df to reflect any changes in the task stage or the mouse is in.
-        database.mouse_df.loc[
-            database.mouse_df["RFID"] == self.mouse_data["RFID"], "Task"
-        ] = task
-        database.mouse_df.loc[
-            database.mouse_df["RFID"] == self.mouse_data["RFID"], "Stage"
-        ] = stage
+        database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "Task"] = task
+        database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "Stage"] = stage
 
         self.PYC.setup_state_machine(sm_name=task)
 
@@ -399,7 +362,7 @@ class system_controller(Data_logger):
             self.PYC.set_variable(k, float(defV))
 
         if len(mouse_df_log) > 0:
-            if not newStage: # newStage is False
+            if not newStage:  # newStage is False
                 for k in updated_stage_row["trackV"]:
                     # Updated variables. They are changed based on the behaviour of the animal.
                     self.PYC.set_variable(k, float(pycontrol_variables_dict[k]))
@@ -409,8 +372,8 @@ class system_controller(Data_logger):
         """Overwrite method of data logger class
 
         Opens a datafile and writes information about the mouse's experimental information to it.
-        
-        The importing of the pyContorl data comes from the old dataformat. 
+
+        The importing of the pyContorl data comes from the old dataformat.
         https://pycontrol.readthedocs.io/en/latest/user-guide/pycontrol-data/#old-data-format
         """
         mouse_ID = mouse_info["Mouse_ID"].values[0]
@@ -419,13 +382,9 @@ class system_controller(Data_logger):
         task = mouse_info["Task"].values[0]
 
         file_name = "_".join([mouse_ID, exp, task, now]) + ".txt"
-        fullpath_to_datafile = os.path.join(
-            self.data_dir, exp, mouse_ID, prot, file_name
-        )
+        fullpath_to_datafile = os.path.join(self.data_dir, exp, mouse_ID, prot, file_name)
         # save a copy of the taskfile that was run
-        self._save_taskFile_run(
-            fullpath_to_datafile=database.paths["mice_dir"], task=task
-        )
+        self._save_taskFile_run(fullpath_to_datafile=database.paths["mice_dir"], task=task)
 
         # Open a datafile
         self.data_file = open(fullpath_to_datafile, "w", newline="\n")
@@ -491,7 +450,9 @@ class system_controller(Data_logger):
                 database.mouse_df.loc[
                     database.mouse_df["RFID"] == self.mouse_data["RFID"],
                     "persistent_variables",
-                ] = json.dumps(persistent_variables)  # ignore this line
+                ] = json.dumps(
+                    persistent_variables
+                )  # ignore this line
                 # JSON.dumps is a string representation of a dictionary. that is put into a column of a dataframe. This is probably not the most elegant solution...
             except Exception as e:
                 print(e)
@@ -520,33 +481,21 @@ class system_controller(Data_logger):
             self.data_file = None
             self.file_path = None
             if "RUN_ERROR" not in database.mouse_df.columns:
-                database.mouse_df.insert(
-                    len(database.mouse_df.columns), "RUN_ERROR", pd.Series(), True
-                )
+                database.mouse_df.insert(len(database.mouse_df.columns), "RUN_ERROR", pd.Series(), True)
 
             mouse_fl = database.mouse_df.file_location
             # Selects the `RUN_ERROR` column for the appropriate row of the mouse_df and sets its value to the `RUN_ERROR` value
-            database.mouse_df.loc[
-                database.mouse_df["RFID"] == self.mouse_data["RFID"], "RUN_ERROR"
-            ] = RUN_ERROR
-            database.mouse_df.loc[
-                database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"
-            ] = False
+            database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "RUN_ERROR"] = RUN_ERROR
+            database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"] = False
             # Removes columns from the mouse_df that are unnamed (i do not know why these columns exist, however. )
-            database.mouse_df = database.mouse_df.loc[
-                :, ~database.mouse_df.columns.str.contains("^Unnamed")
-            ]
+            database.mouse_df = database.mouse_df.loc[:, ~database.mouse_df.columns.str.contains("^Unnamed")]
             database.mouse_df.file_location = mouse_fl
 
             database.mouse_df.to_csv(database.mouse_df.file_location)
 
             setup_fl = database.setup_df.file_location
-            database.setup_df.loc[
-                database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"
-            ] = ""
-            database.setup_df = database.setup_df.loc[
-                :, ~database.setup_df.columns.str.contains("^Unnamed")
-            ]
+            database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"] = ""
+            database.setup_df = database.setup_df.loc[:, ~database.setup_df.columns.str.contains("^Unnamed")]
             database.setup_df.file_location = setup_fl
             database.setup_df.to_csv(database.setup_df.file_location)
 
@@ -562,9 +511,7 @@ class system_controller(Data_logger):
         session
         """
 
-        mouse_row = database.mouse_df.loc[
-            database.mouse_df["RFID"] == self.mouse_data["RFID"]
-        ]
+        mouse_row = database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"]]
         mouse_ID = mouse_row["Mouse_ID"].values[0]
 
         logPth = os.path.join(get_path("mice"), mouse_ID + ".csv")

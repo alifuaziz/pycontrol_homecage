@@ -32,11 +32,35 @@ class MouseOverViewTab(QWidget):
 
         self.GUI = self.parent()
 
-        self.init_buttons()
+        """Initialise buttons to update the mouse table"""
+        self.add_mouse_button = QPushButton("Add Mouse")
+        self.add_mouse_button.setToolTip(
+            "Add a mouse to the database without it being assigned to a experiement or a task"
+        )
+        self.add_mouse_button.clicked.connect(self.add_mouse)
+        self.remove_mouse_button = QPushButton("Remove Mouse")
+        self.remove_mouse_button.setToolTip("Remove a mouse. \nOnce mouse at a time.")
+        self.remove_mouse_button.clicked.connect(self.remove_mouse)
+        self.update_mouse_button = QPushButton("Update Mouse")
+        self.update_mouse_button.clicked.connect(self.update_mouse)
+        self.mouse_summary_button = QPushButton("Get Mouse Summary")
+        self.mouse_summary_button.clicked.connect(self.get_summary)
 
-        self.set_button_layout()
+        """Set button layout"""
+        self.mouse_manager_layout = QHBoxLayout()
+        self.mouse_manager_layout.addWidget(self.remove_mouse_button)
+        self.mouse_manager_layout.addWidget(self.update_mouse_button)
+        self.mouse_manager_layout.addWidget(self.mouse_summary_button)
 
-        self.init_mouse_table()
+        """Initialise a table that shows which mice are currently in the system"""
+        self.mouse_table_label = QLabel()
+        self.mouse_table_label.setText("Mice in setup")
+
+        self.scrollable_mouse = QScrollArea()
+        self.scrollable_mouse.setWidgetResizable(True)
+        self.scrollable_mouse.horizontalScrollBar().setEnabled(False)
+        self.mouse_table_widget = MouseTable(self.GUI, self)
+        self.scrollable_mouse.setWidget(self.mouse_table_widget)
 
         # Buttons to control stuff
         self.Vlayout = QVBoxLayout(self)
@@ -76,38 +100,6 @@ class MouseOverViewTab(QWidget):
         self.Vlayout.addWidget(
             self.variables_box
         )  # THIS NEEDS TO GO. THIS WILL NEVER HAPPEN. CHANGE TO VARIABLES TABLE
-
-    def init_buttons(self) -> None:
-        """Initialise buttons to update the mouse table"""
-        self.add_mouse_button = QPushButton("Add Mouse")
-        self.add_mouse_button.setToolTip(
-            "Add a mouse to the database without it being assigned to a experiement or a task"
-        )
-        self.add_mouse_button.clicked.connect(self.add_mouse)
-        self.remove_mouse_button = QPushButton("Remove Mouse")
-        self.remove_mouse_button.setToolTip("Remove a mouse. \nOnce mouse at a time.")
-        self.remove_mouse_button.clicked.connect(self.remove_mouse)
-        self.update_mouse_button = QPushButton("Update Mouse")
-        self.update_mouse_button.clicked.connect(self.update_mouse)
-        self.mouse_summary_button = QPushButton("Get Mouse Summary")
-        self.mouse_summary_button.clicked.connect(self.get_summary)
-
-    def set_button_layout(self) -> None:
-        self.mouse_manager_layout = QHBoxLayout()
-        self.mouse_manager_layout.addWidget(self.remove_mouse_button)
-        self.mouse_manager_layout.addWidget(self.update_mouse_button)
-        self.mouse_manager_layout.addWidget(self.mouse_summary_button)
-
-    def init_mouse_table(self) -> None:
-        """Initialise a table that shows which mice are currently in the system"""
-        self.mouse_table_label = QLabel()
-        self.mouse_table_label.setText("Mice in setup")
-
-        self.scrollable_mouse = QScrollArea()
-        self.scrollable_mouse.setWidgetResizable(True)
-        self.scrollable_mouse.horizontalScrollBar().setEnabled(False)
-        self.mouse_table_widget = MouseTable(self.GUI, self)
-        self.scrollable_mouse.setWidget(self.mouse_table_widget)
 
     def init_mouse_variables_table(self) -> None:
         return None

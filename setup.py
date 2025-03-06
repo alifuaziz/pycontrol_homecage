@@ -6,13 +6,12 @@ import subprocess
 
 
 def setup_folders() -> None:
-    sys.path.append(os.path.join(os.path.split(__file__)[0], "src/pycontrol_homecage/utils"))
+    path = os.path.join(os.path.split(__file__)[0], "src/pycontrol_homecage/utils")
+    print(path)
+    sys.path.append(path)
 
-    from setup_utils import (get_paths,
-                                    create_paths_and_empty_csvs,
-                                    create_user_file,
-                                    get_root_path
-                                        )
+    from setup_utils import get_paths, create_paths_and_empty_csvs, create_user_file, get_root_path
+
     if not os.path.isdir(get_root_path()):
         os.mkdir(get_root_path())
     all_paths = get_paths()
@@ -21,7 +20,6 @@ def setup_folders() -> None:
     create_user_file()
 
 
-
 if __name__ == "__main__":
     setup()
-    setup_folders() 
+    setup_folders()

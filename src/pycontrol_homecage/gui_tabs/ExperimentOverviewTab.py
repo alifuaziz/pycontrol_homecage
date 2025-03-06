@@ -22,13 +22,9 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
     def __init__(self, MainGUI: QtWidgets.QMainWindow = None):
         super(QtWidgets.QWidget, self).__init__(MainGUI)
         self.MainGUI = MainGUI
-        self._init_buttons()
-        self._set_button_layout()
-        self.list_of_experiments = ExperimentOverviewTable(only_active=False)
 
-        self._set_global_layout()
-
-    def _init_buttons(self) -> None:
+        # Initialise Buttons
+        # NEW / START / STOP experiment buttons
         self.new_experiment_button = QtWidgets.QPushButton("Start new Experiment")
         self.new_experiment_button.setToolTip("Start a new experiment by adding mice to the connected setups")
         self.new_experiment_button.clicked.connect(self.new_experiment)
@@ -40,13 +36,15 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
             "Button for stopping one experiment at a time. It only stops the first selected experiment"
         )
 
-    def _set_button_layout(self) -> None:
+        # Set the button layout
         self.Hlayout = QtWidgets.QHBoxLayout()
         self.Hlayout.addWidget(self.new_experiment_button)
         self.Hlayout.addWidget(self.restart_experiment_button)
         self.Hlayout.addWidget(self.stop_experiment_button)
 
-    def _set_global_layout(self) -> None:
+        self.list_of_experiments = ExperimentOverviewTable(only_active=False)
+
+        # Set the global layout
         self.Vlayout = QtWidgets.QVBoxLayout(self)
         self.Vlayout.addLayout(self.Hlayout)
         self.Vlayout.addWidget(self.list_of_experiments)

@@ -11,3 +11,4 @@ pyhomecage_conf.py
 .coverage
 *config.json
 data/*
+data_old/*
