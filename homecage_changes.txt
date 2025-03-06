@@ -1,9 +1,0 @@
-Home Cage changes:
-
-1. Doors on side facing load cell need to be cut down substantially as it is in the way
-2. Two doors where magnet screw is facing towards the direction where mice are have exposed cables coming from them. Protect the cables
-3. New doors made of magnetic material
-4. Holes cut in the ceiling for the screws coming out of the top of the load cells
-5. If possible clearer cable guides
-6. Amend door for cable from RFID reader
-7. Make doors slightly narrower

@@ -124,3 +124,15 @@ def create_empty_csv(pth: str) -> None:
 
     if (fp is not None) and (not os.path.isfile(fp)):
         df.to_csv(fp, index=False)
+
+
+if __name__ == "__main__":
+
+    def setup_folders():
+        if not os.path.isdir(get_root_path()):
+            os.mkdir(get_root_path())
+        all_paths = get_paths()
+        create_paths_and_empty_csvs(all_paths)
+        create_user_file()
+
+    setup_folders()
