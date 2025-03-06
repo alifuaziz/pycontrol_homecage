@@ -6,7 +6,7 @@ import subprocess
 
 
 def setup_folders() -> None:
-    path = os.path.join(os.path.split(__file__)[0], "src/pycontrol_homecage/utils")
+    path = os.path.join(os.path.split(__file__)[0], r"src\pycontrol_homecage\utils")
     print(path)
     sys.path.append(path)
 
@@ -21,5 +21,5 @@ def setup_folders() -> None:
 
 
 if __name__ == "__main__":
-    setup()
+    # setup()
     setup_folders()
