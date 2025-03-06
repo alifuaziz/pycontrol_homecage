@@ -21,11 +21,13 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+
 # Dependency Mangement
 def check_module(module_name):
     if importlib.util.find_spec(module_name) is None:
         logging.error(f"Unable to import dependency: {module_name}")
         sys.exit()
+
 
 # Depedencies for application
 check_module("PyQt5")
@@ -41,11 +43,11 @@ from pycontrol_homecage.utils import custom_excepthook
 
 def initialise_excepthook() -> None:
     """Initialise a custom excepthook that prints errors to a log
-       in addition to shutting down the program"""
-    setup_dir= get_path("setups")
+    in addition to shutting down the program"""
+    setup_dir = get_path("setups")
     sys._excepthook = sys.excepthook
 
-    exception_path = os.path.join(setup_dir, 'exception_store.txt')
+    exception_path = os.path.join(setup_dir, "exception_store.txt")
     except_hook = partial(custom_excepthook, filepath=exception_path)
     sys.excepthook = except_hook
 
@@ -54,7 +56,7 @@ def main() -> None:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     gui = MainGUI()
-    gui.app = app   # To allow app functions to be called from GUI.
+    gui.app = app  # To allow app functions to be called from GUI.
     return app
 
 

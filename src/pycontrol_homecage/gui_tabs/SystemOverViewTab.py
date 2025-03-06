@@ -244,8 +244,3 @@ class SystemOverviewTab(QWidget):
                         self.log_textbox.moveCursor(QTextCursor.End)
         else:
             pass
-
-    # Required refresh function ---------------------------------------------------------------------------------------------
-
-    def _refresh(self):
-        pass

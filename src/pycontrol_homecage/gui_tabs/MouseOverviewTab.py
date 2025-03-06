@@ -303,6 +303,3 @@ class MouseOverViewTab(QWidget):
             # Raise dialog box that no boxes have been checked.
             dialog = InformationDialog(info_text="No rows were selected. Select rows to get summary")
             dialog.exec()
-
-    def _refresh(self):
-        pass

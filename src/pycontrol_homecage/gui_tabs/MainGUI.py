@@ -86,7 +86,7 @@ class MainGUI(QMainWindow):
         Primary Refresh Function of the GUI.
 
         1. Checks for data from the pyboards currently running
-        2. Refreshes the GUi tabs.
+        2. Refreshes the GUI tabs.
         3. Prints any messages that have entered the message queue
         """
         for k, SC in database.controllers.items():
@@ -105,10 +105,7 @@ class MainGUI(QMainWindow):
     def refresh_tabs(self) -> None:
         """Refresh all tabs in the GUI"""
         self.setup_tab._refresh()
-        self.system_tab._refresh()
         self.experiment_tab._refresh()
-        self.mouse_tab._refresh()
-        self.protocol_tab._refresh()
 
     def change_user(self) -> None:
         self.login.exec_()

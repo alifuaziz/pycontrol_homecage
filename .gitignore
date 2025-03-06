@@ -12,3 +12,4 @@ pyhomecage_conf.py
 *config.json
 data/*
 data_old/*
+data_new/*

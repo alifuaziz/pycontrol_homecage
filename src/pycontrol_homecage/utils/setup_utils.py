@@ -10,16 +10,14 @@ def get_config() -> dict:
     return config
 
 
-def get_root_path() -> str:
-    """Read root path from config.json file"""
-    return get_config()["ROOT"]
+ROOT = get_config()["ROOT"]
 
 
 def get_path(path_type) -> str:
 
     path_list = ["data", "tasks", "setups", "loggers", "experiments", "mice", "prot", "users.txt"]
     assert path_type in path_list, "PATH must be one of {}".format(path_list)
-    return os.path.join(get_root_path(), path_type)
+    return os.path.join(ROOT, path_type)
 
 
 def get_paths() -> List[str]:
@@ -31,8 +29,7 @@ def get_paths() -> List[str]:
 def create_user_file() -> None:
     """Create the root file with system email information"""
 
-    root = get_root_path()
-    user_path = os.path.join(root, "users.txt")
+    user_path = os.path.join(ROOT, "users.txt")
     if not os.path.isfile(user_path):
         config = get_config()
         with open(user_path, "w") as f:
@@ -129,8 +126,8 @@ def create_empty_csv(pth: str) -> None:
 if __name__ == "__main__":
 
     def setup_folders():
-        if not os.path.isdir(get_root_path()):
-            os.mkdir(get_root_path())
+        if not os.path.isdir(ROOT):
+            os.mkdir(ROOT)
         all_paths = get_paths()
         create_paths_and_empty_csvs(all_paths)
         create_user_file()

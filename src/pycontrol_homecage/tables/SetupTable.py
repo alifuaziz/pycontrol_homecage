@@ -255,8 +255,6 @@ class SetupTable(QTableWidget):
         - Once connected, that entry in the table should reflect this.
         - If it has just been connected, the setup is not in use.
         - IF it has just been connected, the setups also has no mice in it ()
-
-
         """
         _, com_, _ = sender_name
         # Connnected to the pyboard

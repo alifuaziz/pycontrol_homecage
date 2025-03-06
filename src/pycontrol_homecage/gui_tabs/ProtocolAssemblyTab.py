@@ -319,9 +319,6 @@ class ProtocolAssemblyTab(QWidget):
         self.protocol_name = protocol_name_temp
         self.protocol_namer.setEnabled(False)
 
-    def _refresh(self):
-        pass
-
     def save_protocol(self):
         save_path = os.path.join(database.paths["protocol_dir"], self.protocol_name + ".prot")
         print("Saving protocol:", save_path)
