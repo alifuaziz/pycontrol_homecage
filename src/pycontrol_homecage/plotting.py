@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import numpy as np
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 event_history_len = 200  # Length of event history to plot (# events).
@@ -14,7 +14,7 @@ analog_history_dur = 12  # Duration of analog signal history to plot (seconds).
 # ----------------------------------------------------------------------------------------
 
 
-class Task_plot(QtGui.QWidget):
+class Task_plot(QtWidgets.QWidget):
     """Widget for plotting the states, events and analog inputs output by a state machine."""
 
     def __init__(self, parent=None):
@@ -293,7 +293,7 @@ class Run_clock:
 # --------------------------------------------------------------------------------
 
 
-class Experiment_plot(QtGui.QMainWindow):
+class Experiment_plot(QtWidgets.QMainWindow):
     """Window for plotting data during experiment run where each subjects plots
     are displayed in a seperate tab."""
 

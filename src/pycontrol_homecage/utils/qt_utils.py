@@ -1,4 +1,4 @@
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
 
 
 def null_resize(widget):
@@ -9,7 +9,7 @@ def null_resize(widget):
     widget.resizeEvent(resize)
 
 
-class TableCheckbox(QtGui.QWidget):
+class TableCheckbox(QtWidgets.QWidget):
     '''Checkbox that is centered in cell when placed in table.'''
 
     def __init__(self, parent=None):

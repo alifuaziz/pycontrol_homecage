@@ -13,3 +13,4 @@ pyhomecage_conf.py
 data/*
 data_old/*
 data_new/*
+*egg-info

@@ -2,8 +2,6 @@ import os
 import re
 from datetime import datetime
 
-from numpy import source
-
 from serial import SerialException
 from .pyboard import Pyboard, PyboardError
 
@@ -13,6 +11,7 @@ from pycontrol_homecage.com.messages import (
     MessageSource,
     emit_print_message,
 )
+
 # from pycontrol_homecage.com.system_handler import system_controller
 
 
@@ -41,9 +40,7 @@ class Access_control(Pyboard):
         writes the data that is returned the host computer to
         """
         try:
-            name_ = database.setup_df.loc[
-                database.setup_df["COM_AC"] == self.serial_port, "Setup_ID"
-            ].values[0]
+            name_ = database.setup_df.loc[database.setup_df["COM_AC"] == self.serial_port, "Setup_ID"].values[0]
         except IndexError:
             available_controls = database.setup_df["COM_AC"].tolist()
             raise IndexError(
@@ -53,9 +50,7 @@ class Access_control(Pyboard):
         self.logger_dir = database.paths["AC_logger_dir"]
         self.logger_path = os.path.join(self.logger_dir, name_ + "_" + now + ".txt")
 
-        database.setup_df.loc[
-            database.setup_df["COM_AC"] == self.serial_port, "logger_path"
-        ] = self.logger_path
+        database.setup_df.loc[database.setup_df["COM_AC"] == self.serial_port, "logger_path"] = self.logger_path
         database.setup_df.to_csv(database.setup_df.file_location)
 
         with open(self.logger_path, "w") as f:
@@ -69,9 +64,7 @@ class Access_control(Pyboard):
             self.reset()  # Soft resets pyboard.
             self.unique_ID = eval(self.eval("pyb.unique_id()").decode())
             v_tuple = eval(
-                self.eval(
-                    "sys.implementation.version if hasattr(sys, 'implementation') else (0,0,0)"
-                ).decode()
+                self.eval("sys.implementation.version if hasattr(sys, 'implementation') else (0,0,0)").decode()
             )
             self.micropython_version = float("{}.{}{}".format(*v_tuple))
 
@@ -91,9 +84,7 @@ class Access_control(Pyboard):
 
         # Load signal generator
         self.transfer_file(
-            os.path.join(
-                database.paths["access_control_dir"], "state_signal_generator.py"
-            ),
+            os.path.join(database.paths["access_control_dir"], "state_signal_generator.py"),
             "state_signal_generator.py",
         )
 
@@ -121,18 +112,14 @@ class Access_control(Pyboard):
             database.paths["access_control_dir"], file_type="py", show_progress=True
         )  # upload access control framework
         self.transfer_file(
-            os.path.join(
-                database.paths["access_control_dir"], "main_script_for_pyboard.py"
-            ),
+            os.path.join(database.paths["access_control_dir"], "main_script_for_pyboard.py"),
             "main.py",
         )
 
         # Access Control Hardware
 
         try:
-            self.exec(
-                "from access_control_upy.access_control_1_0 import Access_control_upy"
-            )
+            self.exec("from access_control_upy.access_control_1_0 import Access_control_upy")
         except PyboardError as e:
             print("Could not import access control upy modules.")
             raise (e)
@@ -166,9 +153,7 @@ class Access_control(Pyboard):
             messages = re.findall("start_(.*?)_end", read)
             for msg in messages:
                 with open("access_control_testing_log.txt", "a") as f:
-                    f.write(
-                        msg + "_" + datetime.now().strftime("-%Y-%m-%d-%H%M%S") + "\n"
-                    )
+                    f.write(msg + "_" + datetime.now().strftime("-%Y-%m-%d-%H%M%S") + "\n")
 
     def process_data(self):
         """Here process data from buffer to update dataframes
@@ -185,19 +170,17 @@ class Access_control(Pyboard):
             for msg in messages:
                 print(f"msg:{msg}")
                 with open(self.logger_path, "a") as f:
-                    f.write(
-                        msg + "_" + datetime.now().strftime("-%Y-%m-%d-%H%M%S") + "\n"
-                    )
+                    f.write(msg + "_" + datetime.now().strftime("-%Y-%m-%d-%H%M%S") + "\n")
 
             for msg in messages:
                 # This is a horrible information flow. The point is simply to print
                 # into the calibrate dialog
                 if "cal" in msg:
                     """
-                    datbase.print_consumers is a list of callable functions. They are specifically being used to print to 
+                    datbase.print_consumers is a list of callable functions. They are specifically being used to print to
                     different parts of the GUI depending on what the recipient of the message should be.
                     The reason for the if statement below is that these print functions are only used if they are defined during the initalisation.
-                    If they are not then the `emit_print_message` function can not work. 
+                    If they are not then the `emit_print_message` function can not work.
                     """
 
                     # if self.GUI.setup_tab.callibrate_dialog:
@@ -211,10 +194,7 @@ class Access_control(Pyboard):
                             target=MessageRecipient.calibrate_dialog,
                             data_source=MessageSource.ACBoard,
                         )
-                    if (
-                        MessageRecipient.configure_box_dialog
-                        in database.print_consumers
-                    ):
+                    if MessageRecipient.configure_box_dialog in database.print_consumers:
                         emit_print_message(
                             print_text=msg,
                             target=MessageRecipient.configure_box_dialog,
