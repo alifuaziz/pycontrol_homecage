@@ -66,7 +66,6 @@ class MouseOverViewTab(QWidget):
         self.Vlayout = QVBoxLayout(self)
         self.Vlayout.addWidget(self.mouse_table_label)
         self.Vlayout.addLayout(self.mouse_manager_layout)
-
         self.Vlayout.addWidget(self.scrollable_mouse)
 
         #### Deal with variables of the tasks

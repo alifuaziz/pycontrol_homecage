@@ -64,16 +64,8 @@ class MainGUI(QMainWindow):
         self.show()
 
         self._init_timer()
-        self.refresh()  # Refresh tasks and ports lists.
 
-    def _disable_gui_pre_login(self) -> None:
-        self.mouse_tab.setEnabled(False)
-        self.setup_tab.setEnabled(False)
-        self.protocol_tab.setEnabled(False)
-        self.system_tab.setup_groupbox.setEnabled(False)
-        self.system_tab.log_groupbox.setEnabled(False)
-        self.system_tab.experiment_groupbox.setEnabled(False)
-        self.experiment_tab.setEnabled(False)
+    # Refresh Logic --------------------------------------------------------------------
 
     def _init_timer(self) -> None:
         # Timer to regularly call refresh() when not running.
@@ -107,21 +99,22 @@ class MainGUI(QMainWindow):
         self.setup_tab._refresh()
         self.experiment_tab._refresh()
 
-    def change_user(self) -> None:
-        self.login.exec_()
-        self.active_user = self.login.userID
-        if self.active_user:
-            self.setWindowTitle("pyControlHomecage: logged in as {}".format(self.active_user))
-            self.mouse_tab.setEnabled(True)
-            self.setup_tab.setEnabled(True)
-            self.protocol_tab.setEnabled(True)
-            self.system_tab.setup_groupbox.setEnabled(True)
-            self.system_tab.log_groupbox.setEnabled(True)
-            self.system_tab.experiment_groupbox.setEnabled(True)
-            self.experiment_tab.setEnabled(True)
+    def _refresh_tables(self):
+        """
+        Function to handle the updating of tables from the database object.
+        """
+        # Update the tablse in order of the update tables queue.
+        try:
+            update_table = database.update_table_queue.pop(0)
+            if update_table == "all":
+                for table in self.table_map.values():
+                    table.fill_table()
+            else:
+                self.table_map[update_table].fill_table()
+        except IndexError as error:
+            print(error)
 
-            # Login button update
-            self.system_tab.logout_button.setEnabled(True)
+    ### Printing Logic -------------------------------------------------------------------------
 
     def print_dispatch(self) -> None:
         """
@@ -143,6 +136,33 @@ class MainGUI(QMainWindow):
         # if there is some bug the means messages for some consumer are not printed
         database.message_queue = database.message_queue[-50:]
 
+    ### Login Functions ------------------------------------------------------------------------
+
+    def _disable_gui_pre_login(self) -> None:
+        self.mouse_tab.setEnabled(False)
+        self.setup_tab.setEnabled(False)
+        self.protocol_tab.setEnabled(False)
+        self.system_tab.setup_groupbox.setEnabled(False)
+        self.system_tab.log_groupbox.setEnabled(False)
+        self.system_tab.experiment_groupbox.setEnabled(False)
+        self.experiment_tab.setEnabled(False)
+
+    def change_user(self) -> None:
+        self.login.exec_()
+        self.active_user = self.login.userID
+        if self.active_user:
+            self.setWindowTitle("pyControlHomecage: logged in as {}".format(self.active_user))
+            self.mouse_tab.setEnabled(True)
+            self.setup_tab.setEnabled(True)
+            self.protocol_tab.setEnabled(True)
+            self.system_tab.setup_groupbox.setEnabled(True)
+            self.system_tab.log_groupbox.setEnabled(True)
+            self.system_tab.experiment_groupbox.setEnabled(True)
+            self.experiment_tab.setEnabled(True)
+
+            # Login button update
+            self.system_tab.logout_button.setEnabled(True)
+
     def add_user_(self) -> None:
         self.add_user.exec_()
         self.login = LoginDialog()
@@ -163,18 +183,3 @@ class MainGUI(QMainWindow):
         self.system_tab.logout_button.setEnabled(False)
         self.system_tab.login_button.setEnabled(True)
         self.system_tab.add_user_button.setEnabled(True)
-
-    def _refresh_tables(self):
-        """
-        Function to handle the updating of tables from the database object.
-        """
-        # Update the tablse in order of the update tables queue.
-        try:
-            update_table = database.update_table_queue.pop(0)
-            if update_table == "all":
-                for table in self.table_map.values():
-                    table.fill_table()
-            else:
-                self.table_map[update_table].fill_table()
-        except IndexError as error:
-            print(error)
