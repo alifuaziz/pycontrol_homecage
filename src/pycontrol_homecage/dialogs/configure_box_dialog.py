@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLin
 from PyQt5.QtGui import QFont, QTextCursor
 
 import pycontrol_homecage.db as database
+from paths import paths
 from pycontrol_homecage.com.messages import MessageRecipient
 
 
@@ -75,7 +76,7 @@ class ConfigureBoxDialog(QDialog):
         hwd_path = QFileDialog.getOpenFileName(
             self,
             "Select hardware definition:",
-            os.path.join(database.paths["config_dir"], "hardware_definition.py"),
+            os.path.join(paths["config_dir"], "hardware_definition.py"),
             filter="*.py",
         )[0]
 

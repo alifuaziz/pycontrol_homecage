@@ -3,7 +3,7 @@ import os
 from serial import SerialException
 from array import array
 from .pyboard import Pyboard, PyboardError
-import pycontrol_homecage.db as database
+from paths import paths
 
 # ----------------------------------------------------------------------------------------
 #  Pycboard class.
@@ -55,8 +55,8 @@ class Pycboard(Pyboard):
     def load_framework(self):
         '''Copy the pyControl framework folder to the board.'''
         self.print('\nTransfering pyControl framework to pyboard.', end='')
-        self.transfer_folder(database.paths["framework_dir"], file_type='py', show_progress=True)
-        self.transfer_folder(database.paths["devices_dir"], file_type='py', show_progress=True)
+        self.transfer_folder(paths["framework_dir"], file_type='py', show_progress=True)
+        self.transfer_folder(paths["devices_dir"], file_type='py', show_progress=True)
         error_message = self.reset()
         if not self.status['framework']:
             self.print('\nError importing framework:')
@@ -65,7 +65,7 @@ class Pycboard(Pyboard):
             self.print(' OK')
         return 
 
-    def load_hardware_definition(self, hwd_path=os.path.join(database.paths["config_dir"], 'hardware_definition.py')):
+    def load_hardware_definition(self, hwd_path=os.path.join(paths["config_dir"], 'hardware_definition.py')):
         '''Transfer a hardware definition file to pyboard.  Defaults to transfering 
         file hardware_definition.py from config folder.'''
         if os.path.exists(hwd_path):
@@ -82,7 +82,7 @@ class Pycboard(Pyboard):
         else:
             self.print('Hardware definition file not found.') 
 
-    def setup_state_machine(self, sm_name, sm_dir=database.paths["task_dir"], uploaded=False):
+    def setup_state_machine(self, sm_name, sm_dir=paths["task_dir"], uploaded=False):
         '''Transfer state machine descriptor file sm_name.py from folder sm_dir
         to board. Instantiate state machine object as state_machine on pyboard.'''
         self.reset()

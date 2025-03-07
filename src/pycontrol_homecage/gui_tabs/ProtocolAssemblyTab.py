@@ -18,8 +18,8 @@ import pandas as pd
 from pycontrol_homecage.utils import get_variables_from_taskfile, get_tasks
 from pycontrol_homecage.utils import validate_lineedit_number
 from pycontrol_homecage.tables import ProtocolTable
-import pycontrol_homecage.db as database
 from pycontrol_homecage.dialogs import InformationDialog
+from paths import paths
 
 
 class ProtocolAssemblyTab(QWidget):
@@ -194,7 +194,7 @@ class ProtocolAssemblyTab(QWidget):
 
     def set_stage_task(self):
         """set task for a given stage"""
-        pth = os.path.join(database.paths["task_dir"], self.task_combo.currentText() + ".py")
+        pth = os.path.join(paths["task_dir"], self.task_combo.currentText() + ".py")
         self.stage_row = pd.Series(
             {
                 # "stage_nr": len(self.protocol_dict.index),
@@ -308,7 +308,7 @@ class ProtocolAssemblyTab(QWidget):
             return
 
         # Check if the protocol name is taken in the protocol directory
-        protocol_dir = database.paths["protocol_dir"]
+        protocol_dir = paths["protocol_dir"]
         if protocol_name_temp + ".prot" in os.listdir(protocol_dir):
             info = InformationDialog(
                 info_text=f"Protocol name {protocol_name_temp}.prot already exists. Please choose a different name."
@@ -320,13 +320,13 @@ class ProtocolAssemblyTab(QWidget):
         self.protocol_namer.setEnabled(False)
 
     def save_protocol(self):
-        save_path = os.path.join(database.paths["protocol_dir"], self.protocol_name + ".prot")
+        save_path = os.path.join(paths["protocol_dir"], self.protocol_name + ".prot")
         print("Saving protocol:", save_path)
         # Save the protocal as a CSV with the extension as .prot
         self.protocol_df.to_csv(save_path)
 
     def load_protocol(self):
-        protocol_dir = database.paths["protocol_dir"]
+        protocol_dir = paths["protocol_dir"]
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(
             self,

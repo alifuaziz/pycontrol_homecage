@@ -6,6 +6,7 @@ from serial import SerialException
 from .pyboard import Pyboard, PyboardError
 
 import pycontrol_homecage.db as database
+from paths import paths
 from pycontrol_homecage.com.messages import (
     MessageRecipient,
     MessageSource,
@@ -47,7 +48,7 @@ class Access_control(Pyboard):
                 f"No entry found in setups_df for COM_AC = {self.serial_port}. Available access controls: {available_controls}"
             )
         now = datetime.now().strftime("-%Y-%m-%d-%H%M%S")
-        self.logger_dir = database.paths["AC_logger_dir"]
+        self.logger_dir = paths["AC_logger_dir"]
         self.logger_path = os.path.join(self.logger_dir, name_ + "_" + now + ".txt")
 
         database.setup_df.loc[database.setup_df["COM_AC"] == self.serial_port, "logger_path"] = self.logger_path
@@ -84,7 +85,7 @@ class Access_control(Pyboard):
 
         # Load signal generator
         self.transfer_file(
-            os.path.join(database.paths["access_control_dir"], "state_signal_generator.py"),
+            os.path.join(paths["access_control_dir"], "state_signal_generator.py"),
             "state_signal_generator.py",
         )
 
@@ -109,10 +110,10 @@ class Access_control(Pyboard):
         self.print("\nTransfering Access Control framework to pyboard.", end="")
 
         self.transfer_folder(
-            database.paths["access_control_dir"], file_type="py", show_progress=True
+            paths["access_control_dir"], file_type="py", show_progress=True
         )  # upload access control framework
         self.transfer_file(
-            os.path.join(database.paths["access_control_dir"], "main_script_for_pyboard.py"),
+            os.path.join(paths["access_control_dir"], "main_script_for_pyboard.py"),
             "main.py",
         )
 

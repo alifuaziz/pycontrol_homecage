@@ -8,6 +8,7 @@ import pandas as pd
 
 from pycontrol_homecage.utils import get_path
 import pycontrol_homecage.db as database
+from paths import paths
 from pycontrol_homecage.com.messages import (
     MessageRecipient,
     MessageSource,
@@ -384,7 +385,7 @@ class system_controller(Data_logger):
         file_name = "_".join([mouse_ID, exp, task, now]) + ".txt"
         fullpath_to_datafile = os.path.join(self.data_dir, exp, mouse_ID, prot, file_name)
         # save a copy of the taskfile that was run
-        self._save_taskFile_run(fullpath_to_datafile=database.paths["mice_dir"], task=task)
+        self._save_taskFile_run(fullpath_to_datafile=paths["mice_dir"], task=task)
 
         # Open a datafile
         self.data_file = open(fullpath_to_datafile, "w", newline="\n")

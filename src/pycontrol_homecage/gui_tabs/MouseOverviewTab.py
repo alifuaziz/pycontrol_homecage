@@ -24,7 +24,7 @@ from pycontrol_homecage.dialogs import (
 from pycontrol_homecage.tables import MouseTable, VariablesTable
 from pycontrol_homecage.utils import get_variables_and_values_from_taskfile
 import pycontrol_homecage.db as database
-
+from paths import paths
 
 class MouseOverViewTab(QWidget):
     def __init__(self, parent: QMainWindow = None):
@@ -199,7 +199,7 @@ class MouseOverViewTab(QWidget):
                     mouseRow["set_variables"].values[0]
                 )  # set variables are persistent variables that are not updated. Is this necessary?? YES
 
-            task_dir = database.paths["task_dir"]
+            task_dir = paths["task_dir"]
             task_path = os.path.join(task_dir, mouseTask)
             self.default_variables = get_variables_and_values_from_taskfile(task_path)
             self.variable_names = list(set(self.default_variables.keys()))  # get_variables_from_taskfile(task_path)

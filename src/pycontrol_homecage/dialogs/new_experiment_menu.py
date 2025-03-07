@@ -14,7 +14,9 @@ from pycontrol_homecage.tables import (
     VariablesTable,
 )
 import pycontrol_homecage.db as database
+from paths import paths
 from . import InformationDialog
+
 
 class NewExperimentDialog(QtWidgets.QDialog):
     """This Class represents a dialog that is used to configure the details of a new experiment"""
@@ -92,7 +94,9 @@ class NewExperimentDialog(QtWidgets.QDialog):
         self.available_tasks = get_tasks()
         self.protocol_combo.addItems(["Select Task"] + self.available_tasks)
 
-        self.exp_GOButton = QtWidgets.QPushButton()  # First stage of specifying experiment whereby set name and (potentially) protocol
+        self.exp_GOButton = (
+            QtWidgets.QPushButton()
+        )  # First stage of specifying experiment whereby set name and (potentially) protocol
         self.exp_GOButton.setText("Set")
         self.exp_GOButton.clicked.connect(self.set_name)
 
@@ -124,9 +128,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
         self.setup_combo = QtWidgets.QComboBox()
         self.available_setups = [
-            rw["Setup_ID"]
-            for kk, rw in database.setup_df.iterrows()
-            if rw["connected"] and not rw["in_use"]
+            rw["Setup_ID"] for kk, rw in database.setup_df.iterrows() if rw["connected"] and not rw["in_use"]
         ]
         self.setup_combo.addItems(["Select Setup"] + self.available_setups)
         self.setup_combo.currentTextChanged.connect(self.on_scb_changed)
@@ -336,9 +338,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
         self.df_mouse_tmp.loc[entry_nr]["Experiment"] = new_mouse_data["Experiment"]
 
         self.df_mouse_tmp.loc[entry_nr]["User"] = self.GUI.active_user
-        self.df_mouse_tmp.loc[entry_nr]["Start_date"] = datetime.now().strftime(
-            "%m/%d/%Y, %H:%M:%S"
-        )
+        self.df_mouse_tmp.loc[entry_nr]["Start_date"] = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
         self.df_mouse_tmp.loc[entry_nr]["Start_weight"] = self.weight.text()
         self.df_mouse_tmp.loc[entry_nr]["Current_weight"] = self.weight.text()
 
@@ -351,9 +351,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
             self.df_mouse_tmp.loc[entry_nr]["Stage"] = 0
         else:  # if you are just running a task
             self.df_mouse_tmp.loc[entry_nr]["Task"] = self.mouse_prot.currentText()
-            self.df_mouse_tmp.loc[entry_nr]["Protocol"] = (
-                str(time.time()).replace(".", "") + "_task"
-            )
+            self.df_mouse_tmp.loc[entry_nr]["Protocol"] = str(time.time()).replace(".", "") + "_task"
             self.df_mouse_tmp.loc[entry_nr]["Stage"] = "NA"
 
         self.df_mouse_tmp.loc[entry_nr]["Setup_ID"] = self.CLT.selected_setups[0]
@@ -363,7 +361,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
         if self.protVtask.isChecked():
             self.running_protocol = True
             self.protocol_combo.clear()
-            self.available_tasks = [i for i in os.listdir(database.paths["protocol_dir"]) if ".prot" in i]
+            self.available_tasks = [i for i in os.listdir(paths["protocol_dir"]) if ".prot" in i]
             self.protocol_combo.addItems(["Select Protocol"] + self.available_tasks)
 
         else:
@@ -378,8 +376,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
     def set_name(self):
         # print(self.expName.text(),self.protocol_combo.currentIndex())
         if (self.expName.text() != "") and (
-            (self.protocol_combo.currentIndex() != 0)
-            or (self.shared_protocol.isChecked() is False)
+            (self.protocol_combo.currentIndex() != 0) or (self.shared_protocol.isChecked() is False)
         ):
             self.setup_groupbox.setEnabled(True)
             self.exp_name_groupbox.setEnabled(False)
@@ -393,7 +390,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
             self.exp_label.setText("Experiment: {}".format(self.set_experiment_name))
             # self.CAT._update_exp_params(self.set_protocol,self.set_experiment_name)
         else:
-            info=InformationDialog("Name not valid")
+            info = InformationDialog("Name not valid")
             info.exec_()
 
     def add_cage(self):
@@ -411,9 +408,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
             for col_name in database.setup_df.columns:
                 if col_name not in ["Setup_ID", "Experiment", "Protocol"]:
-                    val_ = database.setup_df.loc[
-                        database.setup_df["Setup_ID"] == COM, col_name
-                    ]
+                    val_ = database.setup_df.loc[database.setup_df["Setup_ID"] == COM, col_name]
 
                     self.df_setup_tmp.loc[entry_nr][col_name] = val_.values[0]
 
@@ -431,7 +426,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
                 "data_path",
             ]
         )
-        pth_ = os.path.join(database.paths["mice_dir"], mouse_ID + ".csv")
+        pth_ = os.path.join(paths["mice_dir"], mouse_ID + ".csv")
         df_.to_csv(pth_)
 
     def run_experiment(self):
@@ -439,7 +434,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
         ADD WARNING IF YOU ARE DUPLICATING MOUSE NAMES OR RFIDS!!!!
         """
         ## Create all the paths for data
-        exp_path = os.path.join(database.paths["data_dir"], self.set_experiment_name)
+        exp_path = os.path.join(paths["data_dir"], self.set_experiment_name)
         if not os.path.isdir(exp_path):
             os.mkdir(exp_path)
 
@@ -471,52 +466,26 @@ class NewExperimentDialog(QtWidgets.QDialog):
             entry_nr = len(database.exp_df)
             database.exp_df = pd.concat([database.exp_df, pd.Series(dtype="float64").to_frame().T], ignore_index=True)
             database.exp_df.loc[entry_nr, "Name"] = self.set_experiment_name
-            database.exp_df.loc[entry_nr, "Setups"] = repr(
-                self.df_setup_tmp["Setup_ID"].tolist()
-            )
+            database.exp_df.loc[entry_nr, "Setups"] = repr(self.df_setup_tmp["Setup_ID"].tolist())
             database.exp_df.loc[entry_nr, "User"] = self.GUI.active_user
             database.exp_df.loc[entry_nr, "Protocol"] = self.set_protocol
-            database.exp_df.loc[entry_nr, "Subjects"] = repr(
-                self.df_mouse_tmp["Mouse_ID"].tolist()
-            )
-            database.exp_df.loc[entry_nr, "n_subjects"] = len(
-                self.df_mouse_tmp["Mouse_ID"].values
-            )
+            database.exp_df.loc[entry_nr, "Subjects"] = repr(self.df_mouse_tmp["Mouse_ID"].tolist())
+            database.exp_df.loc[entry_nr, "n_subjects"] = len(self.df_mouse_tmp["Mouse_ID"].values)
             database.exp_df.loc[entry_nr, "Active"] = True
 
             for stup in self.df_setup_tmp["Setup_ID"].values:
-                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "User"] = (
-                    self.GUI.active_user
-                )
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "User"] = self.GUI.active_user
 
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "in_use"
-                ] = "Y"
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "in_use"] = "Y"
 
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "Experiment"
-                ] = self.set_experiment_name
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "AC_state"
-                ] = "allow_entry"
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "Door_Mag"
-                ] = "0111"
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "Door_Sensor"
-                ] = "1111"
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "Protocol"
-                ] = self.set_protocol
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "Experiment"] = self.set_experiment_name
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "AC_state"] = "allow_entry"
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "Door_Mag"] = "0111"
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "Door_Sensor"] = "1111"
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "Protocol"] = self.set_protocol
 
-                mices_ = (
-                    self.df_mouse_tmp["Mouse_ID"]
-                    .loc[self.df_mouse_tmp["Setup_ID"] == stup]
-                    .values
-                )
-                database.setup_df.loc[
-                    database.setup_df["Setup_ID"] == stup, "mice_in_setup"
-                ] = str(mices_)[1:-1]
+                mices_ = self.df_mouse_tmp["Mouse_ID"].loc[self.df_mouse_tmp["Setup_ID"] == stup].values
+                database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "mice_in_setup"] = str(mices_)[1:-1]
 
             database.exp_df.to_csv(database.exp_df.file_location)
             database.setup_df.to_csv(database.setup_df.file_location)
