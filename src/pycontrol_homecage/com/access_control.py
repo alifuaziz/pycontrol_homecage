@@ -52,7 +52,7 @@ class Access_control(Pyboard):
         self.logger_path = os.path.join(self.logger_dir, name_ + "_" + now + ".txt")
 
         database.setup_df.loc[database.setup_df["COM_AC"] == self.serial_port, "logger_path"] = self.logger_path
-        database.setup_df.to_csv(database.setup_df.file_location)
+        database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
 
         with open(self.logger_path, "w") as f:
             f.write("Start" + "\n")

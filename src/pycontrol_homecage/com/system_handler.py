@@ -484,21 +484,21 @@ class system_controller(Data_logger):
             if "RUN_ERROR" not in database.mouse_df.columns:
                 database.mouse_df.insert(len(database.mouse_df.columns), "RUN_ERROR", pd.Series(), True)
 
-            mouse_fl = database.mouse_df.file_location
+            mouse_fl = paths["mice_dataframe_filepath"]
             # Selects the `RUN_ERROR` column for the appropriate row of the mouse_df and sets its value to the `RUN_ERROR` value
             database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "RUN_ERROR"] = RUN_ERROR
             database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"] = False
             # Removes columns from the mouse_df that are unnamed (i do not know why these columns exist, however. )
             database.mouse_df = database.mouse_df.loc[:, ~database.mouse_df.columns.str.contains("^Unnamed")]
-            database.mouse_df.file_location = mouse_fl
+            paths["mice_dataframe_filepath"] = mouse_fl
 
-            database.mouse_df.to_csv(database.mouse_df.file_location)
+            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
 
-            setup_fl = database.setup_df.file_location
+            setup_fl = paths["setup_dir_dataframe_filepath"]
             database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"] = ""
             database.setup_df = database.setup_df.loc[:, ~database.setup_df.columns.str.contains("^Unnamed")]
-            database.setup_df.file_location = setup_fl
-            database.setup_df.to_csv(database.setup_df.file_location)
+            paths["setup_dir_dataframe_filepath"] = setup_fl
+            database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
 
         for analog_file in self.analog_files.values():
             if analog_file:

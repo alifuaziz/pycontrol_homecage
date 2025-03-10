@@ -149,7 +149,7 @@ class MouseOverViewTab(QWidget):
                 set_variables_dict
             )
 
-            database.mouse_df.to_csv(database.mouse_df.file_location)
+            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
 
     def update_variables_filter(self):
         self.variables_table.setEnabled(True)
@@ -266,7 +266,7 @@ class MouseOverViewTab(QWidget):
             if sure.GO:
                 for ch_ in isChecked:
                     database.mouse_df.loc[database.mouse_df["RFID"] == ch_, "in_system"] = False
-                    database.mouse_df.to_csv(database.mouse_df.file_location)
+                    database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
 
                     self.mouse_table_widget.fill_table()
 

@@ -450,7 +450,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
                 entry_nr = len(database.mouse_df)
 
-                database.mouse_df.append(pd.Series(), ignore_index=True)
+                database.mouse_df._append(pd.Series(), ignore_index=True)
                 # database.mouse_df.loc[entry_nr]
                 for col in database.mouse_df.columns:
                     # conv_col_ix = self.mouse_df_tmp.col     #convereted column index
@@ -459,7 +459,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
                 self._create_mouse_exp_log(row["Mouse_ID"])
 
-            database.mouse_df.to_csv(database.mouse_df.file_location)
+            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
             self.GUI.mouse_tab.mouse_table_widget.fill_table()
 
             # update experiment information
@@ -487,8 +487,8 @@ class NewExperimentDialog(QtWidgets.QDialog):
                 mices_ = self.df_mouse_tmp["Mouse_ID"].loc[self.df_mouse_tmp["Setup_ID"] == stup].values
                 database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "mice_in_setup"] = str(mices_)[1:-1]
 
-            database.exp_df.to_csv(database.exp_df.file_location)
-            database.setup_df.to_csv(database.setup_df.file_location)
+            database.exp_df.to_csv(paths['experiment_dataframe_filepath'])
+            database.setup_df.to_csv(paths['setup_dir_dataframe_filepath'])
             self.GUI.setup_tab.setup_table_widget.fill_table()
             self.GUI.system_tab.setup_table_widget.fill_table()
             self.GUI.system_tab.experiement_overview_table.fill_table()

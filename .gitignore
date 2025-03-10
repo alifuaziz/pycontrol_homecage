@@ -15,4 +15,4 @@ data_old/*
 data_new/*
 *egg-info
 Errorlog.txt
-config.json
+src/pycontrol_homecage/config.json

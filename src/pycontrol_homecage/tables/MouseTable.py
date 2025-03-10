@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from pycontrol_homecage.utils import get_tasks
 import pycontrol_homecage.db as database
-
+from paths import paths 
 
 class MouseTable(QtWidgets.QTableWidget):
     """This table contains information about all mice currently running in the
@@ -92,6 +92,6 @@ class MouseTable(QtWidgets.QTableWidget):
         database.mouse_df.loc[database.mouse_df["RFID"] == combo.RFID, "Task"] = combo.currentText()
 
         # Save the updated dataframe to disk
-        database.mouse_df.to_csv(database.mouse_df.file_location)
+        database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
         # fill the table again since the data has been updated
         self.fill_table()

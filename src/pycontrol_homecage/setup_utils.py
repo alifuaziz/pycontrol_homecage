@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def get_config() -> dict:
-    config_path = os.path.join(os.path.split(os.path.dirname(__file__))[0], "config.json")
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
     config = json.load(open(config_path, "r"))
     return config
 

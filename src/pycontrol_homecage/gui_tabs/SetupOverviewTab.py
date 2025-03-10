@@ -26,6 +26,7 @@ from pycontrol_homecage.dialogs import (
 from pycontrol_homecage.tables import SetupTable
 from pycontrol_homecage.utils import find_pyboards
 import pycontrol_homecage.db as database
+from paths import paths
 
 
 class SetupsOverviewTab(QWidget):
@@ -195,7 +196,7 @@ class SetupsOverviewTab(QWidget):
         # self.parent()._refresh_tables()
         database.update_table_queue = ["all"]
 
-        database.setup_df.to_csv(database.setup_df.file_location)
+        database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
 
     def _refresh(self):
         """Find which training setups are available"""
@@ -241,10 +242,10 @@ class SetupsOverviewTab(QWidget):
             sure = AreYouSureDialog()
             sure.exec_()
             if sure.GO:
-                fl = database.setup_df.file_location
+                fl = paths["setup_dir_dataframe_filepath"]
 
                 database.setup_df = database.setup_df.drop(database.setup_df.index[isChecked])
-                database.setup_df.file_location = fl
+                paths["setup_dir_dataframe_filepath"] = fl
 
                 self.setup_table_widget.fill_table()
                 # self.GUI.system_tab.setup_table_widget.fill_table()

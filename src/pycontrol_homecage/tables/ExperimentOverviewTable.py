@@ -3,7 +3,7 @@ from typing import List
 
 from PyQt5 import QtCore, QtWidgets
 import pycontrol_homecage.db as database
-
+from paths import paths
 
 class ExperimentOverviewTable(QtWidgets.QTableWidget):
     """Table for system tab that shows all experiments currently running
@@ -102,8 +102,8 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
 
                     database.exp_df.loc[database.exp_df["Name"] == exp_name, "Active"] = False
                     database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "Experiment"] = None
-                    database.setup_df.to_csv(database.setup_df.file_location)
-                    database.exp_df.to_csv(database.exp_df.file_location)
+                    database.setup_df.to_csv(paths['setup_dir_dataframe_filepath'])
+                    database.exp_df.to_csv(paths['experiment_dataframe_filepath'])
 
                     print("CLOSED")
 
