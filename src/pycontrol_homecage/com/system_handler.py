@@ -519,7 +519,7 @@ class system_controller(Data_logger):
         df_mouseLog = pd.read_csv(logPth)
 
         entry_nr = len(df_mouseLog)
-        df_mouseLog.append(pd.Series(), ignore_index=True)
+        df_mouseLog._append(pd.Series(), ignore_index=True)
         if "RUN_ERROR" not in df_mouseLog.columns:
             df_mouseLog.insert(len(df_mouseLog.columns), "RUN_ERROR", pd.Series(), True)
 
