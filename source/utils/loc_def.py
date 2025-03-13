@@ -6,20 +6,20 @@ print(os.path.isfile(config_path))
 print(config_path)
 config = json.load(open(config_path, 'r'))
 
-ROOT = os.path.abspath(config["ROOT"])
-if not os.path.isdir(ROOT):
-    os.mkdir(ROOT)
+DATA_DIR = os.path.abspath(config["DATA_DIR"])
+if not os.path.isdir(DATA_DIR):
+    os.mkdir(DATA_DIR)
 
-data_dir = os.path.join(ROOT, 'data')
-task_dir = os.path.join(ROOT, 'tasks')
-setup_dir = os.path.join(ROOT, 'setups')
-AC_logger_dir = os.path.join(ROOT, 'loggers')
-experiment_dir = os.path.join(ROOT, 'experiments')
-mice_dir = os.path.join(ROOT, 'mice')
-protocol_dir = os.path.join(ROOT, 'prot')
+data_dir = os.path.join(DATA_DIR, 'data')
+task_dir = os.path.join(DATA_DIR, 'tasks')
+setup_dir = os.path.join(DATA_DIR, 'setups')
+AC_logger_dir = os.path.join(DATA_DIR, 'loggers')
+experiment_dir = os.path.join(DATA_DIR, 'experiments')
+mice_dir = os.path.join(DATA_DIR, 'mice')
+protocol_dir = os.path.join(DATA_DIR, 'prot')
 
 
-user_path = os.path.join(ROOT, "users.txt")
+user_path = os.path.join(DATA_DIR, "users.txt")
 print(user_path)
 if not os.path.isfile(user_path):
     with open(user_path, 'w') as f:
@@ -29,6 +29,6 @@ if not os.path.isfile(user_path):
 main_path = os.path.dirname(os.path.abspath(__file__))
 
 
-all_paths = [ROOT, task_dir, experiment_dir, setup_dir, mice_dir, data_dir, AC_logger_dir, protocol_dir]
+all_paths = [DATA_DIR, task_dir, experiment_dir, setup_dir, mice_dir, data_dir, AC_logger_dir, protocol_dir]
 
 

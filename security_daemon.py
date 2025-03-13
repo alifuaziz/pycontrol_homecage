@@ -193,7 +193,7 @@ def send_regular_update(mouse_dict,receiver_email):
 if __name__=='__main__':
     daemon_start_time = datetime.now()
     users = get_users(); user_dicts = get_user_dicts()
-    ROOT,task_dir,experiment_dir,paths["setup_dir"],paths["mice_dir"],data_dir,AC_logger_dir,protocol_dir = all_paths
+    DATA_DIR,task_dir,experiment_dir,paths["setup_dir"],paths["mice_dir"],data_dir,AC_logger_dir,protocol_dir = all_paths
 
     last_check = datetime.now() -timedelta(seconds=20)
     warning_checkDict = {}

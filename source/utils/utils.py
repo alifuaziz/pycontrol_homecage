@@ -27,13 +27,13 @@ def custom_excepthook(type_, exception, traceback_, filepath):
 
 
 # --------------------------------------------------------------------------------
-def get_user_path() -> str:
-    return get_root_path() + "users.txt"
+def get_user_path():
+    return get_data_dir_path() + "users.txt"
 
 
-def get_root_path() -> str:
-    """Read root path from config.json file"""
-    return get_config()["ROOT"]
+def get_data_dir_path():
+    """Read DATA_DIR path from config.json file"""
+    return get_config()["DATA_DIR"]
 
 
 def get_paths():
@@ -52,7 +52,7 @@ def get_path(path_type) -> str:
 
     path_list = ["data", "tasks", "setups", "loggers", "experiments", "mice", "protocols", "users.txt"]
     assert path_type in path_list, "PATH must be one of {}".format(path_list)
-    return os.path.join(get_root_path(), path_type)
+    return os.path.join(get_data_dir_path(), path_type)
 
 
 def get_pyhomecage_email():

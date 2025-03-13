@@ -1,6 +1,7 @@
 # from https://stackoverflow.com/questions/1977362/how-to-create-module-wide-variables-in-python
 import sys
 import pandas as pd
+from source.gui.settings import get_setting
 from paths import paths
 
 
