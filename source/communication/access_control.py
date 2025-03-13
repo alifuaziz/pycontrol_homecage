@@ -4,6 +4,7 @@ from datetime import datetime
 
 from serial import SerialException
 from .pyboard import Pyboard, PyboardError
+from .pycboard import Pycboard
 
 import db as database
 from source.gui.settings import user_folder
@@ -75,12 +76,9 @@ class Access_control(Pyboard):
     def load_framework(self) -> None:
         """
         Copy the pyControl framework folder to the board. Then run the main script that runs the firmware on the board.
-
-
         The commands run on the board are:
         from access_control_upy.access_control_1_0 import Access_control_upy
         access_control = Access_control_upy()
-
         """
 
         self.print("\nTransfering Access Control framework to pyboard.", end="")

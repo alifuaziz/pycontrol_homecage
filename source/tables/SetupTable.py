@@ -1,24 +1,19 @@
 import time
 from functools import partial
-
+from serial import SerialException
+import pandas as pd
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QPushButton,
 )
-from serial import SerialException
-import pandas as pd
 
 from source.communication.access_control import Access_control
 from source.communication.pycboard import PyboardError, Pycboard
 from source.communication.system_handler import system_controller
+from source.dialogs import CalibrationDialog, InformationDialog, DirectPyboardDialog
 
-from source.dialogs import (
-    CalibrationDialog,
-    InformationDialog,
-    DirectPyboardDialog,
-)
 from ..utils import find_pyboards
 import db as database
 
@@ -182,11 +177,11 @@ class SetupTable(QTableWidget):
 
             print_func = partial(print, flush=True)
 
-            print("Connecting to com:", com_, flush=True)
+            print_func("Connecting to com:", com_)
 
             pycontrol_board = Pycboard(serial_port=com_, print_func=print_func)
-            access_control_board = Access_control(serial_port=comAC_, print_func=print_func)
             pycontrol_board.load_framework()
+            access_control_board = Access_control(serial_port=comAC_, print_func=print_func)
             access_control_board.load_framework()
             SC = system_controller(
                 PYC=pycontrol_board, AC=access_control_board, print_func=print_func, setup_ID=setup_id

@@ -27,7 +27,7 @@ def get_setting(setting_type, setting_name, want_default=False):
             "data": os.path.join(os.getcwd(), "data"),
             "experiments": os.path.join(os.getcwd(), "experiments"),
             "tasks": os.path.join(os.getcwd(), "tasks"),
-            # PYCONTROL HOMECAGE FOLDERS
+            ########################## PYCONTROL HOMECAGE FOLDERS ##########################
             "user_path": os.path.join(DATA_DIR, "users.txt"),
             "task_dir": os.path.join(DATA_DIR, "tasks"),  # Task Directory
             "task_dir_dataframe_filepath": os.path.join(DATA_DIR, "tasks", "tasks.csv"),  # Tasks df filepath
@@ -43,8 +43,8 @@ def get_setting(setting_type, setting_name, want_default=False):
             "AC_logger_dir": os.path.join(DATA_DIR, "loggers"),
             "protocol_dir": os.path.join(DATA_DIR, "prot"),
             # Package paths
-            "framework_dir": os.path.join(package_path, "pyControl"),
-            "devices_dir": os.path.join(package_path, "devices"),
+            # "framework_dir": os.path.join(package_path, "pyControl"),
+            # "devices_dir": os.path.join(package_path, "devices"),
             "config_dir": os.path.join(package_path, "pyControl_config"),
             "access_control_dir": os.path.join(package_path, "access_control_framework"),
         },

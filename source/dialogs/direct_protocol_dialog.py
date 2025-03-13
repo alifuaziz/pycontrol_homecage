@@ -26,18 +26,9 @@ class DirectProtocolDialog(QDialog):
         self.setup_id = setup_id
         self.PYC = database.controllers[self.setup_id].PYC
         self.setup_df = database.setup_df
-        self.paths = paths
-
         self.global_layout = QHBoxLayout(self)
-        self.initialise_layout()
 
-        self.initialise_protocol()
-
-    def initialise_layout(self):
-        pass
-
-    def initialise_protocol(self):
-
+        # Initialise Layout
         # Get the protocol
         self.protocol_name = self.setup_df.loc[self.setup_df["Setup_ID"] == self.setup_id, "Protocol"].values
         # Load in the protocol as a csv (even though it ends with a .prot)
@@ -51,10 +42,6 @@ class DirectProtocolDialog(QDialog):
         self.available_tasks = [
             task for task in self.tasks if os.path.isfile(os.path.join(self.task_dir, f"{task}.py"))
         ]
-
-        # Add these tasks to a combobox to be tested with the pyboard
-
-        pass
 
     def add_tasks_to_combo_box(self):
         """"""
