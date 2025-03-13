@@ -13,17 +13,16 @@ from pycontrol_homecage.com.messages import (
     emit_print_message,
 )
 
-# from pycontrol_homecage.com.system_handler import system_controller
 
 
 class Access_control(Pyboard):
     # Class that runs on the main computer to provide an API for inferfacting with
     # the access control module
 
-    def __init__(self, serial_port, print_func=print, data_logger=None):
+    def __init__(self, serial_port, print_func=print):
         self.serial_port = serial_port
         self.print = print_func  # Function used for print statements.
-        self.data_logger = data_logger  # This is set to the system_controller. Ideally this would be done on initalisation, however this could lead to a circular depenadncy
+        self.data_logger = None  # This is set to the system_controller. Ideally this would be done on initalisation, however this could lead to a circular depenadncy
         self._init_variables()
 
         self._init_logger()

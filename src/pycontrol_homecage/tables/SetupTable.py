@@ -181,45 +181,18 @@ class SetupTable(QTableWidget):
         """
         try:
             setup_id, com_, comAC_ = self.sender().name
-            # if the setup has had an attempted reconnect. Reconnect requires that any pyboards that have been connected are released
-            try:
-                if database.controllers[setup_id]:
-                    # disconnect the access control
-                    access_control_board = database.connected_access_controls[setup_id]
-                    access_control_board.close()
-                    # Remove from dictionary
-                    del database.connected_access_controls[setup_id]
-
-                    # disconnect the pycontrol_board
-                    pycontrol_board = database.connected_pycontrol_boards[setup_id]
-                    pycontrol_board.close()
-                    # remove from dictionary
-                    del database.connected_pycontrol_boards[setup_id]
-            except Exception:
-                print(
-                    "One of the two boards hadn't been connnected or properly initalised so it did not appear the the dicts."
-                )
-                print("So it can't be removed.")
-            # Button metadata
 
             print_func = partial(print, flush=True)
-            SC = system_controller(print_func=print_func, setup_id=setup_id)
+
             print("Connecting to com:", com_, flush=True)
-            board = Pycboard(com_, print_func=print_func, data_logger=SC)
 
-            board.load_framework()
-            time.sleep(0.05)
-            database.connected_pycontrol_boards[setup_id] = board
-            access_control_board = Access_control(comAC_, print_func=print_func, data_logger=SC)
-            time.sleep(0.05)
-            # System controller gets access to the pycontrol board (That runs the operant box task)
-            SC.add_PYC(board)
-            # Add it also getes access to the access control board (That run the access control module)
-            SC.add_AC(access_control_board)
-
-            # Load the access control framework on the access control board.
+            pycontrol_board = Pycboard(serial_port=com_, print_func=print_func)
+            access_control_board = Access_control(serial_port=comAC_, print_func=print_func)
+            pycontrol_board.load_framework()
             access_control_board.load_framework()
-            database.connected_access_controls[setup_id] = access_control_board
+            SC = system_controller(
+                PYC=pycontrol_board, AC=access_control_board, print_func=print_func, setup_ID=setup_id
+            )
 
             send_name = self.sender().name
             self._fill_setup_df_row(send_name)

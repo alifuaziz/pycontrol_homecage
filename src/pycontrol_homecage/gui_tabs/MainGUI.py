@@ -81,8 +81,8 @@ class MainGUI(QMainWindow):
         2. Refreshes the GUI tabs.
         3. Prints any messages that have entered the message queue
         """
-        for k, SC in database.controllers.items():
-            SC.check_for_data()
+        for controller in database.controllers.values():
+            controller.check_for_data()
 
             if self.system_tab.plot_isactive:
                 self.system_tab.experiment_plot.update()

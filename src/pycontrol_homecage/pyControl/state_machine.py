@@ -1,148 +1,111 @@
+from . import utility
+from . import timer
 from . import framework as fw
 
-class State_machine():
-    # State machine behaviour is defined by passing state machine description object smd to 
-    # State_machine __init__(). smd is a module which defines the states, events and  
-    # functionality of the state machine object that is created (see examples). 
+# State machine variables.
 
-    def __init__(self, smd):
+user_task_file = None  # User task definition file module.
 
-        self.smd = smd # State machine definition.
-        self.state_transition_in_progress = False # Set to True during state transitions.
+states = {}  # Dictionary of {state_name: state_ID}
 
-        fw.register_machine(self)
+events = {}  # Dictionary of {event_name: event_ID}
 
-        # Make dict mapping state names to state event handler functions.
-        smd_methods = dir(self.smd) # List of methods of state machine instance.
-        self.event_dispatch_dict = {}
-        for state in list(self.smd.states) + ['all_states', 'run_start', 'run_end']:
-            if state in smd_methods:
-                self.event_dispatch_dict[state] = getattr(self.smd, state)
-            else:
-                self.event_dispatch_dict[state] = None
+ID2name = {}  # Dictionary of {ID: state_or_event_name}
 
-        # Attach user methods to discription object namespace, this allows the user
-        # to write e.g. goto_state(state) in the task description to call 
-        # State_machine.goto_state. 
-        smd.goto_state       = self.goto_state
-        smd.goto             = self.goto_state # For backwards compatibility.
-        smd.timed_goto_state = self.timed_goto_state
-        smd.set_timer        = self.set_timer
-        smd.disarm_timer     = self.disarm_timer
-        smd.reset_timer      = self.reset_timer
-        smd.pause_timer      = self.pause_timer
-        smd.unpause_timer    = self.unpause_timer
-        smd.print            = self.print 
-        smd.stop_framework   = self.stop_framework
-        smd.publish_event    = self.publish_event
-        smd.get_current_time = self.get_current_time
-        smd.timer_remaining  = self.timer_remaining
+transition_in_progress = False  # Set to True during state transitions.
 
-    # Methods called by user
+variables = None  # User task variables object.
 
-    def goto_state(self, next_state):
-        # Transition to next state, calling exit action of old state
-        # and entry action of next state.
-        if self.state_transition_in_progress:
-            raise fw.pyControlError("goto_state cannot not be called while processing 'entry' or 'exit' events.")
-        if not next_state in self.smd.states.keys():
-            raise fw.pyControlError('Invalid state name passed to goto_state: ' + repr(next_state))
-        self.state_transition_in_progress = True
-        self._process_event('exit')
-        fw.timer.disarm_type(fw.state_typ) # Clear any timed_goto_states     
-        if fw.data_output:
-            fw.data_output_queue.put((fw.current_time, fw.state_typ, fw.states[next_state]))
-        self.current_state = next_state
-        self._process_event('entry')
-        self.state_transition_in_progress = False
+event_dispatch_dict = {}  # {state_name: state behaviour function}
 
-    def timed_goto_state(self, next_state, interval):
-        # Transition to next_state after interval milliseconds. timed_goto_state()
-        # is cancelled if goto_state() occurs before interval elapses.
-        fw.timer.set(interval, fw.state_typ, fw.states[next_state])
+current_state = None
 
-    def set_timer(self, event, interval, output_event=False):
-        # Set a timer to return specified event after interval milliseconds.
-        event_type = fw.event_typ if output_event else fw.timer_typ
-        fw.timer.set(interval, event_type, fw.events[event])    
+# State machine functions.
 
-    def disarm_timer(self, event):
-        # Disable all timers due to return specified event.
-        fw.timer.disarm(fw.events[event])
 
-    def reset_timer(self, event, interval, output_event=False):
-        # Disarm all timers due to return specified event and set new timer
-        # to return specified event after interval milliseconds.
-        fw.timer.disarm(fw.events[event])
-        event_type = fw.event_typ if output_event else fw.timer_typ
-        fw.timer.set(interval, event_type, fw.events[event])
+def setup_state_machine(task_file):
+    # Initialise the state machine using an imported task definition file.
+    global user_task_file, variables, transition_in_progress, states, events, ID2name, event_dispatch_dict
 
-    def pause_timer(self,event):
-        # Pause all timers due to return specified event.
-        fw.timer.pause(fw.events[event])
+    user_task_file = task_file
+    variables = utility.v
+    transition_in_progress = False
 
-    def unpause_timer(self,event):
-        # Unpause all timers due to return specified event.
-        fw.timer.unpause(fw.events[event])
+    # Assign states and events interger IDs.
+    states = {s: i + 1 for s, i in zip(user_task_file.states, range(len(user_task_file.states)))}
+    events = {
+        e: i + 1 + len(user_task_file.states) for e, i in zip(user_task_file.events, range(len(user_task_file.events)))
+    }
 
-    def timer_remaining(self,event):
-        # Return time until timer for specified event elapses, returns 0 if no timer set for event.
-        return fw.timer.remaining(fw.events[event])
+    ID2name = {ID: name for name, ID in list(states.items()) + list(events.items())}
 
-    def print(self, print_string):
-        # Used to output data print_string with timestamp.  print_string is stored and only
-        #  printed to serial line once higher priority tasks have all been processed. 
-        if fw.data_output:
-            fw.data_output_queue.put((fw.current_time, fw.print_typ, str(print_string)))
+    # Make dict mapping state names to state behaviour functions.
+    user_task_file_methods = dir(user_task_file)
+    for state in list(user_task_file.states) + ["all_states", "run_start", "run_end"]:
+        if state in user_task_file_methods:
+            event_dispatch_dict[state] = getattr(user_task_file, state)
+        else:
+            event_dispatch_dict[state] = None
 
-    def publish_event(self, event):
-        # Put event with specified name in the event queue.
-        fw.event_queue.put((fw.current_time, fw.event_typ, fw.events[event]))
 
-    def stop_framework(self):
-        fw.running = False
+def goto_state(next_state):
+    # Transition to next state, calling exit action of old state and entry action of next state.
+    global transition_in_progress, current_state
+    if isinstance(next_state, int):  # ID passed in not name.
+        next_state = ID2name[next_state]
+    if transition_in_progress:
+        raise fw.pyControlError("goto_state cannot not be called while processing 'entry' or 'exit' events.")
+    if next_state not in states.keys():
+        raise fw.pyControlError("Invalid state name passed to goto_state: " + repr(next_state))
+    transition_in_progress = True
+    process_event("exit")
+    timer.disarm_type(fw.STATE_TYP)  # Clear any timed_goto_states
+    fw.data_output_queue.put(fw.Datatuple(fw.current_time, fw.STATE_TYP, "", states[next_state]))
+    current_state = next_state
+    process_event("entry")
+    transition_in_progress = False
 
-    def get_current_time(self):
-        return fw.current_time
 
-    # Methods called by pyControl framework.
+def process_event(event):
+    # Process event given event name by calling appropriate state event handler function.
+    if isinstance(event, int):  # ID passed in not name.
+        event = ID2name[event]
+    if event_dispatch_dict["all_states"]:  # If machine has all_states event handler function.
+        handled = event_dispatch_dict["all_states"](event)  # Evaluate all_states event handler function.
+        if handled:  # If all_states event handler returns True, don't evaluate state specific behaviour.
+            return
+    if event_dispatch_dict[current_state]:  # If state machine has event handler function for current state.
+        event_dispatch_dict[current_state](event)  # Evaluate state event handler function.
 
-    def _process_event(self, event):
-        # Process event given event name by calling appropriate state event handler function.
-        if self.event_dispatch_dict['all_states']:                      # If machine has all_states event handler function. 
-            handled = self.event_dispatch_dict['all_states'](event)     # Evaluate all_states event handler function.
-            if handled: return                                          # If all_states event handler returns True, don't evaluate state specific behaviour.
-        if self.event_dispatch_dict[self.current_state]:                # If state machine has event handler function for current state.
-            self.event_dispatch_dict[self.current_state](event)         # Evaluate state event handler function.
 
-    def _start(self):
-        # Called when run is started. Puts agent in initial state, and runs entry event.
-        if self.event_dispatch_dict['run_start']:
-            self.event_dispatch_dict['run_start']()
-        self.current_state = self.smd.initial_state
-        if fw.data_output:
-            fw.data_output_queue.put((fw.current_time, fw.state_typ, fw.states[self.current_state]))
-        self._process_event('entry')
+def start():
+    global current_state
+    # Called when run is started. Puts agent in initial state, and runs entry event.
+    if event_dispatch_dict["run_start"]:
+        event_dispatch_dict["run_start"]()
+    current_state = user_task_file.initial_state
+    fw.data_output_queue.put(fw.Datatuple(fw.current_time, fw.STATE_TYP, "", states[current_state]))
+    process_event("entry")
 
-    def _stop(self):
-        # Calls user defined stop function at end of run if function is defined.
-        if self.event_dispatch_dict['run_end']:
-            self.event_dispatch_dict['run_end']()
 
-    def _set_variable(self, v_name, v_str, checksum=None):
-        # Set value of variable v.v_name to value eval(v_str).
-        if checksum:
-            str_sum = sum(v_str) if type(v_str) is bytes else sum(v_str.encode())
-            if not str_sum == checksum:
-                return False # Bad checksum.
-        try:
-            setattr(self.smd.v, v_name, eval(v_str))
-            return True # Variable set OK.
-        except Exception:
-            return False # Bad variable name or invalid value string.
+def stop():
+    # Calls user defined stop function at end of run if function is defined.
+    if event_dispatch_dict["run_end"]:
+        event_dispatch_dict["run_end"]()
 
-    def _get_variable(self, v_name):
-        try:
-            return getattr(self.smd.v, v_name)
-        except Exception:
-            return None
+
+def set_variable(v_name, v_value):
+    # Set value of variable v.v_name to v_value.
+    try:
+        setattr(variables, v_name, v_value)
+        return True  # Variable set OK.
+    except Exception:
+        return False  # Bad variable name or invalid value string.
+
+
+def get_variable(v_name):
+    # Return the value of specified variable.
+    try:
+        return getattr(variables, v_name)
+    except Exception:
+        return None  # Bad variable name
