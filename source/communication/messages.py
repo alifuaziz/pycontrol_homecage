@@ -8,7 +8,6 @@ import db as database
 """ 
 This modules provides dataclasses to pass messages from data processors to
 the recipient log windows which then print them
-
 """
 
 

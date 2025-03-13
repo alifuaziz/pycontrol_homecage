@@ -27,5 +27,5 @@ paths = {
     "framework_dir": os.path.join(package_path, "pyControl"),
     "devices_dir": os.path.join(package_path, "devices"),
     "config_dir": os.path.join(package_path, "pyControl_config"),
-    "access_control_dir": os.path.join(package_path, "access_control_upy"),
+    "access_control_dir": os.path.join(package_path, "access_control_framework"),
 }
