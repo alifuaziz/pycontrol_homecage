@@ -24,7 +24,7 @@ from source.dialogs import (
 from source.tables import MouseTable, VariablesTable
 from ..utils import get_variables_and_values_from_taskfile
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 
 
 class MouseOverViewTab(QWidget):
@@ -150,7 +150,7 @@ class MouseOverViewTab(QWidget):
                 set_variables_dict
             )
 
-            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
+            database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
 
     def update_variables_filter(self):
         self.variables_table.setEnabled(True)
@@ -199,7 +199,7 @@ class MouseOverViewTab(QWidget):
                     mouseRow["set_variables"].values[0]
                 )  # set variables are persistent variables that are not updated. Is this necessary?? YES
 
-            task_dir = paths["task_dir"]
+            task_dir = user_folder("task_dir")
             task_path = os.path.join(task_dir, mouseTask)
             self.default_variables = get_variables_and_values_from_taskfile(task_path)
             self.variable_names = list(set(self.default_variables.keys()))  # get_variables_from_taskfile(task_path)
@@ -267,7 +267,7 @@ class MouseOverViewTab(QWidget):
             if sure.GO:
                 for ch_ in isChecked:
                     database.mouse_df.loc[database.mouse_df["RFID"] == ch_, "in_system"] = False
-                    database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
+                    database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
 
                     self.mouse_table_widget.fill_table()
 

@@ -3,7 +3,8 @@ from typing import List
 
 from PyQt5 import QtCore, QtWidgets
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
+
 
 class ExperimentOverviewTable(QtWidgets.QTableWidget):
     """Table for system tab that shows all experiments currently running
@@ -102,8 +103,8 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
 
                     database.exp_df.loc[database.exp_df["Name"] == exp_name, "Active"] = False
                     database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "Experiment"] = None
-                    database.setup_df.to_csv(paths['setup_dir_dataframe_filepath'])
-                    database.exp_df.to_csv(paths['experiment_dataframe_filepath'])
+                    database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
+                    database.exp_df.to_csv(user_folder("experiment_dataframe_filepath"))
 
                     print("CLOSED")
 

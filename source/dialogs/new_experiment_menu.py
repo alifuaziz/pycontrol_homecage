@@ -14,7 +14,7 @@ from source.tables import (
     VariablesTable,
 )
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 from . import InformationDialog
 
 
@@ -361,7 +361,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
         if self.protVtask.isChecked():
             self.running_protocol = True
             self.protocol_combo.clear()
-            self.available_tasks = [i for i in os.listdir(paths["protocol_dir"]) if ".prot" in i]
+            self.available_tasks = [i for i in os.listdir(user_folder("protocol_dir")) if ".prot" in i]
             self.protocol_combo.addItems(["Select Protocol"] + self.available_tasks)
 
         else:
@@ -426,7 +426,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
                 "data_path",
             ]
         )
-        pth_ = os.path.join(paths["mice_dir"], mouse_ID + ".csv")
+        pth_ = os.path.join(user_folder("mice_dir"), mouse_ID + ".csv")
         df_.to_csv(pth_)
 
     def run_experiment(self):
@@ -434,7 +434,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
         ADD WARNING IF YOU ARE DUPLICATING MOUSE NAMES OR RFIDS!!!!
         """
         ## Create all the paths for data
-        exp_path = os.path.join(paths["data_dir"], self.set_experiment_name)
+        exp_path = os.path.join(user_folder("data_dir"), self.set_experiment_name)
         if not os.path.isdir(exp_path):
             os.mkdir(exp_path)
 
@@ -459,7 +459,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
                 self._create_mouse_exp_log(row["Mouse_ID"])
 
-            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
+            database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
             self.GUI.mouse_tab.mouse_table_widget.fill_table()
 
             # update experiment information
@@ -487,8 +487,8 @@ class NewExperimentDialog(QtWidgets.QDialog):
                 mices_ = self.df_mouse_tmp["Mouse_ID"].loc[self.df_mouse_tmp["Setup_ID"] == stup].values
                 database.setup_df.loc[database.setup_df["Setup_ID"] == stup, "mice_in_setup"] = str(mices_)[1:-1]
 
-            database.exp_df.to_csv(paths["experiment_dataframe_filepath"])
-            database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
+            database.exp_df.to_csv(user_folder("experiment_dataframe_filepath"))
+            database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
             self.GUI.setup_tab.setup_table_widget.fill_table()
             self.GUI.system_tab.setup_table_widget.fill_table()
             self.GUI.system_tab.experiement_overview_table.fill_table()

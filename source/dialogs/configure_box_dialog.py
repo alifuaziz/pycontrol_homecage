@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLin
 from PyQt5.QtGui import QFont, QTextCursor
 
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 from source.communication.messages import MessageRecipient
 
 
@@ -76,7 +76,7 @@ class ConfigureBoxDialog(QDialog):
         hwd_path = QFileDialog.getOpenFileName(
             self,
             "Select hardware definition:",
-            os.path.join(paths["config_dir"], "hardware_definition.py"),
+            os.path.join(user_folder("config_dir"), "hardware_definition.py"),
             filter="*.py",
         )[0]
 

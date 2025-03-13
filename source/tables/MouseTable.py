@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from ..utils import get_tasks
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 
 
 class MouseTable(QtWidgets.QTableWidget):
@@ -93,6 +93,6 @@ class MouseTable(QtWidgets.QTableWidget):
         database.mouse_df.loc[database.mouse_df["RFID"] == combo.RFID, "Task"] = combo.currentText()
 
         # Save the updated dataframe to disk
-        database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
+        database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
         # fill the table again since the data has been updated
         self.fill_table()

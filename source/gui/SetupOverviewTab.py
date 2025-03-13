@@ -26,7 +26,7 @@ from source.dialogs import (
 from source.tables import SetupTable
 from ..utils import find_pyboards
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 
 
 class SetupsOverviewTab(QWidget):
@@ -196,7 +196,7 @@ class SetupsOverviewTab(QWidget):
         # self.parent()._refresh_tables()
         database.update_table_queue = ["all"]
 
-        database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
+        database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
 
     def _refresh(self):
         """Find which training setups are available"""
@@ -242,13 +242,8 @@ class SetupsOverviewTab(QWidget):
             sure = AreYouSureDialog()
             sure.exec_()
             if sure.GO:
-                fl = paths["setup_dir_dataframe_filepath"]
-
                 database.setup_df = database.setup_df.drop(database.setup_df.index[isChecked])
-                paths["setup_dir_dataframe_filepath"] = fl
-
                 self.setup_table_widget.fill_table()
-                # self.GUI.system_tab.setup_table_widget.fill_table()
         else:
             info = InformationDialog(info_text="No setups were selected to be removed")
             info.exec()

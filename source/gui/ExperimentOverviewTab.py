@@ -16,7 +16,8 @@ from PyQt5 import QtWidgets
 from source.tables import ExperimentOverviewTable
 from source.dialogs import AreYouSureDialog, InformationDialog
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
+
 
 class ExperimentOverviewTab(QtWidgets.QWidget):
     def __init__(self, MainGUI: QtWidgets.QMainWindow = None):
@@ -121,7 +122,7 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
 
         database.exp_df.loc[database.exp_df["Name"] == experiment_name, "Active"] = running
         # write to disk
-        database.exp_df.to_csv(paths['experiment_dataframe_filepath'])
+        database.exp_df.to_csv(user_folder("experiment_dataframe_filepath"))
 
     def _get_mice_in_experiment(self, exp_row: pd.Series) -> List[str]:
         """Returns a list of mice in an experiement as a list of strings"""
@@ -168,7 +169,7 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
             database.mouse_df.loc[database.mouse_df["Mouse_ID"] == mouse, "is_assigned"] = assigned
             database.mouse_df.loc[database.mouse_df["Mouse_ID"] == mouse, "in_system"] = assigned
             # Save to disk
-            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
+            database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
 
     def _update_setups(self, setups_in_exp, experiment=None):
         """Update the `setups_df`  to be assigned to tne experiment (argument to the function).
@@ -179,7 +180,7 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
             database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "Experiment"] = experiment
             # If the setup has an experiment, then it is also in use.
             database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "in_use"] = experiment is not None
-            database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
+            database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
 
     def _refresh(self):
         pass

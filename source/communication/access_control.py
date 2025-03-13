@@ -6,13 +6,12 @@ from serial import SerialException
 from .pyboard import Pyboard, PyboardError
 
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 from source.communication.messages import (
     MessageRecipient,
     MessageSource,
     emit_print_message,
 )
-
 
 
 class Access_control(Pyboard):
@@ -47,11 +46,11 @@ class Access_control(Pyboard):
                 f"No entry found in setups_df for COM_AC = {self.serial_port}. Available access controls: {available_controls}"
             )
         now = datetime.now().strftime("-%Y-%m-%d-%H%M%S")
-        self.logger_dir = paths["AC_logger_dir"]
+        self.logger_dir = user_folder("AC_logger_dir")
         self.logger_path = os.path.join(self.logger_dir, name_ + "_" + now + ".txt")
 
         database.setup_df.loc[database.setup_df["COM_AC"] == self.serial_port, "logger_path"] = self.logger_path
-        database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
+        database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
 
         with open(self.logger_path, "w") as f:
             f.write("Start" + "\n")
@@ -73,28 +72,6 @@ class Access_control(Pyboard):
             self.status["serial"] = False
             raise (e)
 
-    def load_test_framework(self) -> None:
-        """
-        Script for generating artificial signals
-
-        This function mirrors the normal `load_framework` function.
-        """
-
-        self.print("\nTransfering `state_signal_generator` to the python board.")
-
-        # Load signal generator
-        self.transfer_file(
-            os.path.join(paths["access_control_dir"], "state_signal_generator.py"),
-            "state_signal_generator.py",
-        )
-
-        try:
-            self.exec_raw_no_follow("import state_signal_generator")
-        except PyboardError as e:
-            raise e
-
-        self.print("OK")
-
     def load_framework(self) -> None:
         """
         Copy the pyControl framework folder to the board. Then run the main script that runs the firmware on the board.
@@ -109,10 +86,10 @@ class Access_control(Pyboard):
         self.print("\nTransfering Access Control framework to pyboard.", end="")
 
         self.transfer_folder(
-            paths["access_control_dir"], file_type="py", show_progress=True
+            user_folder("access_control_dir"), file_type="py", show_progress=True
         )  # upload access control framework
         self.transfer_file(
-            os.path.join(paths["access_control_dir"], "main_script_for_pyboard.py"),
+            os.path.join(user_folder("access_control_dir"), "main_script_for_pyboard.py"),
             "main.py",
         )
 

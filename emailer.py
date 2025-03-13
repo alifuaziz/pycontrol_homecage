@@ -9,9 +9,9 @@ from email.mime.multipart import MIMEMultipart
 
 
 from .utils import get_users, get_user_dicts
-from paths import paths
+from source.gui.settings import user_folder
 
-lines_ = open(paths["user_path"], "r").readlines()
+lines_ = open(user_folder("user_path"), "r").readlines()
 users = get_users()
 sender_email = [re.findall('"(.*)"', l)[0] for l in lines_ if "system_email" in l][0]
 password = [re.findall('"(.*)"', l)[0] for l in lines_ if "password" in l][0]
@@ -76,7 +76,7 @@ def get_behaviour_dat(root_path):
 
 def send_email(send_message, subject, receiver_email, opening=None):
     """This function actually send an email"""
-    lines_ = open(paths["user_path"], "r").readlines()
+    lines_ = open(user_folder("user_path"), "r").readlines()
     users = get_users()
     sender_email = [re.findall('"(.*)"', l)[0] for l in lines_ if "system_email" in l][0]
     password = [re.findall('"(.*)"', l)[0] for l in lines_ if "password" in l][0]
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     users = get_users()  # get all users
     user_dicts = get_user_dicts()
 
-    setup_df = pd.read_csv(os.path.join(paths["setup_dir"], "setups.csv"))
+    setup_df = pd.read_csv(os.path.join(user_folder("setup_dir"), "setups.csv"))
     for user in users:
         send_mouse_df = pd.DataFrame(
             columns=[
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 mouse_dict = get_weight_history(tmp_logP)
                 # print(mouse_dict)
 
-                mouse_df = pd.read_csv(os.path.join(paths["mice_dir"], "mice.csv"))
+                mouse_df = pd.read_csv(os.path.join(user_folder("mice_dir"), "mice.csv"))
                 # print(mouse_df)
 
                 # print(mouse_dict.keys())
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                     tmp["current_task"] = str(mouse_df.loc[mouse_df["RFID"] == int(k), "Task"].values[0])
 
                     mouse_id = str(mouse_df.loc[mouse_df["RFID"] == int(k), "Mouse_ID"].values[0])
-                    dat_path = os.path.join(paths["data_dir"], tmp["Experiment"], mouse_id)
+                    dat_path = os.path.join(user_folder("data_dir"), tmp["Experiment"], mouse_id)
                     beh_dat = get_behaviour_dat(dat_path)
                     tmp["n_rewards"] = beh_dat
                     # print(tmp)

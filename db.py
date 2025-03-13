@@ -1,16 +1,15 @@
 # from https://stackoverflow.com/questions/1977362/how-to-create-module-wide-variables-in-python
 import sys
 import pandas as pd
-from source.gui.settings import get_setting
-from paths import paths
+from source.gui.settings import user_folder
 
 
 def load_data_csv():
 
-    task_df = pd.read_csv(paths["task_dir_dataframe_filepath"])
-    exp_df = pd.read_csv(paths["experiment_dataframe_filepath"])
-    setup_df = pd.read_csv(paths["setup_dir_dataframe_filepath"])
-    mouse_df = pd.read_csv(paths["mice_dataframe_filepath"])
+    task_df = pd.read_csv(user_folder("task_dir_dataframe_filepath"))
+    exp_df = pd.read_csv(user_folder("experiment_dataframe_filepath"))
+    setup_df = pd.read_csv(user_folder("setup_dir_dataframe_filepath"))
+    mouse_df = pd.read_csv(user_folder("mice_dataframe_filepath"))
 
     for col in mouse_df.columns:
         if "Unnamed" in col:

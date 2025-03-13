@@ -7,7 +7,7 @@ import pandas as pd
 
 from ..utils import get_path
 import db as database
-from paths import paths
+from source.gui.settings import user_folder
 from source.communication.messages import (
     MessageRecipient,
     MessageSource,
@@ -141,7 +141,9 @@ class system_controller(Data_logger):
 
         # first entry in this state is when the mouse first enters the apparatus
         elif state == "mouse_training":
-            if self.data_file is None: # The mouse has NOT re-entered the Training room from being it it. It has come in from the 'home' side
+            if (
+                self.data_file is None
+            ):  # The mouse has NOT re-entered the Training room from being it it. It has come in from the 'home' side
                 self._handle_mouse_training()
 
         elif state == "allow_exit":
@@ -198,7 +200,7 @@ class system_controller(Data_logger):
                 # read the task file uploaded to pyboard
                 dat_ = f_.readlines()
                 # save it to a new file
-                with open(paths["mice_dir"] + "_taskFile.txt", "w") as f_backup:
+                with open(user_folder("mice_dir") + "_taskFile.txt", "w") as f_backup:
                     f_backup.writelines(dat_)
 
             # Open the data file (using the datalogger class)
@@ -414,11 +416,11 @@ class system_controller(Data_logger):
             database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"] = False
             # Removes columns from the mouse_df that are unnamed ???
             database.mouse_df = database.mouse_df.loc[:, ~database.mouse_df.columns.str.contains("^Unnamed")]
-            database.mouse_df.to_csv(paths["mice_dataframe_filepath"])
-            
+            database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
+
             database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"] = ""
             database.setup_df = database.setup_df.loc[:, ~database.setup_df.columns.str.contains("^Unnamed")]
-            database.setup_df.to_csv(paths["setup_dir_dataframe_filepath"])
+            database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
 
         for analog_file in self.analog_files.values():
             if analog_file:
