@@ -11,13 +11,6 @@ from .message import MsgType, Datatuple
 from source.gui.settings import VERSION, user_folder
 from dataclasses import dataclass
 
-
-# def user_folder(folder_name):
-#     if folder_name == "devices":
-#         return r"C:\Users\alifa\OneDrive - Nexus365\Documents\Homecage Software Development\fork\pycontrol_homecage\devices"
-#     elif folder_name == "tasks":
-
-
 # ----------------------------------------------------------------------------------------
 #  Helper functions.
 # ----------------------------------------------------------------------------------------
