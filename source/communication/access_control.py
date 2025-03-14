@@ -6,9 +6,8 @@ from datetime import datetime
 
 from serial import SerialException
 from .pyboard import Pyboard, PyboardError
-from .pycboard import Pycboard,_djb2_file, _receive_file
-
-
+from .pycboard import Pycboard, _djb2_file, _receive_file
+from .system_handler import system_controller
 import db as database
 from source.gui.settings import user_folder
 from source.communication.messages import (
@@ -59,7 +58,9 @@ class Access_control(Pycboard):
         self.exec(inspect.getsource(_djb2_file))  # define djb2 hashing function.
         self.exec(inspect.getsource(_receive_file))  # define receive file function.
         self.exec("import os; import gc; import sys; import pyb")
-        pass
+        self.status["usb_mode"] = self.eval("pyb.usb_mode()").decode()
+        if self.data_logger: # This is required since the system handler requires both the pycboard and the acboard to init
+            self.data_logger.reset()
 
     def _init_logger(self) -> None:
         """
