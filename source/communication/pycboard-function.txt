@@ -1,0 +1,34 @@
+- pycboard
+# Low level operations 
+    - __init__
+    - reset
+    - hard reset
+    - gc_collect
+    - DFU mode
+    - disable mass storage
+    - enable mass storage
+# pyboard file system operation 
+    - write file 
+    - get file hash 
+    - transfer file
+    - transfer folder
+    - remove_file
+# pycontrol operation 
+    - load_framework
+    - load_hardware definition
+    - transfer device files
+    - setup_statemachine
+    - get_states
+    - get_events
+    - get_ananlog_inputs
+    - startframework
+    - stop_framework
+    - process_data
+    - trigger event
+    - get timestamp
+    - send serial data
+# Getting and settings variables
+    - set_variable
+    - get_variable
+    - get_variables
+

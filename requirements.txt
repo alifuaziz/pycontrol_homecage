@@ -6,4 +6,3 @@ PyQt5-sip
 pyqtgraph
 pyserial
 python-dateutil
--e .
