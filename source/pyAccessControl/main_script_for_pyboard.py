@@ -1,9 +1,9 @@
 
 import pyb
 from pyb import Pin
-from access_control_upy.access_control_1_0 import Access_control_upy
+from pyAccessControl.access_control_1_0 import Access_control_upy
 import time
-from access_control_upy.pin_classes import signal_pin, magnet_pin
+from pyAccessControl.pin_classes import signal_pin, magnet_pin
 
 
 class handler:

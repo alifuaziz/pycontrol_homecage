@@ -46,7 +46,7 @@ def get_setting(setting_type, setting_name, want_default=False):
             # "framework_dir": os.path.join(package_path, "pyControl"),
             # "devices_dir": os.path.join(package_path, "devices"),
             "config_dir": os.path.join(package_path, "pyControl_config"),
-            "access_control_dir": os.path.join(package_path, "access_control_framework"),
+            "access_control_dir": os.path.join(os.getcwd(), "source", "pyAccessControl"),
         },
         "plotting": {
             "update_interval": 10,
