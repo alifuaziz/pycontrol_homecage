@@ -6,7 +6,8 @@ from datetime import datetime
 
 from serial import SerialException
 from .pyboard import Pyboard, PyboardError
-from .pycboard import Pycboard
+from .pycboard import Pycboard,_djb2_file, _receive_file
+
 
 import db as database
 from source.gui.settings import user_folder
@@ -17,53 +18,11 @@ from source.communication.messages import (
 )
 
 # ----------------------------------------------------------------------------------------
-#  Helper functions.
-# ----------------------------------------------------------------------------------------
-
-
-# djb2 hashing algorithm used to check integrity of transfered files.
-def _djb2_file(file_path):
-    with open(file_path, "rb") as f:
-        h = 5381
-        while True:
-            c = f.read(4)
-            if not c:
-                break
-            h = ((h << 5) + h + int.from_bytes(c, "little")) & 0xFFFFFFFF
-    return h
-
-
-# Used on pyboard for file transfer.
-def _receive_file(file_path, file_size):
-    usb = pyb.USB_VCP()
-    usb.setinterrupt(-1)
-    buf_size = 512
-    buf = bytearray(buf_size)
-    buf_mv = memoryview(buf)
-    bytes_remaining = file_size
-    try:
-        with open(file_path, "wb") as f:
-            while bytes_remaining > 0:
-                bytes_read = usb.recv(buf, timeout=5)
-                usb.write(b"OK")
-                if bytes_read:
-                    bytes_remaining -= bytes_read
-                    f.write(buf_mv[:bytes_read])
-    except:
-        fs_stat = os.statvfs("/flash")
-        fs_free_space = fs_stat[0] * fs_stat[3]
-        if fs_free_space < bytes_remaining:
-            usb.write(b"NS")  # Out of space.
-        else:
-            usb.write(b"ER")
-
-
-# ----------------------------------------------------------------------------------------
 #  Access_control class.
 # ----------------------------------------------------------------------------------------
 
 
-class Access_control(Pyboard):
+class Access_control(Pycboard):
     # Class that runs on the main computer to provide an API for inferfacting with
     # the access control module
 
@@ -102,11 +61,6 @@ class Access_control(Pyboard):
         self.exec("import os; import gc; import sys; import pyb")
         pass
 
-    def gc_collect(self):
-        """Run a garbage collection on pyboard to free up memory."""
-        self.exec("gc.collect()")
-        time.sleep(0.01)
-
     def _init_logger(self) -> None:
         """
         This function opens the file which the data from the pyboard is written to. The self.process_data() function then
@@ -129,107 +83,6 @@ class Access_control(Pyboard):
         with open(self.logger_path, "w") as f:
             f.write("Start" + "\n")
             f.write(now + "\n")
-
-    # ------------------------------------------------------------------------------------
-    # Pyboard filesystem operations.
-    # ------------------------------------------------------------------------------------
-
-    def write_file(self, target_path, data):
-        """Write data to file at specified path on pyboard, any data already
-        in the file will be deleted."""
-        try:
-            self.exec("with open('{}','w') as f: f.write({})".format(target_path, repr(data)))
-        except PyboardError as e:
-            raise PyboardError(e)
-
-    def get_file_hash(self, target_path):
-        """Get the djb2 hash of a file on the pyboard."""
-        try:
-            file_hash = int(self.eval("_djb2_file('{}')".format(target_path)).decode())
-        except PyboardError:  # File does not exist.
-            return -1
-        return file_hash
-
-    def transfer_file(self, file_path, target_path=None):
-        """Copy file at file_path to location target_path on pyboard."""
-        if not target_path:
-            target_path = os.path.split(file_path)[-1]
-        file_size = os.path.getsize(file_path)
-        file_hash = _djb2_file(file_path)
-        error_message = (
-            "\n\nError: Unable to transfer file. See the troubleshooting docs:\n"
-            "https://pycontrol.readthedocs.io/en/latest/user-guide/troubleshooting/"
-        )
-        # Try to load file, return once file hash on board matches that on computer.
-        for i in range(10):
-            if file_hash == self.get_file_hash(target_path):
-                return
-            self.exec_raw_no_follow("_receive_file('{}',{})".format(target_path, file_size))
-            with open(file_path, "rb") as f:
-                while True:
-                    chunk = f.read(512)
-                    if not chunk:
-                        break
-                    self.serial.write(chunk)
-                    response_bytes = self.serial.read(2)
-                    if response_bytes != b"OK":
-                        if response_bytes == b"NS":
-                            self.print("\n\nInsufficient space on pyboard filesystem to transfer file.")
-                        else:
-                            self.print(error_message)
-                        time.sleep(0.01)
-                        self.serial.reset_input_buffer()
-                        raise PyboardError
-                self.follow(3)
-        # Unable to transfer file.
-        self.print(error_message)
-        raise PyboardError
-
-    def transfer_folder(
-        self, folder_path, target_folder=None, file_type="all", files="all", remove_files=True, show_progress=False
-    ):
-        """Copy a folder into the root directory of the pyboard.  Folders that
-        contain subfolders will not be copied successfully.  To copy only files of
-        a specific type, change the file_type argument to the file suffix (e.g. 'py').
-        To copy only specified files pass a list of file names as files argument."""
-        if not target_folder:
-            target_folder = os.path.split(folder_path)[-1]
-        if files == "all":
-            files = os.listdir(folder_path)
-            if file_type != "all":
-                files = [f for f in files if f.split(".")[-1] == file_type]
-        try:
-            self.exec("os.mkdir({})".format(repr(target_folder)))
-        except PyboardError:
-            # Folder already exists.
-            if remove_files:  # Remove any files not in sending folder.
-                target_files = self.get_folder_contents(target_folder)
-                remove_files = list(set(target_files) - set(files))
-                for f in remove_files:
-                    target_path = target_folder + "/" + f
-                    self.remove_file(target_path)
-        for f in files:
-            file_path = os.path.join(folder_path, f)
-            target_path = target_folder + "/" + f
-            self.transfer_file(file_path, target_path)
-            if show_progress:
-                self.print(".", end="")
-
-    def remove_file(self, file_path):
-        """Remove a file from the pyboard."""
-        try:
-            self.exec("os.remove({})".format(repr(file_path)))
-        except PyboardError:
-            pass  # File does not exist.
-
-    def get_folder_contents(self, folder_path, get_hash=False):
-        """Get a list of the files in a folder on the pyboard, if
-        get_hash=True a dict {file_name:file_hash} is returned instead"""
-        file_list = eval(self.eval("os.listdir({})".format(repr(folder_path))).decode())
-        if get_hash:
-            return {file_name: self.get_file_hash(folder_path + "/" + file_name) for file_name in file_list}
-        else:
-            return file_list
 
     # ------------------------------------------------------------------------------------
     # Access Control operations.
