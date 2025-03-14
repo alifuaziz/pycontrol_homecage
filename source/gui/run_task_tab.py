@@ -42,59 +42,60 @@ class Run_task_tab(QtWidgets.QWidget):
 
         # Setup groupbox
 
-        self.board_groupbox = QtWidgets.QGroupBox("Pycboard Setup")
+        self.pyc_board_groupbox = QtWidgets.QGroupBox("Pycboard Setup")
 
-        self.board_select = QtWidgets.QComboBox()
-        self.board_select.addItems(["No setups found"])
-        self.board_select.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents)
-        self.connect_button = QtWidgets.QPushButton("Connect")
-        self.connect_button.setIcon(QtGui.QIcon("source/gui/icons/connect.svg"))
-        self.connect_button.setEnabled(False)
-        self.config_dropdown = QtWidgets.QComboBox()
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/settings.svg"), "Config")
-        self.config_dropdown.setFixedWidth(self.config_dropdown.minimumSizeHint().width())
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load framework")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load hardware definition")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/wrench.svg"), "DFU mode")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/enable.svg"), "Enable flashdrive")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/disable.svg"), "Disable flashdrive")
-        self.config_dropdown.view().setRowHidden(0, True)
+        self.pyc_board_select = QtWidgets.QComboBox()
+        self.pyc_board_select.addItems(["No setups found"])
+        self.pyc_board_select.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.pyc_connect_button = QtWidgets.QPushButton("Connect")
+        self.pyc_connect_button.setIcon(QtGui.QIcon("source/gui/icons/connect.svg"))
+        self.pyc_connect_button.setEnabled(False)
+        self.pyc_config_dropdown = QtWidgets.QComboBox()
+        self.pyc_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/settings.svg"), "Config")
+        self.pyc_config_dropdown.setFixedWidth(self.pyc_config_dropdown.minimumSizeHint().width())
+        self.pyc_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load framework")
+        self.pyc_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load hardware definition")
+        self.pyc_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/wrench.svg"), "DFU mode")
+        self.pyc_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/enable.svg"), "Enable flashdrive")
+        self.pyc_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/disable.svg"), "Disable flashdrive")
+        self.pyc_config_dropdown.view().setRowHidden(0, True)
 
-        boardgroup_layout = QtWidgets.QGridLayout(self.board_groupbox)
-        boardgroup_layout.addWidget(self.board_select, 0, 0, 1, 2)
-        boardgroup_layout.addWidget(self.connect_button, 1, 0)
-        boardgroup_layout.addWidget(self.config_dropdown, 1, 1)
-        boardgroup_layout.setContentsMargins(pad, pad, pad, pad)
+        pyc_boardgroup_layout = QtWidgets.QGridLayout(self.pyc_board_groupbox)
+        pyc_boardgroup_layout.addWidget(self.pyc_board_select, 0, 0, 1, 2)
+        pyc_boardgroup_layout.addWidget(self.pyc_connect_button, 1, 0)
+        pyc_boardgroup_layout.addWidget(self.pyc_config_dropdown, 1, 1)
+        pyc_boardgroup_layout.setContentsMargins(pad, pad, pad, pad)
 
-        self.connect_button.clicked.connect(lambda: self.pyc_disconnect() if self.connected else self.pyc_connect())
-        self.config_dropdown.currentIndexChanged.connect(self.configure_board)
+        self.pyc_connect_button.clicked.connect(lambda: self.pyc_disconnect() if self.pyc_connected else self.pyc_connect())
+        self.pyc_config_dropdown.currentIndexChanged.connect(self.configure_board)
 
         # Access Control Groupbox
+        self.ac_board_groupbox = QtWidgets.QGroupBox("Access Control Setup")
+        
+        self.ac_board_select = QtWidgets.QComboBox()
+        self.ac_board_select.addItems(["No setups found"])
+        self.ac_board_select.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.ac_connect_button = QtWidgets.QPushButton("Connect")
+        self.ac_connect_button.setIcon(QtGui.QIcon("source/gui/icons/connect.svg"))
+        self.ac_connect_button.setEnabled(False)
+        self.ac_config_dropdown = QtWidgets.QComboBox()
+        self.ac_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/settings.svg"), "Config")
+        self.ac_config_dropdown.setFixedWidth(self.ac_config_dropdown.minimumSizeHint().width())
+        self.ac_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load framework")
+        self.ac_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load hardware definition")
+        self.ac_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/wrench.svg"), "DFU mode")
+        self.ac_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/enable.svg"), "Enable flashdrive")
+        self.ac_config_dropdown.addItem(QtGui.QIcon("source/gui/icons/disable.svg"), "Disable flashdrive")
+        self.ac_config_dropdown.view().setRowHidden(0, True)
 
-        self.board_select = QtWidgets.QComboBox()
-        self.board_select.addItems(["No setups found"])
-        self.board_select.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents)
-        self.connect_button = QtWidgets.QPushButton("Connect")
-        self.connect_button.setIcon(QtGui.QIcon("source/gui/icons/connect.svg"))
-        self.connect_button.setEnabled(False)
-        self.config_dropdown = QtWidgets.QComboBox()
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/settings.svg"), "Config")
-        self.config_dropdown.setFixedWidth(self.config_dropdown.minimumSizeHint().width())
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load framework")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/upload.svg"), "Load hardware definition")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/wrench.svg"), "DFU mode")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/enable.svg"), "Enable flashdrive")
-        self.config_dropdown.addItem(QtGui.QIcon("source/gui/icons/disable.svg"), "Disable flashdrive")
-        self.config_dropdown.view().setRowHidden(0, True)
+        ac_boardgroup_layout = QtWidgets.QGridLayout(self.ac_board_groupbox)
+        ac_boardgroup_layout.addWidget(self.ac_board_select, 0, 0, 1, 2)
+        ac_boardgroup_layout.addWidget(self.ac_connect_button, 1, 0)
+        ac_boardgroup_layout.addWidget(self.ac_config_dropdown, 1, 1)
+        ac_boardgroup_layout.setContentsMargins(pad, pad, pad, pad)
 
-        boardgroup_layout = QtWidgets.QGridLayout(self.board_groupbox)
-        boardgroup_layout.addWidget(self.board_select, 0, 0, 1, 2)
-        boardgroup_layout.addWidget(self.connect_button, 1, 0)
-        boardgroup_layout.addWidget(self.config_dropdown, 1, 1)
-        boardgroup_layout.setContentsMargins(pad, pad, pad, pad)
-
-        self.connect_button.clicked.connect(lambda: self.ac_disconnect() if self.connected else self.ac_connect())
-        self.config_dropdown.currentIndexChanged.connect(self.configure_board)
+        self.ac_connect_button.clicked.connect(lambda: self.ac_disconnect() if self.ac_connected else self.ac_connect())
+        self.ac_config_dropdown.currentIndexChanged.connect(self.configure_board)
 
         # File groupbox
 
@@ -125,26 +126,29 @@ class Run_task_tab(QtWidgets.QWidget):
 
         # Task groupbox
 
-        self.task_groupbox = QtWidgets.QGroupBox("Task")
+        # self.task_groupbox = QtWidgets.QGroupBox("Task")
 
-        self.task_select = NestedMenu("select task", ".py")
-        self.task_select.set_callback(self.task_changed)
-        self.upload_button = QtWidgets.QPushButton("Upload")
-        self.upload_button.setIcon(QtGui.QIcon("source/gui/icons/circle-arrow-up.svg"))
-        self.controls_button = QtWidgets.QPushButton("Controls")
-        self.controls_button.setIcon(QtGui.QIcon("source/gui/icons/filter.svg"))
+        # self.task_select = NestedMenu("select task", ".py")
+        # self.task_select.set_callback(self.task_changed)
+        # self.upload_button = QtWidgets.QPushButton("Upload")
+        # self.upload_button.setIcon(QtGui.QIcon("source/gui/icons/circle-arrow-up.svg"))
+        # self.controls_button = QtWidgets.QPushButton("Controls")
+        # self.controls_button.setIcon(QtGui.QIcon("source/gui/icons/filter.svg"))
 
-        taskgroup_layout = QtWidgets.QGridLayout(self.task_groupbox)
-        taskgroup_layout.addWidget(self.task_select, 0, 0, 1, 2)
-        taskgroup_layout.addWidget(self.upload_button, 1, 0)
-        taskgroup_layout.addWidget(self.controls_button, 1, 1)
-        taskgroup_layout.setContentsMargins(pad, pad, pad, pad)
+        # taskgroup_layout = QtWidgets.QGridLayout(self.task_groupbox)
+        # taskgroup_layout.addWidget(self.task_select, 0, 0, 1, 2)
+        # taskgroup_layout.addWidget(self.upload_button, 1, 0)
+        # taskgroup_layout.addWidget(self.controls_button, 1, 1)
+        # taskgroup_layout.setContentsMargins(pad, pad, pad, pad)
 
-        self.upload_button.clicked.connect(self.setup_task)
+        # self.upload_button.clicked.connect(self.setup_task)
 
-        # Session groupbox.
+        # Access Control Groupbox
 
-        self.session_groupbox = QtWidgets.QGroupBox("Session")
+
+        # pyControl Session groupbox.
+
+        self.session_groupbox = QtWidgets.QGroupBox("pyControl Session")
 
         self.start_button = QtWidgets.QPushButton("Start")
         self.start_button.setIcon(QtGui.QIcon("source/gui/icons/play.svg"))
@@ -178,8 +182,9 @@ class Run_task_tab(QtWidgets.QWidget):
 
         self.top_section = QtWidgets.QWidget()
         top_layout = QtWidgets.QHBoxLayout(self.top_section)
-        top_layout.addWidget(self.board_groupbox)
-        top_layout.addWidget(self.task_groupbox)
+        top_layout.addWidget(self.pyc_board_groupbox)
+        top_layout.addWidget(self.ac_board_groupbox)
+        # top_layout.addWidget(self.task_groupbox)
         top_layout.addWidget(self.file_groupbox)
         top_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -204,7 +209,7 @@ class Run_task_tab(QtWidgets.QWidget):
 
         # Keyboard Shortcuts
         shortcut_dict = {
-            "t": self.task_select.showMenu,
+            # "t": self.task_select.showMenu,
             "u": self.setup_task,
             "Space": (lambda: self.stop_task() if self.running else self.start_task() if self.uploaded else None),
         }
@@ -212,7 +217,7 @@ class Run_task_tab(QtWidgets.QWidget):
         init_keyboard_shortcuts(self, shortcut_dict)
 
         # Initial setup.
-        self.disconnect()  # Set initial state as disconnected.
+        # self.disconnect()  # Set initial state as disconnected.
 
     # General methods
     def print_to_log(self, print_string, end="\n"):
@@ -311,8 +316,8 @@ class Run_task_tab(QtWidgets.QWidget):
                 time.sleep(0.5)
                 self.GUI_main.refresh()
                 self.disconnect()
-            if self.connected and self.board.status["framework"]:
-                self.task_groupbox.setEnabled(True)
+            # if self.pyc_connected and self.board.status["framework"]:
+            #     self.task_groupbox.setEnabled(True)
 
     # Widget methods.
 
@@ -340,10 +345,10 @@ class Run_task_tab(QtWidgets.QWidget):
             self.connect_button.setEnabled(True)
             self.connect_button.setText("Disconnect")
             self.connect_button.setIcon(QtGui.QIcon("source/gui/icons/disconnect.svg"))
-            if self.board.status["framework"]:
-                self.task_groupbox.setEnabled(True)
-            else:
-                self.print_to_log("\nLoad pyControl framework using 'Config' button.")
+            # if self.board.status["framework"]:
+            #     self.task_groupbox.setEnabled(True)
+            # else:
+            #     self.print_to_log("\nLoad pyControl framework using 'Config' button.")
         except (SerialException, PyboardError):
             self.print_to_log("Connection failed.")
             self.connect_button.setEnabled(True)
@@ -355,7 +360,7 @@ class Run_task_tab(QtWidgets.QWidget):
             self.board.close()
             self.print_to_log("\nDisconnected from board.")
         self.board = None
-        self.task_groupbox.setEnabled(False)
+        # self.task_groupbox.setEnabled(False)
         self.file_groupbox.setEnabled(False)
         self.session_groupbox.setEnabled(False)
         self.config_dropdown.setEnabled(False)

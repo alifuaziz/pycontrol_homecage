@@ -10,8 +10,10 @@ from . import (
     ProtocolAssemblyTab,
     SystemOverviewTab,
     ExperimentOverviewTab,
+
 )
 from source.dialogs import LoginDialog, AddUserDialog
+from source.gui.run_task_tab import Run_task_tab
 import db as database
 
 
@@ -28,6 +30,7 @@ class MainGUI(QMainWindow):
         database.setup_df["connected"] = False
 
         # Initialise tabs
+        self.run_task_tab = Run_task_tab(self)
         self.mouse_tab = MouseOverViewTab(self)
         self.setup_tab = SetupsOverviewTab(self)
         self.protocol_tab = ProtocolAssemblyTab(self)
@@ -35,6 +38,7 @@ class MainGUI(QMainWindow):
         self.experiment_tab = ExperimentOverviewTab(self)
         # Add tabs to tab widget
         self.tab_widget = QTabWidget(self)
+        self.tab_widget.addTab(self.run_task_tab, "Run task")
         self.tab_widget.addTab(self.system_tab, "System Overview")
         self.tab_widget.addTab(self.experiment_tab, "Experiments")
         self.tab_widget.addTab(self.mouse_tab, "Mouse Overview")
