@@ -12,6 +12,7 @@ from source.gui.plotting import Task_plot
 from source.gui.utility import init_keyboard_shortcuts, NestedMenu, TaskInfo
 from source.gui.hardware_variables_dialog import set_hardware_variables, hw_vars_defined_in_setup
 
+from source.gui.MouseTable import MouseTable
 
 # Run_task_gui ------------------------------------------------------------------------
 
@@ -144,11 +145,15 @@ class Run_task_tab(QtWidgets.QWidget):
         # self.upload_button.clicked.connect(self.setup_task)
 
         # Access Control Groupbox
-
-
+        
+        self.mouse_groupbox = QtWidgets.QGroupBox("Access Control Animals Session")
+        self.mouse_table = MouseTable(self)
+        table_layout = QtWidgets.QGridLayout()
+        table_layout.addWidget(self.mouse_table)
+        self.mouse_groupbox.setLayout(table_layout)
         # pyControl Session groupbox.
 
-        self.session_groupbox = QtWidgets.QGroupBox("pyControl Session")
+        self.pycontrol_session_groupbox = QtWidgets.QGroupBox("pyControl Session")
 
         self.start_button = QtWidgets.QPushButton("Start")
         self.start_button.setIcon(QtGui.QIcon("source/gui/icons/play.svg"))
@@ -167,7 +172,7 @@ class Run_task_tab(QtWidgets.QWidget):
         sessiongroup_layout.addWidget(self.start_button, 0, 0)
         sessiongroup_layout.addWidget(self.stop_button, 1, 0)
         sessiongroup_layout.setContentsMargins(pad, pad, pad, pad)
-        self.session_groupbox.setLayout(sessiongroup_layout)
+        self.pycontrol_session_groupbox.setLayout(sessiongroup_layout)
 
         self.start_button.clicked.connect(self.start_task)
         self.stop_button.clicked.connect(self.stop_task)
@@ -197,8 +202,9 @@ class Run_task_tab(QtWidgets.QWidget):
         # Main layout
         self.run_layout = QtWidgets.QGridLayout()
         self.run_layout.addWidget(self.top_section, 0, 0)
-        self.run_layout.addWidget(self.session_groupbox, 1, 0)
-        self.run_layout.addWidget(self.vsplitter, 2, 0)
+        self.run_layout.addWidget(self.mouse_groupbox, 1, 0)
+        self.run_layout.addWidget(self.pycontrol_session_groupbox, 2, 0)
+        self.run_layout.addWidget(self.vsplitter, 3, 0)
         self.run_layout.setRowStretch(2, 1)
 
         self.setLayout(self.run_layout)
@@ -362,7 +368,7 @@ class Run_task_tab(QtWidgets.QWidget):
         self.board = None
         # self.task_groupbox.setEnabled(False)
         self.file_groupbox.setEnabled(False)
-        self.session_groupbox.setEnabled(False)
+        self.pycontrol_session_groupbox.setEnabled(False)
         self.config_dropdown.setEnabled(False)
         self.board_select.setEnabled(True)
         self.connect_button.setText("Connect")
@@ -432,7 +438,7 @@ class Run_task_tab(QtWidgets.QWidget):
             self.task_plot.set_state_machine(self.board.sm_info)
             self.task_info.set_state_machine(self.board.sm_info)
             self.file_groupbox.setEnabled(True)
-            self.session_groupbox.setEnabled(True)
+            self.pycontrol_session_groupbox.setEnabled(True)
             self.start_button.setEnabled(True)
             self.stop_button.setEnabled(False)
             self.fresh_task = True

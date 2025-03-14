@@ -31,7 +31,7 @@ class MouseOverViewTab(QWidget):
     def __init__(self, parent: QMainWindow = None):
         super(QWidget, self).__init__(parent)
 
-        self.GUI = self.parent()
+        self.MainGUI = self.parent()
 
         """Initialise buttons to update the mouse table"""
         self.add_mouse_button = QPushButton("Add Mouse")
@@ -60,7 +60,7 @@ class MouseOverViewTab(QWidget):
         self.scrollable_mouse = QScrollArea()
         self.scrollable_mouse.setWidgetResizable(True)
         self.scrollable_mouse.horizontalScrollBar().setEnabled(False)
-        self.mouse_table_widget = MouseTable(self.GUI, self)
+        self.mouse_table_widget = MouseTable(self.MainGUI)
         self.scrollable_mouse.setWidget(self.mouse_table_widget)
 
         # Buttons to control stuff
