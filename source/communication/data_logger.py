@@ -166,7 +166,7 @@ class Data_logger:
             )
         ]
         if self.board.framework_running:
-            self.process_data(new_data)
+            self.write_and_emit_data(new_data)
             if self.board.data_consumers:
                 for data_consumer in self.board.data_consumers:
                     data_consumer.process_data(new_data)
