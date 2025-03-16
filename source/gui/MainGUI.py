@@ -1,5 +1,5 @@
 import os
-
+from serial.tools import list_ports
 from PyQt5.QtWidgets import QMainWindow, QTabWidget
 from PyQt5 import QtCore
 
@@ -28,6 +28,8 @@ class MainGUI(QMainWindow):
         self.setGeometry(10, 30, 900, 800)  # Left, top, width, height.
 
         database.setup_df["connected"] = False
+
+        self.available_ports = None
 
         # Initialise tabs
         self.run_task_tab = Run_task_tab(self)
@@ -97,6 +99,15 @@ class MainGUI(QMainWindow):
 
         if database.message_queue:
             self.print_dispatch()
+            
+            
+        # Scan serial ports.
+        ports = set([c[0] for c in list_ports.comports() if ("Pyboard" in c[1]) or ("USB Serial Device" in c[1])])
+        self.available_ports_changed = ports != self.available_ports
+        if self.available_ports_changed:
+            self.available_ports = ports
+
+
 
     def refresh_tabs(self) -> None:
         """Refresh all tabs in the GUI"""

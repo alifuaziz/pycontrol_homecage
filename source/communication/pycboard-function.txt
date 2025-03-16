@@ -1,0 +1,75 @@
+- pycboard
+# Low level operations 
+    - __init__
+    - reset
+    - hard reset
+    - gc_collect
+    - DFU mode
+    - disable mass storage
+    - enable mass storage
+# pyboard file system operation 
+    - write file 
+    - get file hash 
+    - transfer file
+    - transfer folder
+    - remove_file
+# pycontrol operation 
+    - load_framework
+    - load_hardware definition
+    - transfer device files
+    - setup_statemachine
+    - get_states
+    - get_events
+    - get_ananlog_inputs
+    - startframework
+    - stop_framework
+    - process_data
+    - trigger event
+    - get timestamp
+    - send serial data
+# Getting and settings variables
+    - set_variable
+    - get_variable
+    - get_variables
+
+- Datalogger class
+# 
+- reset
+    Reset the variables in the class
+    file path
+    subject id
+    analog_writers
+- open data file
+    - Opens the pycontrol output file
+- write_info_line
+    - Writes to the data file 
+- tsv_row_str
+- copy task file
+- close files
+    - closes the data file 
+- process data
+write to file
+data to string
+print message
+
+# Analog writer
+- open data files
+- close files
+- save analog chunk
+
+
+System handler Class funcitionality 
+
+
+# saving the data to logs appriodately durin experiments
+- check for data 
+# Saving the data at the end of a session to the correct parts of the code base
+- Close files
+- update mouse log 
+
+
+# Doing pycboard / Access contorl commands
+- process_ac state
+- handle mouse training 
+- start running mouse task 
+- run mouse protocol 
