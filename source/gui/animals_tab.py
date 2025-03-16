@@ -53,12 +53,12 @@ class Animals_tab(QWidget):
 
         # Initialize_camera_groupbox
         self.camera_table_groupbox = QGroupBox("Camera Table")
-        self.camera_table = CameraOverviewTable(parent=self)
-        self.camera_table.setMinimumSize(1, 1)
-        self.camera_table.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.animal_table = AnimalOverviewTable(parent=self)
+        self.animal_table.setMinimumSize(1, 1)
+        self.animal_table.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
         self.camera_table_layout = QVBoxLayout()
-        self.camera_table_layout.addWidget(self.camera_table)
+        self.camera_table_layout.addWidget(self.animal_table)
         self.camera_table_groupbox.setLayout(self.camera_table_layout)
 
         self.page_layout = QVBoxLayout()
@@ -70,11 +70,21 @@ class Animals_tab(QWidget):
             self.saved_setups = []
             default_animal = AnimalSettingsConfig(**default_animal_settings)
             self.saved_setups.append(default_animal)
-            self.setups[default_animal.RFID] = Animal_table_item(self.camera_table, **default_animal_settings)
         else:
             with open(self.save_path, "r") as file:
                 animal_list = json.load(file)
             self.saved_setups = [AnimalSettingsConfig(**animal_dict) for animal_dict in animal_list]
+
+        for animal in self.saved_setups:
+            self.setups[animal.RFID] = Animal_table_item(
+            self.animal_table,
+            name=animal.name,
+            RFID=animal.RFID,
+            sex=animal.sex,
+            weight=animal.weight,
+            task=animal.task,
+            training=animal.training,
+            )
 
         self.refresh()
         self.setups_changed = False
@@ -149,7 +159,7 @@ class Animals_tab(QWidget):
                 return setup.settings.unique_id
         return None
 
-    def get_camera_settings_from_label(self, label: str) -> AnimalSettingsConfig:
+    def get_animal_settings_from_label(self, label: str) -> AnimalSettingsConfig:
         """Get the camera settings config datastruct from the setups table."""
         for setup in self.setups.values():
             if setup.settings.name is None:
@@ -160,12 +170,16 @@ class Animals_tab(QWidget):
                 return setup.settings
         return None
 
+    def get_available_tasks(self):
+        """get the list of tasks in the task folder"""
+        pass
 
-class CameraOverviewTable(QTableWidget):
+
+class AnimalOverviewTable(QTableWidget):
     """Table for displaying information and setting for connected cameras."""
 
     def __init__(self, parent=None):
-        super(CameraOverviewTable, self).__init__(parent)
+        super(AnimalOverviewTable, self).__init__(parent)
         self.setups_tab = parent
         self.header_names = ["Name", "RFID", "Sex", "Weight (g)", "Task", "Training"]  # read only bool
         self.setColumnCount(len(self.header_names))
@@ -188,14 +202,7 @@ class Animal_table_item:
     """Class representing single camera in the Camera Tab table."""
 
     def __init__(self, setups_table, name, RFID, sex, weight, task, training):
-        self.settings = AnimalSettingsConfig(
-            name=name,
-            RFID=RFID,
-            sex=sex,
-            weight=weight,
-            task=task,
-            training=training
-        )
+        self.settings = AnimalSettingsConfig(name=name, RFID=RFID, sex=sex, weight=weight, task=task, training=training)
 
         self.setups_table = setups_table
         self.setups_tab = setups_table.setups_tab
@@ -231,7 +238,7 @@ class Animal_table_item:
 
         # Pixel format edit
         self.animal_task = QComboBox()
-        self.animal_task.addItems([]) # list of task in the task folder
+        self.animal_task.addItems([])  # list of task in the task folder
         self.animal_task.activated.connect(self.animal_task_changed)
 
         self.animal_training_checkbox = TableCheckbox()
@@ -273,8 +280,6 @@ class Animal_table_item:
         """Return name if defined else unique ID."""
         return self.settings.name if self.settings.name else self.settings.RFID
 
-    # Camera Parameters --------------------------------------------------------------------------
-
     def animal_weight_changed(self):
         """Called when fps text of setup is edited."""
         self.settings.sex = int(self.weight_edit.text())
@@ -302,8 +307,6 @@ class Animal_table_item:
         """Called when the downsampling factor of the seutp is edited"""
         self.settings.downsampling_factor = int(self.animal_training_checkbox.currentText())
         self.setups_tab.update_saved_setups(setup=self)
-
-    # Camera preview functions -----------------------------------------------------------------------
 
     def add_animal_row(self):
         """Button to preview the camera in the row"""

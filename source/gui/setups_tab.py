@@ -5,6 +5,7 @@ from source.gui.settings import get_setting, user_folder
 from source.gui.utility import TableCheckbox, parallel_call
 from source.gui.hardware_variables_dialog import Hardware_variables_editor
 from source.communication.pycboard import Pycboard, PyboardError
+from source.communication.access_control import Access_control
 import random
 import string
 import os
@@ -229,6 +230,8 @@ class Setups_tab(QtWidgets.QWidget):
 
     def load_framework(self):
         self.print_to_log("Loading framework...\n")
+        
+        
         parallel_call("load_framework", self.get_selected_setups())
 
     def enable_flashdrive(self):
@@ -297,7 +300,7 @@ class Setup:
         self.config = config
         self.setup_tab = setup_tab
 
-        self.board = None
+        self.pyc_board = None
         self.delay_printing = False
 
         # Select Check box
@@ -391,62 +394,80 @@ class Setup:
                 self.setup_tab.print_to_log(*p)
             self.setup_tab.print_to_log("")  # Add blank line.
 
-    def connect(self):
+    def pyc_connect(self):
         """Instantiate pyboard object, opening serial connection to board."""
-        self.print("\nConnecting to board.")
+        self.print("\nConnecting to pyControl board.")
         try:
-            self.board = Pycboard(self.pyc_port, print_func=self.print)
+            self.pyc_board = Pycboard(self.pyc_port, print_func=self.print)
         except PyboardError:
             self.print("\nUnable to connect.")
 
-    def disconnect(self):
-        if self.board:
-            self.board.close()
-            self.board = None
+    def pyc_disconnect(self):
+        if self.pyc_board:
+            self.pyc_board.close()
+            self.pyc_board = None
+
+    def ac_connect(self): 
+        self.print("\nConnecting to Access Control board.")
+        try:
+            self.ac_board = Access_control(self.pyc_port, print_func=self.print)
+        except PyboardError:
+            self.print("\nUnable to connect.")
+    
+    def ac_disconnect(self):
+        if self.ac_board:
+            self.ac_board.close()
+            self.ac_board = None
 
     def unplugged(self):
         """Called when a board is physically unplugged from computer.
         Closes serial connection and removes row from setups table."""
-        if self.board:
-            self.board.close()
+        if self.pyc_board:
+            self.pyc_board.close()
         self.setup_tab.setups_table.removeRow(self.pyc_board_item.row())
         del self.setup_tab.setups[self.pyc_port]
 
-    def load_framework(self):
-        if not self.board:
-            self.connect()
-        if self.board:
-            self.board.load_framework()
+    def load_pyc_framework(self):
+        if not self.pyc_board:
+            self.pyc_connect()
+        if self.pyc_board:
+            self.pyc_board.load_framework()
+
+    def load_ac_framwork(self):
+        if not self.ac_board:
+            self.ac_connect()
+        if self.ac_board:
+            self.ac_board.load_framework()
 
     def load_hardware_definition(self):
-        if not self.board:
-            self.connect()
-        if self.board:
-            self.board.load_hardware_definition(self.setup_tab.hwd_path)
+        if not self.pyc_board:
+            self.pyc_connect()
+        if self.pyc_board:
+            self.pyc_board.load_hardware_definition(self.setup_tab.hwd_path)
 
     def DFU_mode(self):
         """Enter DFU mode"""
         self.select_checkbox.setChecked(False)
-        if not self.board:
-            self.connect()
-        if self.board:
-            self.board.DFU_mode()
-            self.board.close()
+        if not self.pyc_board:
+            self.pyc_connect()
+        if self.pyc_board:
+            self.pyc_board.DFU_mode()
+            self.pyc_board.close()
 
     def enable_flashdrive(self):
         self.select_checkbox.setChecked(False)
-        if not self.board:
-            self.connect()
-        if self.board:
-            self.board.enable_mass_storage()
-            self.board.close()
-            self.board = None
+        if not self.pyc_board:
+            self.pyc_connect()
+        if self.pyc_board:
+            self.pyc_board.enable_mass_storage()
+            self.pyc_board.close()
+            self.pyc_board = None
 
     def disable_flashdrive(self):
         self.select_checkbox.setChecked(False)
-        if not self.board:
-            self.connect()
-        if self.board:
-            self.board.disable_mass_storage()
-            self.board.close()
-            self.board = None
+        if not self.pyc_board:
+            self.pyc_connect()
+        if self.pyc_board:
+            self.pyc_board.disable_mass_storage()
+            self.pyc_board.close()
+            self.pyc_board = None

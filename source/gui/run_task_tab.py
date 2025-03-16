@@ -125,32 +125,13 @@ class Run_task_tab(QtWidgets.QWidget):
         data_dir_button.clicked.connect(self.select_data_dir)
         self.subject_text.textChanged.connect(self.test_data_path)
 
-        # Task groupbox
-
-        # self.task_groupbox = QtWidgets.QGroupBox("Task")
-
-        # self.task_select = NestedMenu("select task", ".py")
-        # self.task_select.set_callback(self.task_changed)
-        # self.upload_button = QtWidgets.QPushButton("Upload")
-        # self.upload_button.setIcon(QtGui.QIcon("source/gui/icons/circle-arrow-up.svg"))
-        # self.controls_button = QtWidgets.QPushButton("Controls")
-        # self.controls_button.setIcon(QtGui.QIcon("source/gui/icons/filter.svg"))
-
-        # taskgroup_layout = QtWidgets.QGridLayout(self.task_groupbox)
-        # taskgroup_layout.addWidget(self.task_select, 0, 0, 1, 2)
-        # taskgroup_layout.addWidget(self.upload_button, 1, 0)
-        # taskgroup_layout.addWidget(self.controls_button, 1, 1)
-        # taskgroup_layout.setContentsMargins(pad, pad, pad, pad)
-
-        # self.upload_button.clicked.connect(self.setup_task)
-
         # Access Control Groupbox
         
-        self.mouse_groupbox = QtWidgets.QGroupBox("Access Control Animals Session")
-        self.mouse_table = MouseTable(self)
-        table_layout = QtWidgets.QGridLayout()
-        table_layout.addWidget(self.mouse_table)
-        self.mouse_groupbox.setLayout(table_layout)
+        # self.mouse_groupbox = QtWidgets.QGroupBox("Access Control Animals Session")
+        # self.mouse_table = MouseTable(self)
+        # table_layout = QtWidgets.QGridLayout()
+        # table_layout.addWidget(self.mouse_table)
+        # self.mouse_groupbox.setLayout(table_layout)
         # pyControl Session groupbox.
 
         self.pycontrol_session_groupbox = QtWidgets.QGroupBox("pyControl Session")
@@ -202,7 +183,7 @@ class Run_task_tab(QtWidgets.QWidget):
         # Main layout
         self.run_layout = QtWidgets.QGridLayout()
         self.run_layout.addWidget(self.top_section, 0, 0)
-        self.run_layout.addWidget(self.mouse_groupbox, 1, 0)
+        # self.run_layout.addWidget(self.mouse_groupbox, 1, 0)
         self.run_layout.addWidget(self.pycontrol_session_groupbox, 2, 0)
         self.run_layout.addWidget(self.vsplitter, 3, 0)
         self.run_layout.setRowStretch(2, 1)

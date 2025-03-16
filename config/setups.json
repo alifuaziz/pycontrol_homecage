@@ -3,5 +3,10 @@
         "name": "Default Setup",
         "pyc_port": "COM3",
         "ac_port": "COM8"
+    },
+    {
+        "name": "SWRA0",
+        "pyc_port": "",
+        "ac_port": "COM8"
     }
 ]
