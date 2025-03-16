@@ -27,6 +27,7 @@ def get_setting(setting_type, setting_name, want_default=False):
             "data": os.path.join(os.getcwd(), "data"),
             "experiments": os.path.join(os.getcwd(), "experiments"),
             "tasks": os.path.join(os.getcwd(), "tasks"),
+            "config":os.path.join(os.getcwd(), "configs"),
             ########################## PYCONTROL HOMECAGE FOLDERS ##########################
             "user_path": os.path.join(DATA_DIR, "users.txt"),
             "task_dir": os.path.join(DATA_DIR, "tasks"),  # Task Directory

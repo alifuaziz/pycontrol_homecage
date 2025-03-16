@@ -4,16 +4,16 @@ from PyQt5.QtWidgets import QMainWindow, QTabWidget
 from PyQt5 import QtCore
 
 from source.communication.messages import MessageRecipient
-from . import (
-    MouseOverViewTab,
-    SetupsOverviewTab,
-    ProtocolAssemblyTab,
-    SystemOverviewTab,
-    ExperimentOverviewTab,
-
-)
+# from . import (
+    # MouseOverViewTab,
+    # ProtocolAssemblyTab,
+    # SystemOverviewTab,
+    # ExperimentOverviewTab,
+# )
 from source.dialogs import LoginDialog, AddUserDialog
 from source.gui.run_task_tab import Run_task_tab
+from source.gui.setups_tab import Setups_tab
+from source.gui.animals_tab import Animals_tab
 import db as database
 
 
@@ -24,52 +24,51 @@ class MainGUI(QMainWindow):
         self.GUI_filepath = os.path.dirname(os.path.abspath(__file__))
         self.app = None  # Overwritten with QApplication instance in main.
         self.active_user = None
-        self.setWindowTitle("pyControlHomeCage: Please log in")
+        self.setWindowTitle("pyControlHomeCage")
         self.setGeometry(10, 30, 900, 800)  # Left, top, width, height.
 
         database.setup_df["connected"] = False
 
         self.available_ports = None
-
+        ports = set([c[0] for c in list_ports.comports() if ("Pyboard" in c[1]) or ("USB Serial Device" in c[1])])
+        self.available_ports_changed = ports != self.available_ports
+        if self.available_ports_changed:
+            self.available_ports = ports
+            
+        print(ports)
+        # self.refresh()
         # Initialise tabs
-        self.run_task_tab = Run_task_tab(self)
-        self.mouse_tab = MouseOverViewTab(self)
-        self.setup_tab = SetupsOverviewTab(self)
-        self.protocol_tab = ProtocolAssemblyTab(self)
-        self.system_tab = SystemOverviewTab(self)
-        self.experiment_tab = ExperimentOverviewTab(self)
+        # self.run_task_tab = Run_task_tab(self)
+        self.setups_tab = Setups_tab(self)
+        self.animals_tab = Animals_tab(self)
+
+        # self.mouse_tab = MouseOverViewTab(self)
+        # self.protocol_tab = ProtocolAssemblyTab(self)
+        # self.system_tab = SystemOverviewTab(self)
+        # self.experiment_tab = ExperimentOverviewTab(self)
         # Add tabs to tab widget
         self.tab_widget = QTabWidget(self)
-        self.tab_widget.addTab(self.run_task_tab, "Run task")
-        self.tab_widget.addTab(self.system_tab, "System Overview")
-        self.tab_widget.addTab(self.experiment_tab, "Experiments")
-        self.tab_widget.addTab(self.mouse_tab, "Mouse Overview")
-        self.tab_widget.addTab(self.setup_tab, "Setup Overview")
-        self.tab_widget.addTab(self.protocol_tab, "Protocols")
-        # Dict of table references
-        self.table_map = {
-            "system_tab.list_of_experiments": self.system_tab.experiement_overview_table,
-            "system_tab.list_of_setups": self.system_tab.setup_table_widget,
-            "experiment_tab.list_of_experiments": self.experiment_tab.list_of_experiments,
-            "mouse_tab.list_of_mice": self.mouse_tab.mouse_table_widget,
-            "setup_tab.list_of_setups": self.setup_tab.setup_table_widget,
-        }
+        # self.tab_widget.addTab(self.run_task_tab, "Run task")
+        self.tab_widget.addTab(self.setups_tab, "Setups")
+        self.tab_widget.addTab(self.animals_tab, "Animals")
+        # self.tab_widget.addTab(self.system_tab, "System Overview")
+        # self.tab_widget.addTab(self.experiment_tab, "Experiments")
+        # self.tab_widget.addTab(self.mouse_tab, "Mouse Overview")
+        # self.tab_widget.addTab(self.protocol_tab, "Protocols")
 
-        database.print_consumers[MessageRecipient.system_overview] = self.system_tab.write_to_log
-
-        self._disable_gui_pre_login()
 
         self.login = LoginDialog()
         self.add_user = AddUserDialog()
 
-        self.system_tab.login_button.clicked.connect(self.change_user)
-        self.system_tab.add_user_button.clicked.connect(self.add_user_)
-        self.system_tab.logout_button.clicked.connect(self.logout_user)
+        # self.system_tab.login_button.clicked.connect(self.change_user)
+        # self.system_tab.add_user_button.clicked.connect(self.add_user_)
+        # self.system_tab.logout_button.clicked.connect(self.logout_user)
 
         self.setCentralWidget(self.tab_widget)
         self.show()
 
         self._init_timer()
+
 
     # Refresh Logic --------------------------------------------------------------------
 
@@ -87,32 +86,29 @@ class MainGUI(QMainWindow):
         2. Refreshes the GUI tabs.
         3. Prints any messages that have entered the message queue
         """
-        for controller in database.controllers.values():
-            controller.check_for_data()
+        # for controller in database.controllers.values():
+        #     controller.check_for_data()
 
-            if self.system_tab.plot_isactive:
-                self.system_tab.experiment_plot.update()
+        #     # if self.system_tab.plot_isactive:
+        #     #     self.system_tab.experiment_plot.update()
 
-        self.refresh_tabs()
-        if database.update_table_queue:
-            self._refresh_tables()
+        # self.refresh_tabs()
+        # if database.update_table_queue:
+        #     self._refresh_tables()
 
-        if database.message_queue:
-            self.print_dispatch()
-            
-            
+        # if database.message_queue:
+        #     self.print_dispatch()
+
         # Scan serial ports.
-        ports = set([c[0] for c in list_ports.comports() if ("Pyboard" in c[1]) or ("USB Serial Device" in c[1])])
-        self.available_ports_changed = ports != self.available_ports
-        if self.available_ports_changed:
-            self.available_ports = ports
-
-
+        # ports = set([c[0] for c in list_ports.comports() if ("Pyboard" in c[1]) or ("USB Serial Device" in c[1])])
+        # self.available_ports_changed = ports != self.available_ports
+        # if self.available_ports_changed:
+        #     self.available_ports = ports
+        pass
 
     def refresh_tabs(self) -> None:
         """Refresh all tabs in the GUI"""
-        self.setup_tab._refresh()
-        self.experiment_tab._refresh()
+        # self.experiment_tab._refresh()
 
     def _refresh_tables(self):
         """
@@ -153,30 +149,20 @@ class MainGUI(QMainWindow):
 
     ### Login Functions ------------------------------------------------------------------------
 
-    def _disable_gui_pre_login(self) -> None:
-        self.mouse_tab.setEnabled(False)
-        self.setup_tab.setEnabled(False)
-        self.protocol_tab.setEnabled(False)
-        self.system_tab.setup_groupbox.setEnabled(False)
-        self.system_tab.log_groupbox.setEnabled(False)
-        self.system_tab.experiment_groupbox.setEnabled(False)
-        self.experiment_tab.setEnabled(False)
-
     def change_user(self) -> None:
         self.login.exec_()
         self.active_user = self.login.userID
         if self.active_user:
             self.setWindowTitle("pyControlHomecage: logged in as {}".format(self.active_user))
-            self.mouse_tab.setEnabled(True)
-            self.setup_tab.setEnabled(True)
-            self.protocol_tab.setEnabled(True)
-            self.system_tab.setup_groupbox.setEnabled(True)
-            self.system_tab.log_groupbox.setEnabled(True)
-            self.system_tab.experiment_groupbox.setEnabled(True)
-            self.experiment_tab.setEnabled(True)
+            # self.mouse_tab.setEnabled(True)
+            # self.protocol_tab.setEnabled(True)
+            # self.system_tab.setup_groupbox.setEnabled(True)
+            # self.system_tab.log_groupbox.setEnabled(True)
+            # self.system_tab.experiment_groupbox.setEnabled(True)
+            # self.experiment_tab.setEnabled(True)
 
             # Login button update
-            self.system_tab.logout_button.setEnabled(True)
+            # self.system_tab.logout_button.setEnabled(True)
 
     def add_user_(self) -> None:
         self.add_user.exec_()
@@ -186,15 +172,14 @@ class MainGUI(QMainWindow):
         self.active_user = None
         self.setWindowTitle("Not logged in")
         self.mouse_tab.setEnabled(False)
-        self.setup_tab.setEnabled(False)
         self.protocol_tab.setEnabled(False)
-        self.system_tab.setup_groupbox.setEnabled(False)
-        self.system_tab.log_groupbox.setEnabled(False)
-        self.system_tab.experiment_groupbox.setEnabled(False)
-        self.system_tab.user_groupbox.setEnabled(True)
+        # self.system_tab.setup_groupbox.setEnabled(False)
+        # self.system_tab.log_groupbox.setEnabled(False)
+        # self.system_tab.experiment_groupbox.setEnabled(False)
+        # self.system_tab.user_groupbox.setEnabled(True)
         self.experiment_tab.setEnabled(False)
 
         # Enable / disable login buttons appropriately
-        self.system_tab.logout_button.setEnabled(False)
-        self.system_tab.login_button.setEnabled(True)
-        self.system_tab.add_user_button.setEnabled(True)
+        # self.system_tab.logout_button.setEnabled(False)
+        # self.system_tab.login_button.setEnabled(True)
+        # self.system_tab.add_user_button.setEnabled(True)

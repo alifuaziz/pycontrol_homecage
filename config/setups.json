@@ -1,0 +1,7 @@
+[
+    {
+        "name": "Default Setup",
+        "pyc_port": "COM3",
+        "ac_port": "COM8"
+    }
+]

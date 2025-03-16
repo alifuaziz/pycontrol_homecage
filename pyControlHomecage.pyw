@@ -40,17 +40,6 @@ from source.gui.MainGUI import MainGUI
 from source.utils import get_path, custom_excepthook
 
 
-def initialise_excepthook() -> None:
-    """Initialise a custom excepthook that prints errors to a log
-    in addition to shutting down the program"""
-    setup_dir = get_path("setups")
-    sys._excepthook = sys.excepthook
-
-    exception_path = os.path.join(setup_dir, "exception_store.txt")
-    except_hook = partial(custom_excepthook, filepath=exception_path)
-    sys.excepthook = except_hook
-
-
 def main() -> None:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
@@ -60,7 +49,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    initialise_excepthook()
+    setup_dir = get_path("setups")
+    sys._excepthook = sys.excepthook
+
+    exception_path = os.path.join(setup_dir, "exception_store.txt")
+    except_hook = partial(custom_excepthook, filepath=exception_path)
+    sys.excepthook = except_hook
 
     app = main()
     sys.exit(app.exec_())

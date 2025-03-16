@@ -5,39 +5,24 @@ from source.gui.settings import get_setting, user_folder
 from source.gui.utility import TableCheckbox, parallel_call
 from source.gui.hardware_variables_dialog import Hardware_variables_editor
 from source.communication.pycboard import Pycboard, PyboardError
+import random
+import string
+import os
+from dataclasses import asdict, dataclass
 
 
 class Setups_tab(QtWidgets.QWidget):
     """The setups tab is used to name and configure setups, where one setup is one
     pyboard and connected hardware."""
 
-    def __init__(self, parent=None):
-        super(QtWidgets.QWidget, self).__init__(parent)
+    def __init__(self, GUI_main):
+        super(QtWidgets.QWidget, self).__init__(GUI_main)
 
         # Variables
-        self.GUI_main = self.parent()
+        self.GUI_main = GUI_main
         self.setups = {}  # Dictionary {serial_port:Setup}
         self.setup_names = []
         self.available_setups_changed = False
-
-        # rename old file from setup_names.json to setups.json
-        # and change format so that names are a key within a serial port dictionary
-        setup_names = Path("config", "setup_names.json")
-        try:
-            new_path = Path("config", "setups.json")
-            setup_names.rename(new_path)
-            with open(new_path, "r", encoding="utf-8") as names_json:
-                names_dict = json.loads(names_json.read())
-                new_format = {}
-                for k, v in names_dict.items():
-                    new_format[k] = {"name": v, "variables": {}}
-                with open(new_path, "w", encoding="utf-8") as f:
-                    f.write(json.dumps(new_format, sort_keys=True, indent=4))
-        except FileNotFoundError:
-            pass
-
-        # Load saved setup names.
-        self.saved_setups = self.get_setups_from_json()
 
         # Select setups group box.
         self.setup_groupbox = QtWidgets.QGroupBox("Setups")
@@ -45,14 +30,17 @@ class Setups_tab(QtWidgets.QWidget):
         self.select_all_checkbox = QtWidgets.QCheckBox("Select all")
         self.select_all_checkbox.stateChanged.connect(self.select_all_setups)
 
-        self.setups_table = QtWidgets.QTableWidget(0, 3, parent=self)
-        self.setups_table.setHorizontalHeaderLabels(["Select", "Serial port", "Name"])
+        self.setups_table = QtWidgets.QTableWidget(0, 5, parent=self)
+        self.setups_table.setHorizontalHeaderLabels(
+            ["Select", "Name", "Pycboard serial port", "AC baord serial port", "Add/Remove"]
+        )
         self.setups_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        self.setups_table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        self.setups_table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.setups_table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.setups_table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.setups_table.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.setups_table.horizontalHeader().setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         self.setups_table.verticalHeader().setVisible(False)
         self.setups_table.itemChanged.connect(lambda item: item.changed() if hasattr(item, "changed") else None)
-
         # Configuration buttons
         self.configure_group = QtWidgets.QGroupBox("Configure selected")
         load_fw_button = QtWidgets.QPushButton("Load framework")
@@ -111,14 +99,19 @@ class Setups_tab(QtWidgets.QWidget):
         self.setups_layout.setRowStretch(2, 1)
         self.setLayout(self.setups_layout)
 
-    def get_setups_from_json(self):
+        # Load saved setup names.
         self.save_path = Path("config", "setups.json")
-        if self.save_path.exists():
-            with open(self.save_path, "r", encoding="utf-8") as f:
-                setups_from_json = json.loads(f.read())
+        if not os.path.exists(self.save_path):
+            self.saved_configs = []
+            default_setup = Setup_config(name="Default Setup", pyc_port="", ac_port="")
+            self.setups[default_setup.pyc_port] = Setup(default_setup, self)
         else:
-            setups_from_json = {}  # {setup.port:setup.name}
-        return setups_from_json
+            with open(self.save_path, "r") as file:
+                cams_list = json.load(file)
+            self.saved_configs = [Setup_config(**cam_dict) for cam_dict in cams_list]
+            # for each saved_config initialize a setup object
+            for config in self.saved_configs:
+                self.setups[config.pyc_port] = Setup(config, self)
 
     def print_to_log(self, print_string, end="\n"):
         self.log_textbox.moveCursor(QtGui.QTextCursor.MoveOperation.End)
@@ -169,7 +162,7 @@ class Setups_tab(QtWidgets.QWidget):
 
     def update_available_setups(self):
         """Called when boards are plugged, unplugged or renamed."""
-        setup_names = sorted([setup.name for setup in self.setups.values() if setup.name != "_hidden_"])
+        setup_names = sorted([setup.config.name for setup in self.setups.values()])
         if setup_names != self.setup_names:
             self.available_setups_changed = True
             self.setup_names = setup_names
@@ -177,48 +170,40 @@ class Setups_tab(QtWidgets.QWidget):
         else:
             self.available_setups_changed = False
 
-    def update_saved_setups(self, setup):
-        """Update the save setup names when a setup name is edited."""
-        if setup.name == setup.port:
-            if setup.port not in self.saved_setups.keys():
-                return
-            else:
-                del self.saved_setups[setup.port]
-        else:
-            if setup.port not in self.saved_setups:
-                # create a new setup
-                self.saved_setups[setup.port] = {}
-                self.saved_setups[setup.port]["name"] = setup.name
-                self.saved_setups[setup.port]["variables"] = {}
-            else:
-                # edit existing setup name
-                self.saved_setups[setup.port]["name"] = setup.name
-                if "variables" not in self.saved_setups[setup.port].keys():
-                    self.saved_setups[setup.port]["variables"] = {}
+    def get_saved_setup(self, name=None):
+        """Get a saved CameraSettingsConfig object from a name or unique_id from self.saved_setups."""
+        if name:
+            try:
+                return next(config for config in self.saved_configs if config.name == name)
+            except StopIteration:
+                pass
+        return None
 
-        with open(self.save_path, "w", encoding="utf-8") as f:
-            f.write(json.dumps(self.saved_setups, sort_keys=True, indent=4))
+    def update_saved_setups(self, setup):
+        """Updates the saved setups"""
+        saved_setup = self.get_saved_setup(name=setup.config.name)
+        # if saved_setup == setup.settings:
+        #     return
+        if saved_setup:
+            self.saved_configs.remove(saved_setup)
+        # if the setup has a name
+        # if setup.settings.label:
+        # add the setup config to the saved setups list
+        self.saved_configs.append(setup.config)
+        # Save any setups in the list of setups
+        if self.saved_configs:
+            with open(self.save_path, "w") as f:
+                json.dump([asdict(setup) for setup in self.saved_configs], f, indent=4)
 
     def get_port(self, setup_name):
         """Return a setups serial port given the setups name."""
-        return next(setup.port for setup in self.setups.values() if setup.name == setup_name)
+        return next(setup.port for setup in self.setups.values() if setup.config.name == setup_name)
 
     def get_selected_setups(self, has_name_filter=False):
         """Return sorted list of setups whose select checkboxes are ticked."""
-        if has_name_filter:
-            return sorted(
-                [
-                    setup
-                    for setup in self.setups.values()
-                    if setup.select_checkbox.isChecked() and setup.name != setup.port and setup.name != "_hidden_"
-                ],
-                key=lambda setup: setup.port,
-            )
-        else:
-            return sorted(
-                [setup for setup in self.setups.values() if setup.select_checkbox.isChecked()],
-                key=lambda setup: setup.port,
-            )
+        return sorted(
+            [setup for setup in self.setups.values() if setup.select_checkbox.isChecked()],
+        )
 
     def disconnect(self):
         """Disconect from all pyboards, called on tab change."""
@@ -266,20 +251,38 @@ class Setups_tab(QtWidgets.QWidget):
             self.print_to_log("Loading hardware definition...\n")
             parallel_call("load_hardware_definition", self.get_selected_setups())
 
-    def refresh(self):
-        """Called regularly when no task running to update tab with currently
-        connected boards."""
-        if self.GUI_main.available_ports_changed:
-            # Add any newly connected setups.
-            for serial_port in self.GUI_main.available_ports:
-                if serial_port not in self.setups.keys():
-                    self.setups[serial_port] = Setup(serial_port, self)
-            # Remove any unplugged setups.
-            for serial_port in list(self.setups.keys()):
-                if serial_port not in self.GUI_main.available_ports:
-                    self.setups[serial_port].unplugged()
-            self.setups_table.sortItems(1)
+    def add_row(self):
+        """Function that adds another setup"""
+        name = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+        config = Setup_config(name=name, pyc_port="", ac_port="")
+        self.setups[name] = Setup(config, self)
         self.update_available_setups()
+
+    def remove_row(self):
+        """Function that adds another setup"""
+        # name = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+        # self.setups[name] = Setup(name, self)
+        # self.update_available_setups()
+        print("not implemented")
+        pass
+
+    def get_unused_comports(self):
+        unused_ports = list(self.GUI_main.available_ports.copy())
+        # for setup in self.saved_configs:
+        #     for port in self.GUI_main.available_ports:
+        #         if port == setup.pyc_port or port == setup.ac_port:
+        #             unused_ports.remove(port)
+        return unused_ports
+
+
+# setup config -------------------------------------------------------------------
+
+
+@dataclass
+class Setup_config:
+    name: str
+    pyc_port: str
+    ac_port: str
 
 
 # setup class --------------------------------------------------------------------
@@ -288,66 +291,89 @@ class Setups_tab(QtWidgets.QWidget):
 class Setup:
     """Class representing one setup in the setups table."""
 
-    def __init__(self, serial_port, setups_tab):
+    def __init__(self, config, setup_tab):
         """Setup is intilised when board is plugged into computer."""
 
-        try:
-            self.name = setups_tab.saved_setups[serial_port]["name"]
-        except KeyError:
-            # key error could be from the serial_port not being connected
-            # or the serial port was never assigned a name before
-            self.name = serial_port
+        self.config = config
+        self.setup_tab = setup_tab
 
-        self.port = serial_port
-        self.setups_tab = setups_tab
         self.board = None
         self.delay_printing = False
 
-        self.port_item = QtWidgets.QTableWidgetItem()
-        self.port_item.setText(serial_port)
-        self.port_item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)
-
-        self.name_edit = QtWidgets.QLineEdit()
-        self.name_edit.setPlaceholderText("name required if you want to edit setup variables")
-        self.name_edit.textChanged.connect(self.name_changed)
-        if self.name != self.port:
-            self.name_edit.setText(self.name)
-
+        # Select Check box
         self.select_checkbox = TableCheckbox()
         self.select_checkbox.checkbox.stateChanged.connect(self.checkbox_handler)
 
-        self.setups_tab.setups_table.insertRow(0)
-        self.setups_tab.setups_table.setCellWidget(0, 0, self.select_checkbox)
-        self.setups_tab.setups_table.setItem(0, 1, self.port_item)
-        self.setups_tab.setups_table.setCellWidget(0, 2, self.name_edit)
+        # Name
+        self.name_edit = QtWidgets.QLineEdit(self.config.name)
+        self.name_edit.setPlaceholderText("name required if you want to edit setup variables")
+        self.name_edit.textChanged.connect(self.name_changed)
+        # Add remove button
+        self.add_remove_button = QtWidgets.QPushButton("Add/Remove")
+        self.add_remove_button.clicked.connect(self.setup_tab.add_row)
+        self.add_remove_button.setEnabled(True)
+
+        # pycboard
+        self.pyc_board_item = QtWidgets.QComboBox()
+        self.pyc_board_item.addItems(self.setup_tab.get_unused_comports())
+        self.pyc_board_item.currentIndexChanged.connect(self.pyc_board_changed)
+        self.pyc_board_item.setCurrentText(self.config.pyc_port)
+        # AC board
+        self.ac_board_item = QtWidgets.QComboBox()
+        self.ac_board_item.currentIndexChanged.connect(self.ac_board_changed)
+        self.ac_board_item.addItems(self.setup_tab.get_unused_comports())
+        self.ac_board_item.setCurrentText(self.config.ac_port)
+
+        self.setup_tab.setups_table.insertRow(0)
+        self.setup_tab.setups_table.setCellWidget(0, 0, self.select_checkbox)
+        self.setup_tab.setups_table.setCellWidget(0, 1, self.name_edit)
+        self.setup_tab.setups_table.setCellWidget(0, 2, self.pyc_board_item)
+        self.setup_tab.setups_table.setCellWidget(0, 3, self.ac_board_item)
+        self.setup_tab.setups_table.setCellWidget(0, 4, self.add_remove_button)
         self.signal_from_rowcheck = True
 
-        self.name_changed()
-
-    def checkbox_handler(self):
-        if self.signal_from_rowcheck:
-            self.setups_tab.multi_config_enable()
+    # Name edit
 
     def name_changed(self):
         """If name entry in table is blank setup name is set to serial port."""
         name = str(self.name_edit.text())
-        self.name = name if name else self.port
-        self.setups_tab.update_available_setups()
-        self.setups_tab.update_saved_setups(self)
+        self.config.name = name
+        self.setup_tab.update_available_setups()
+        self.setup_tab.update_saved_setups(self)
 
-        if name == "":
-            self.name_edit.setStyleSheet("color: red;")
-        elif name == "_hidden_":
-            self.name_edit.setStyleSheet("color: grey;")
-        else:
-            self.name_edit.setStyleSheet("color: black;")
+    # Add new setup button function
+
+    def check_valid_setup(self):
+        """If anything in this table is change, this check should be run"""
+        return True
+
+    # Available pybaord functions
+    def pyc_board_changed(self):
+        # if the pyboard is changed
+        self.config.pyc_port = self.pyc_board_item.currentText()
+        self.setup_tab.update_saved_setups(self)
+        # Option to add the setup if you want and if its valid
+        self.add_remove_button.setEnabled(self.check_valid_setup())
+
+    def ac_board_changed(self):
+        # if the pyboard is changed
+        self.config.ac_port = self.ac_board_item.currentText()
+        self.setup_tab.update_saved_setups(self)
+        # Option to add the setup if you want and if its valid
+        self.add_remove_button.setEnabled(self.check_valid_setup())
+
+    # Pyboard firmware functions ---------------------------------------------
+
+    def checkbox_handler(self):
+        if self.signal_from_rowcheck:
+            self.setup_tab.multi_config_enable()
 
     def print(self, print_string, end="\n"):
         """Print a string to the log prepended with the setup name."""
         if self.delay_printing:
             self.print_queue.append((print_string, end))
             return
-        self.setups_tab.print_to_log(f"\n{self.name}: " + print_string)
+        self.setup_tab.print_to_log(f"\n{self.config.name}: " + print_string)
 
     def start_delayed_print(self):
         """Store print output to display later to avoid error
@@ -360,16 +386,16 @@ class Setup:
         name and horisontal line above."""
         self.delay_printing = False
         if self.print_queue:
-            self.setups_tab.print_to_log(f"{self.name} " + "-" * 70)
+            self.setup_tab.print_to_log(f"{self.config.name} " + "-" * 70)
             for p in self.print_queue:
-                self.setups_tab.print_to_log(*p)
-            self.setups_tab.print_to_log("")  # Add blank line.
+                self.setup_tab.print_to_log(*p)
+            self.setup_tab.print_to_log("")  # Add blank line.
 
     def connect(self):
         """Instantiate pyboard object, opening serial connection to board."""
         self.print("\nConnecting to board.")
         try:
-            self.board = Pycboard(self.port, print_func=self.print)
+            self.board = Pycboard(self.pyc_port, print_func=self.print)
         except PyboardError:
             self.print("\nUnable to connect.")
 
@@ -383,8 +409,8 @@ class Setup:
         Closes serial connection and removes row from setups table."""
         if self.board:
             self.board.close()
-        self.setups_tab.setups_table.removeRow(self.port_item.row())
-        del self.setups_tab.setups[self.port]
+        self.setup_tab.setups_table.removeRow(self.pyc_board_item.row())
+        del self.setup_tab.setups[self.pyc_port]
 
     def load_framework(self):
         if not self.board:
@@ -396,7 +422,7 @@ class Setup:
         if not self.board:
             self.connect()
         if self.board:
-            self.board.load_hardware_definition(self.setups_tab.hwd_path)
+            self.board.load_hardware_definition(self.setup_tab.hwd_path)
 
     def DFU_mode(self):
         """Enter DFU mode"""

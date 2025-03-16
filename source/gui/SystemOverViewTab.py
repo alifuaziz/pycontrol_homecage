@@ -50,7 +50,7 @@ class SystemOverviewTab(QWidget):
         self.experiment_groupbox = QGroupBox("Active Experiments")
         self.scrollable_experiments = QScrollArea()
         self.scrollable_experiments.setWidgetResizable(True)
-        self.experiement_overview_table: ExperimentOverviewTable = ExperimentOverviewTable(only_active=True)
+        # self.experiement_overview_table: ExperimentOverviewTable = ExperimentOverviewTable(only_active=True)
         self.scrollable_experiments.setWidget(self.experiement_overview_table)
 
         # Initialise the New Experiment Buttons

@@ -29,7 +29,7 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
         self._set_headers()
         self.only_active = only_active
 
-        self.fill_table()
+        # self.fill_table()
 
     def _set_headers(self):
         self.setHorizontalHeaderLabels(self.header_names)
@@ -37,34 +37,34 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
         self.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.select_col_ix = self.header_names.index("Select")
 
-    def fill_table(self):
-        self.clearContents()
-        if self.only_active:
-            self.setRowCount(sum(database.exp_df["Active"]))
-        else:
-            self.setRowCount(len(database.exp_df))
+    # def fill_table(self):
+    #     self.clearContents()
+    #     if self.only_active:
+    #         self.setRowCount(sum(database.exp_df["Active"]))
+    #     else:
+    #         self.setRowCount(len(database.exp_df))
 
-        self.buttons = []
-        row_index = 0
-        for _, row in database.exp_df.iterrows():
-            if (not self.only_active) or (self.only_active and row["Active"]):
-                for col_index in range(self.columnCount()):
-                    try:
-                        cHeader = self.header_names[col_index]
+    #     self.buttons = []
+    #     row_index = 0
+    #     for _, row in database.exp_df.iterrows():
+    #         if (not self.only_active) or (self.only_active and row["Active"]):
+    #             for col_index in range(self.columnCount()):
+    #                 try:
+    #                     cHeader = self.header_names[col_index]
 
-                        self.setItem(
-                            row_index,
-                            col_index,
-                            QtWidgets.QTableWidgetItem(str(row[cHeader])),
-                        )
-                    except KeyError:
-                        pass
+    #                     self.setItem(
+    #                         row_index,
+    #                         col_index,
+    #                         QtWidgets.QTableWidgetItem(str(row[cHeader])),
+    #                     )
+    #                 except KeyError:
+    #                     pass
 
-                chkBoxItem = QtWidgets.QTableWidgetItem()
-                chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-                chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
-                self.setItem(row_index, self.select_col_ix, chkBoxItem)
-                row_index += 1
+    #             chkBoxItem = QtWidgets.QTableWidgetItem()
+    #             chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+    #             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
+    #             self.setItem(row_index, self.select_col_ix, chkBoxItem)
+    #             row_index += 1
 
     def get_checked_experiments(self) -> List[str]:
         """Check which experiments the user has checked
