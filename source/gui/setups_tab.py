@@ -11,6 +11,15 @@ import string
 import os
 from dataclasses import asdict, dataclass
 
+# setup config -------------------------------------------------------------------
+
+
+@dataclass
+class Setup_config:
+    name: str
+    pyc_port: str
+    ac_port: str
+
 
 class Setups_tab(QtWidgets.QWidget):
     """The setups tab is used to name and configure setups, where one setup is one
@@ -21,7 +30,7 @@ class Setups_tab(QtWidgets.QWidget):
 
         # Variables
         self.GUI_main = GUI_main
-        self.setups = {}  # Dictionary {serial_port:Setup}
+        self.setups = {}  # Dictionary {serial_port:Setup_table_item}
         self.setup_names = []
         self.available_setups_changed = False
 
@@ -44,7 +53,7 @@ class Setups_tab(QtWidgets.QWidget):
         self.setups_table.itemChanged.connect(lambda item: item.changed() if hasattr(item, "changed") else None)
         # Configuration buttons
         self.configure_group = QtWidgets.QGroupBox("Configure selected")
-        load_fw_button = QtWidgets.QPushButton("Load framework")
+        load_fw_button = QtWidgets.QPushButton("Load frameworks")
         load_fw_button.setIcon(QtGui.QIcon("source/gui/icons/upload.svg"))
         load_hw_button = QtWidgets.QPushButton("Load hardware definition")
         load_hw_button.setIcon(QtGui.QIcon("source/gui/icons/upload.svg"))
@@ -52,7 +61,7 @@ class Setups_tab(QtWidgets.QWidget):
         enable_flashdrive_button.setIcon(QtGui.QIcon("source/gui/icons/enable.svg"))
         disable_flashdrive_button = QtWidgets.QPushButton("Disable flashdrive")
         disable_flashdrive_button.setIcon(QtGui.QIcon("source/gui/icons/disable.svg"))
-        load_fw_button.clicked.connect(self.load_framework)
+        load_fw_button.clicked.connect(self.load_frameworks)
         load_hw_button.clicked.connect(self.load_hardware_definition)
         enable_flashdrive_button.clicked.connect(self.enable_flashdrive)
         disable_flashdrive_button.clicked.connect(self.disable_flashdrive)
@@ -101,18 +110,19 @@ class Setups_tab(QtWidgets.QWidget):
         self.setLayout(self.setups_layout)
 
         # Load saved setup names.
-        self.save_path =os.path.join( user_folder('config'),'setups.json')
+        self.save_path = os.path.join(user_folder("config"), "setups.json")
         if not os.path.exists(self.save_path):
             self.saved_configs = []
             default_setup = Setup_config(name="Default Setup", pyc_port="", ac_port="")
-            self.setups[default_setup.pyc_port] = Setup(default_setup, self)
+            self.setups[default_setup.pyc_port] = Setup_table_item(default_setup, self)
         else:
             with open(self.save_path, "r") as file:
                 cams_list = json.load(file)
             self.saved_configs = [Setup_config(**cam_dict) for cam_dict in cams_list]
             # for each saved_config initialize a setup object
             for config in self.saved_configs:
-                self.setups[config.pyc_port] = Setup(config, self)
+                self.setups[config.pyc_port] = Setup_table_item(config, self)
+        self.update_available_setups()
 
     def print_to_log(self, print_string, end="\n"):
         self.log_textbox.moveCursor(QtGui.QTextCursor.MoveOperation.End)
@@ -146,7 +156,7 @@ class Setups_tab(QtWidgets.QWidget):
             self.dfu_btn.setEnabled(True)
         else:
             self.dfu_btn.setEnabled(False)
-        if len(self.get_selected_setups(has_name_filter=True)):
+        if len(self.get_selected_boards(has_name_filter=True)):
             self.variables_btn.setEnabled(True)
         else:
             self.variables_btn.setEnabled(False)
@@ -170,6 +180,7 @@ class Setups_tab(QtWidgets.QWidget):
             self.multi_config_enable()
         else:
             self.available_setups_changed = False
+        print("setup_names", setup_names)
 
     def get_saved_setup(self, name=None):
         """Get a saved CameraSettingsConfig object from a name or unique_id from self.saved_setups."""
@@ -196,14 +207,23 @@ class Setups_tab(QtWidgets.QWidget):
             with open(self.save_path, "w") as f:
                 json.dump([asdict(setup) for setup in self.saved_configs], f, indent=4)
 
-    def get_port(self, setup_name):
+    def get_port(self, setup_name, pyc_board = True):
         """Return a setups serial port given the setups name."""
-        return next(setup.port for setup in self.setups.values() if setup.config.name == setup_name)
-
-    def get_selected_setups(self, has_name_filter=False):
+        if pyc_board:
+            return next(setup.config.pyc_port for setup in self.setups.values() if setup.config.name == setup_name)
+        else:
+            return next(setup.config.ac_port for setup in self.setups.values() if setup.config.name == setup_name)
+            
+    def get_selected_boards(self, has_name_filter=False):
         """Return sorted list of setups whose select checkboxes are ticked."""
         return sorted(
             [setup for setup in self.setups.values() if setup.select_checkbox.isChecked()],
+        )
+
+    def get_selected_ac_boards(self, has_name_filter=False):
+        """Return sorted list of setups whose select checkboxes are ticked."""
+        return sorted(
+            [setup.acboard for setup in self.setups.values() if setup.select_checkbox.isChecked()],
         )
 
     def disconnect(self):
@@ -228,23 +248,24 @@ class Setups_tab(QtWidgets.QWidget):
             return
         hardware_var_editor.exec()
 
-    def load_framework(self):
-        self.print_to_log("Loading framework...\n")
-        
-        
-        parallel_call("load_framework", self.get_selected_setups())
+    def load_frameworks(self):
+        for setup_item in self.get_selected_boards():
+            self.print_to_log("Loading pyControl framework...\n")
+            setup_item.load_pyc_framework()
+            self.print_to_log("Loading Access control framework...\n")
+            setup_item.load_ac_framework()
 
     def enable_flashdrive(self):
         self.print_to_log("Enabling flashdrive...\n")
-        parallel_call("enable_flashdrive", self.get_selected_setups())
+        parallel_call("enable_flashdrive", self.get_selected_boards())
 
     def disable_flashdrive(self):
         self.print_to_log("Disabling flashdrive...\n")
-        parallel_call("disable_flashdrive", self.get_selected_setups())
+        parallel_call("disable_flashdrive", self.get_selected_boards())
 
     def DFU_mode(self):
         self.print_to_log("Enabling DFU mode...\n")
-        parallel_call("DFU_mode", self.get_selected_setups())
+        parallel_call("DFU_mode", self.get_selected_boards())
 
     def load_hardware_definition(self):
         self.hwd_path = QtWidgets.QFileDialog.getOpenFileName(
@@ -252,13 +273,13 @@ class Setups_tab(QtWidgets.QWidget):
         )[0]
         if self.hwd_path:
             self.print_to_log("Loading hardware definition...\n")
-            parallel_call("load_hardware_definition", self.get_selected_setups())
+            parallel_call("load_hardware_definition", self.get_selected_boards())
 
     def add_row(self):
         """Function that adds another setup"""
         name = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
         config = Setup_config(name=name, pyc_port="", ac_port="")
-        self.setups[name] = Setup(config, self)
+        self.setups[name] = Setup_table_item(config, self)
         self.update_available_setups()
 
     def remove_row(self):
@@ -270,28 +291,21 @@ class Setups_tab(QtWidgets.QWidget):
         pass
 
     def get_unused_comports(self):
-        unused_ports = list(self.GUI_main.available_ports.copy())
-        # for setup in self.saved_configs:
-        #     for port in self.GUI_main.available_ports:
-        #         if port == setup.pyc_port or port == setup.ac_port:
-        #             unused_ports.remove(port)
-        return unused_ports
-
-
-# setup config -------------------------------------------------------------------
-
-
-@dataclass
-class Setup_config:
-    name: str
-    pyc_port: str
-    ac_port: str
+        if self.GUI_main.available_ports:
+            unused_ports = list(self.GUI_main.available_ports.copy())
+            # for setup in self.saved_configs:
+            #     for port in self.GUI_main.available_ports:
+            #         if port == setup.pyc_port or port == setup.ac_port:
+            #             unused_ports.remove(port)
+            return unused_ports
+        else:
+            return []
 
 
 # setup class --------------------------------------------------------------------
 
 
-class Setup:
+class Setup_table_item:
     """Class representing one setup in the setups table."""
 
     def __init__(self, config, setup_tab):
@@ -301,6 +315,7 @@ class Setup:
         self.setup_tab = setup_tab
 
         self.pyc_board = None
+        self.ac_board = None
         self.delay_printing = False
 
         # Select Check box
@@ -398,7 +413,7 @@ class Setup:
         """Instantiate pyboard object, opening serial connection to board."""
         self.print("\nConnecting to pyControl board.")
         try:
-            self.pyc_board = Pycboard(self.pyc_port, print_func=self.print)
+            self.pyc_board = Pycboard(self.config.pyc_port, print_func=self.print)
         except PyboardError:
             self.print("\nUnable to connect.")
 
@@ -407,13 +422,13 @@ class Setup:
             self.pyc_board.close()
             self.pyc_board = None
 
-    def ac_connect(self): 
+    def ac_connect(self):
         self.print("\nConnecting to Access Control board.")
         try:
-            self.ac_board = Access_control(self.pyc_port, print_func=self.print)
+            self.ac_board = Access_control(self.config.ac_port, print_func=self.print)
         except PyboardError:
             self.print("\nUnable to connect.")
-    
+
     def ac_disconnect(self):
         if self.ac_board:
             self.ac_board.close()
@@ -433,7 +448,7 @@ class Setup:
         if self.pyc_board:
             self.pyc_board.load_framework()
 
-    def load_ac_framwork(self):
+    def load_ac_framework(self):
         if not self.ac_board:
             self.ac_connect()
         if self.ac_board:

@@ -510,7 +510,7 @@ class Pycboard(Pyboard):
             else:
                 unexpected_input.append(new_byte.decode())
         if new_data:
-            self.data_logger.write_and_emit_data(new_data)
+            self.data_logger.process_data(new_data)
             if self.data_consumers:
                 for data_consumer in self.data_consumers:
                     data_consumer.process_data(new_data)

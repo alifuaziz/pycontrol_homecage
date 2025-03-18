@@ -43,8 +43,7 @@ from source.utils import get_path, custom_excepthook
 def main() -> None:
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    gui = MainGUI()
-    gui.app = app  # To allow app functions to be called from GUI.
+    MainGUI(app)
     return app
 
 

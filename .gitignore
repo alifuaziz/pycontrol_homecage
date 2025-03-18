@@ -16,3 +16,4 @@ data_new/*
 *egg-info
 Errorlog.txt
 src/pycontrol_homecage/config.json
+configs/*

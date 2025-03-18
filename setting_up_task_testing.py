@@ -16,10 +16,10 @@ print(mice_data.head())
 
 print("Pycboard")
 pyc_board = Pycboard("COM8")
-# pyc_board.load_framework()
+pyc_board.load_framework()
 print("Acess Control")
 ac_board = Access_control("COM3")
-# ac_board.load_framework()
+ac_board.load_framework()
 
 sc= system_controller(AC=ac_board, PYC=pyc_board)
 print(mice_data.iloc[0]['Task'])

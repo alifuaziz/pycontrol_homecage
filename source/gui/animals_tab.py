@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QHeaderView,
+    QMessageBox,
 )
 
 from .utility import TableCheckbox
@@ -77,13 +78,13 @@ class Animals_tab(QWidget):
 
         for animal in self.saved_setups:
             self.setups[animal.RFID] = Animal_table_item(
-            self.animal_table,
-            name=animal.name,
-            RFID=animal.RFID,
-            sex=animal.sex,
-            weight=animal.weight,
-            task=animal.task,
-            training=animal.training,
+                self.animal_table,
+                name=animal.name,
+                RFID=animal.RFID,
+                sex=animal.sex,
+                weight=animal.weight,
+                task=animal.task,
+                training=animal.training,
             )
 
         self.refresh()
@@ -181,7 +182,16 @@ class AnimalOverviewTable(QTableWidget):
     def __init__(self, parent=None):
         super(AnimalOverviewTable, self).__init__(parent)
         self.setups_tab = parent
-        self.header_names = ["Name", "RFID", "Sex", "Weight (g)", "Task", "Training"]  # read only bool
+        self.header_names = [
+            "Name",
+            "RFID",
+            "Sex",
+            "Weight (g)",
+            "Task",
+            "Training",
+            "Open Record",
+            "New Animal",
+        ]  # read only bool
         self.setColumnCount(len(self.header_names))
         self.setRowCount(0)
         self.verticalHeader().setVisible(False)
@@ -191,9 +201,23 @@ class AnimalOverviewTable(QTableWidget):
             resize_mode = QHeaderView.ResizeMode.Stretch if i < 2 else QHeaderView.ResizeMode.ResizeToContents
             self.horizontalHeader().setSectionResizeMode(i, resize_mode)
 
-    def remove(self, unique_id):
+        self.add_animal_row()
+
+    def add_animal_row(self):
+        """Button to preview the camera in the row"""
+        new_animal = Animal_table_item(
+            self,
+            name="",
+            RFID="",
+            sex=0,
+            weight=0,
+            task="",
+            training=False,
+        )
+
+    def remove(self, rfid):
         for row in range(self.rowCount()):
-            if self.cellWidget(row, 1).text() == unique_id:
+            if self.cellWidget(row, 1).text() == rfid:
                 self.removeRow(row)
                 break
 
@@ -232,32 +256,39 @@ class Animal_table_item:
 
         # Exposure time edit
         self.sex_edit = QComboBox()
+        self.sex_edit.addItems(["Male", "Female"])
         if self.settings.weight:
             self.sex_edit.setCurrentText(str(self.settings.weight))
         self.sex_edit.currentIndexChanged.connect(self.animal_sex_changed)
 
-        # Pixel format edit
+        # Animal task
         self.animal_task = QComboBox()
-        self.animal_task.addItems([])  # list of task in the task folder
+        self.animal_task.addItems(
+            [f for f in os.listdir(user_folder("tasks")) if f.endswith(".py")]
+        )  # list of task in the task folder
         self.animal_task.activated.connect(self.animal_task_changed)
 
         self.animal_training_checkbox = TableCheckbox()
-        if self.settings.training:
-            self.animal_training_checkbox.setChecked(bool(self.settings.training))
-        # self.animal_training_checkbox.stateChanged.connect(self.animal_training_changed)
+        self.animal_training_checkbox.setChecked(bool(self.settings.training))
+        self.animal_training_checkbox.setEnabled(False)
+
+        # Open Record button
+        self.open_record_button = QPushButton("Open Record")
+        self.open_record_button.clicked.connect(self.open_record_file)
 
         # Preview button.
-        self.add_new_animal_button = QPushButton("Add New animal")
-        self.add_new_animal_button.clicked.connect(self.add_animal_row)
+        self.add_new_animal_button = QPushButton("Remove Animal")
+        self.add_new_animal_button.clicked.connect(self.remove_animal_row)
 
         # Populate the table
         self.setups_table.insertRow(0)
         self.setups_table.setCellWidget(0, 0, self.name_edit)
         self.setups_table.setCellWidget(0, 1, self.rfid_edit)
-        self.setups_table.setCellWidget(0, 2, self.weight_edit)
-        self.setups_table.setCellWidget(0, 3, self.sex_edit)
+        self.setups_table.setCellWidget(0, 2, self.sex_edit)
+        self.setups_table.setCellWidget(0, 3, self.weight_edit)
+        self.setups_table.setCellWidget(0, 4, self.animal_training_checkbox)
         self.setups_table.setCellWidget(0, 5, self.animal_task)
-        self.setups_table.setCellWidget(0, 6, self.animal_training_checkbox)
+        self.setups_table.setCellWidget(0, 6, self.open_record_button)
         self.setups_table.setCellWidget(0, 7, self.add_new_animal_button)
 
     def animal_name_changed(self):
@@ -308,12 +339,25 @@ class Animal_table_item:
         self.settings.downsampling_factor = int(self.animal_training_checkbox.currentText())
         self.setups_tab.update_saved_setups(setup=self)
 
-    def add_animal_row(self):
-        """Button to preview the camera in the row"""
-        self.setups_tab.refresh()
-        if self.setups_tab.preview_showing:
-            self.close_preview_camera()
-        self.setups_tab.camera_preview = CameraWidget(self.setups_tab, self.get_label(), preview_mode=True)
-        self.setups_tab.camera_preview.begin_capturing()
-        self.setups_tab.page_layout.addWidget(self.setups_tab.camera_preview)
-        self.setups_tab.preview_showing = True
+    def open_record_file(self):
+        """Open a .txt file when the button is clicked."""
+        file_path = os.path.join(user_folder("records"), f"{self.settings.RFID}.txt")
+        if os.path.exists(file_path):
+            os.startfile(file_path)
+        else:
+            print(f"Record file for {self.settings.RFID} does not exist.")
+
+    def remove_animal_row(self):
+        """"""
+        reply = QMessageBox.question(
+            self.setups_table,
+            "Remove Animal",
+            f"Are you sure you want to remove the animal with RFID {self.settings.RFID}?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply == QMessageBox.Yes:
+            self.setups_table.removeRow(self.setups_table.indexAt(self.rfid_edit.pos()).row())
+            self.setups_tab.setups.pop(self.settings.RFID)
+            self.setups_tab.update_saved_setups(self)
+            self.setups_tab.refresh()

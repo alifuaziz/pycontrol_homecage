@@ -59,7 +59,9 @@ class Access_control(Pycboard):
         self.exec(inspect.getsource(_receive_file))  # define receive file function.
         self.exec("import os; import gc; import sys; import pyb")
         self.status["usb_mode"] = self.eval("pyb.usb_mode()").decode()
-        if self.data_logger: # This is required since the system handler requires both the pycboard and the acboard to init
+        if (
+            self.data_logger
+        ):  # This is required since the system handler requires both the pycboard and the acboard to init
             self.data_logger.reset()
 
     def _init_logger(self) -> None:
@@ -103,9 +105,11 @@ class Access_control(Pycboard):
             user_folder("access_control_dir"), file_type="py", show_progress=True
         )  # upload access control framework
         self.transfer_file(
-            os.path.join("source", "pyAccessControl", "main_script_for_pyboard.py"),
+            os.path.join(user_folder("access_control_dir"), "main_script_for_pyboard.py"),
             "main.py",
-        )
+        ) 
+
+    def set_up_access_control(self):
         try:  # Instantiate Hardware definition into pyboard
             self.exec("from pyAccessControl.access_control_1_0 import Access_control_upy")
         except PyboardError as e:
