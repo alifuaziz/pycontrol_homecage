@@ -38,7 +38,7 @@ class MainGUI(QMainWindow):
         # self.refresh()
         # Initialise tabs
         # self.run_task_tab = Run_task_tab(self)
-        self.homecage_tab = 
+        # self.homecage_tab = 
         self.setups_tab = Setups_tab(self)
         self.animals_tab = Animals_tab(self)
 

@@ -33,7 +33,7 @@ class Setups_tab(QtWidgets.QWidget):
 
         self.setups_table = QtWidgets.QTableWidget(0, 5, parent=self)
         self.setups_table.setHorizontalHeaderLabels(
-            ["Select", "Name", "Pycboard serial port", "AC baord serial port", "Add/Remove"]
+            ["Select", "Name", "Pycboard serial port", "AC board serial port", "Add/Remove"]
         )
         self.setups_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         self.setups_table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
@@ -101,7 +101,7 @@ class Setups_tab(QtWidgets.QWidget):
         self.setLayout(self.setups_layout)
 
         # Load saved setup names.
-        self.save_path = Path("config", "setups.json")
+        self.save_path =os.path.join( user_folder('config'),'setups.json')
         if not os.path.exists(self.save_path):
             self.saved_configs = []
             default_setup = Setup_config(name="Default Setup", pyc_port="", ac_port="")
