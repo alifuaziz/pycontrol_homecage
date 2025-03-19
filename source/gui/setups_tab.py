@@ -191,6 +191,10 @@ class Setups_tab(QtWidgets.QWidget):
                 pass
         return None
 
+    def get_saved_setups(self):
+        """Return a list of all saved setups."""
+        return [config.name for config in self.saved_configs]
+
     def update_saved_setups(self, setup):
         """Updates the saved setups"""
         saved_setup = self.get_saved_setup(name=setup.config.name)
@@ -284,18 +288,16 @@ class Setups_tab(QtWidgets.QWidget):
 
     def remove_row(self):
         """Function that adds another setup"""
-        # name = "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
-        # self.setups[name] = Setup(name, self)
-        # self.update_available_setups()
-        print("not implemented")
+
         pass
 
     def get_unused_comports(self):
         unused_ports = list(self.GUI_main.available_ports.copy())
-        # for setup in self.saved_configs:
-        #     for port in self.GUI_main.available_ports:
-        #         if port == setup.pyc_port or port == setup.ac_port:
-        #             unused_ports.remove(port)
+        print(unused_ports)
+        for setup in self.saved_configs:
+            for port in self.GUI_main.available_ports:
+                if port == setup.pyc_port or port == setup.ac_port:
+                    unused_ports.remove(port)
         return unused_ports
 
 
@@ -330,13 +332,15 @@ class Setup_table_item:
 
         # pycboard
         self.pyc_board_item = QtWidgets.QComboBox()
-        self.pyc_board_item.addItems([])
+        self.pyc_board_item.addItem(self.config.pyc_port)
+        self.pyc_board_item.addItems(self.setup_tab.get_unused_comports())
         self.pyc_board_item.currentIndexChanged.connect(self.pyc_board_changed)
         self.pyc_board_item.setCurrentText(self.config.pyc_port)
         # AC board
         self.ac_board_item = QtWidgets.QComboBox()
+        self.ac_board_item.addItem(self.config.ac_port)
         self.ac_board_item.currentIndexChanged.connect(self.ac_board_changed)
-        self.ac_board_item.addItems([])
+        self.ac_board_item.addItems(self.setup_tab.get_unused_comports())
         self.ac_board_item.setCurrentText(self.config.ac_port)
 
         self.setup_tab.setups_table.insertRow(0)
@@ -369,8 +373,8 @@ class Setup_table_item:
         self.setup_tab.update_saved_setups(self)
         # Option to add the setup if you want and if its valid
         self.add_remove_button.setEnabled(self.check_valid_setup())
-        self.ac_board_item.addItem(self.setup_tab.get_unused_comports())
-        self.pyc_board_item.addItem(self.setup_tab.get_unused_comports())
+        # self.ac_board_item.addItems(self.setup_tab.get_unused_comports())
+        # self.pyc_board_item.addItems(self.setup_tab.get_unused_comports())
 
     def ac_board_changed(self):
         # if the pyboard is changed
@@ -378,8 +382,8 @@ class Setup_table_item:
         self.setup_tab.update_saved_setups(self)
         # Option to add the setup if you want and if its valid
         self.add_remove_button.setEnabled(self.check_valid_setup())
-        self.ac_board_item.addItem(self.setup_tab.get_unused_comports())
-        self.pyc_board_item.addItem(self.setup_tab.get_unused_comports())
+        # self.ac_board_item.addItems(self.setup_tab.get_unused_comports())
+        # self.pyc_board_item.addItems(self.setup_tab.get_unused_comports())
 
     # Pyboard firmware functions ---------------------------------------------
 

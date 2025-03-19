@@ -357,11 +357,15 @@ class Run_task_tab(QtWidgets.QWidget):
             self.board_select.setEnabled(True)
 
     def disconnect(self):
-        # Disconnect from pyboard.
+        # Disconnect from setup.
         if self.pyc_board:
             self.pyc_board.close()
-            self.print_to_log("\nDisconnected from board.")
+            self.print_to_log("\nDisconnected from pyControl board.")
+        if self.ac_board: 
+            self.ac_board.close()
+            self.print_to_log("\nDisconnected from Access Control board")
         self.pyc_board = None
+        self.ac_board = None
         self.task_groupbox.setEnabled(False)
         self.file_groupbox.setEnabled(False)
         self.session_groupbox.setEnabled(False)

@@ -44,6 +44,14 @@ class MainGUI(QMainWindow):
         self.current_tab_ind = 0  # Which tab is currently selected.
         self.app = app
 
+        # Get a list of the ports         
+        ports = set([c[0] for c in list_ports.comports() if ("Pyboard" in c[1]) or ("USB Serial Device" in c[1])])
+        self.available_ports_changed = ports != self.available_ports
+        if self.available_ports_changed:
+            self.available_ports = ports
+
+        print(self.available_ports)
+
         # Initialise tabs
         self.run_task_tab = Run_task_tab(self)
         self.setups_tab = Setups_tab(self)
@@ -70,11 +78,6 @@ class MainGUI(QMainWindow):
         self.refresh()
 
     def refresh(self):
-
-        ports = set([c[0] for c in list_ports.comports() if ("Pyboard" in c[1]) or ("USB Serial Device" in c[1])])
-        self.available_ports_changed = ports != self.available_ports
-        if self.available_ports_changed:
-            self.available_ports = ports
 
         self.run_task_tab.refresh()
 
