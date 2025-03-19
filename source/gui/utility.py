@@ -375,6 +375,34 @@ class NestedMenu(QtWidgets.QPushButton):
         else:
             return self.submenus_dictionary[os.path.sep.join(split_folder[:-1])]
 
+# ----------------------------------------------------------------------------------
+# Acess Control Info
+# ----------------------------------------------------------------------------------
+
+class AccessControlInfo:
+    """Class for displaying the current state and most recent event and printed line.
+    Instantiates the GUI elements and has their process data method, but does not
+    handle layout of the elements.
+    """
+
+    def __init__(self):
+        self.state_label = QtWidgets.QLabel("State:")
+        self.state_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.state_text = QtWidgets.QLineEdit("")
+        self.state_text.setReadOnly(True)
+
+        self.event_label = QtWidgets.QLabel("Event:")
+        self.event_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.event_text = QtWidgets.QLineEdit("")
+        self.event_text.setReadOnly(True)
+
+        self.print_label = QtWidgets.QLabel("Print:")
+        self.print_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.print_text = QtWidgets.QLineEdit("")
+        self.print_text.setReadOnly(True)
+
+
+
 
 # ----------------------------------------------------------------------------------
 # Task Info

@@ -207,13 +207,13 @@ class Setups_tab(QtWidgets.QWidget):
             with open(self.save_path, "w") as f:
                 json.dump([asdict(setup) for setup in self.saved_configs], f, indent=4)
 
-    def get_port(self, setup_name, pyc_board = True):
+    def get_port(self, setup_name, pyc_board=True):
         """Return a setups serial port given the setups name."""
         if pyc_board:
             return next(setup.config.pyc_port for setup in self.setups.values() if setup.config.name == setup_name)
         else:
             return next(setup.config.ac_port for setup in self.setups.values() if setup.config.name == setup_name)
-            
+
     def get_selected_boards(self, has_name_filter=False):
         """Return sorted list of setups whose select checkboxes are ticked."""
         return sorted(
@@ -291,15 +291,12 @@ class Setups_tab(QtWidgets.QWidget):
         pass
 
     def get_unused_comports(self):
-        if self.GUI_main.available_ports:
-            unused_ports = list(self.GUI_main.available_ports.copy())
-            # for setup in self.saved_configs:
-            #     for port in self.GUI_main.available_ports:
-            #         if port == setup.pyc_port or port == setup.ac_port:
-            #             unused_ports.remove(port)
-            return unused_ports
-        else:
-            return []
+        unused_ports = list(self.GUI_main.available_ports.copy())
+        # for setup in self.saved_configs:
+        #     for port in self.GUI_main.available_ports:
+        #         if port == setup.pyc_port or port == setup.ac_port:
+        #             unused_ports.remove(port)
+        return unused_ports
 
 
 # setup class --------------------------------------------------------------------
@@ -327,19 +324,19 @@ class Setup_table_item:
         self.name_edit.setPlaceholderText("name required if you want to edit setup variables")
         self.name_edit.textChanged.connect(self.name_changed)
         # Add remove button
-        self.add_remove_button = QtWidgets.QPushButton("Add/Remove")
-        self.add_remove_button.clicked.connect(self.setup_tab.add_row)
+        self.add_remove_button = QtWidgets.QPushButton("Remove")
+        self.add_remove_button.clicked.connect(self.setup_tab.remove_row)
         self.add_remove_button.setEnabled(True)
 
         # pycboard
         self.pyc_board_item = QtWidgets.QComboBox()
-        self.pyc_board_item.addItems(self.setup_tab.get_unused_comports())
+        self.pyc_board_item.addItems([])
         self.pyc_board_item.currentIndexChanged.connect(self.pyc_board_changed)
         self.pyc_board_item.setCurrentText(self.config.pyc_port)
         # AC board
         self.ac_board_item = QtWidgets.QComboBox()
         self.ac_board_item.currentIndexChanged.connect(self.ac_board_changed)
-        self.ac_board_item.addItems(self.setup_tab.get_unused_comports())
+        self.ac_board_item.addItems([])
         self.ac_board_item.setCurrentText(self.config.ac_port)
 
         self.setup_tab.setups_table.insertRow(0)
@@ -372,6 +369,8 @@ class Setup_table_item:
         self.setup_tab.update_saved_setups(self)
         # Option to add the setup if you want and if its valid
         self.add_remove_button.setEnabled(self.check_valid_setup())
+        self.ac_board_item.addItem(self.setup_tab.get_unused_comports())
+        self.pyc_board_item.addItem(self.setup_tab.get_unused_comports())
 
     def ac_board_changed(self):
         # if the pyboard is changed
@@ -379,6 +378,8 @@ class Setup_table_item:
         self.setup_tab.update_saved_setups(self)
         # Option to add the setup if you want and if its valid
         self.add_remove_button.setEnabled(self.check_valid_setup())
+        self.ac_board_item.addItem(self.setup_tab.get_unused_comports())
+        self.pyc_board_item.addItem(self.setup_tab.get_unused_comports())
 
     # Pyboard firmware functions ---------------------------------------------
 

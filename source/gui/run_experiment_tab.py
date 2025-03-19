@@ -12,7 +12,7 @@ from source.communication.pycboard import Pycboard, PyboardError
 from source.gui.settings import get_setting, user_folder
 from source.gui.plotting import Experiment_plot
 from source.gui.dialogs import Controls_dialog, Summary_variables_dialog
-from source.gui.utility import variable_constants, TaskInfo, parallel_call
+from source.gui.utility import variable_constants, AccessControlInfo, parallel_call
 from source.gui.custom_controls_dialog import Custom_controls_dialog, Custom_gui
 from source.gui.hardware_variables_dialog import set_hardware_variables
 
@@ -303,7 +303,7 @@ class Subjectbox(QtWidgets.QGroupBox):
         self.time_text = QtWidgets.QLineEdit()
         self.time_text.setReadOnly(True)
         self.time_text.setFixedWidth(50)
-        self.task_info = TaskInfo()
+        self.task_info = AccessControlInfo()
         self.controls_button = QtWidgets.QPushButton("Controls")
         self.controls_button.setIcon(QtGui.QIcon("source/gui/icons/filter.svg"))
         self.controls_button.setEnabled(False)

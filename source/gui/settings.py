@@ -1,7 +1,7 @@
 import os
 import json
 
-VERSION = "2.0.2"
+VERSION = "0.0.0"
 
 # Get DATA_DIR  from the config file
 config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "configs", "config.json")

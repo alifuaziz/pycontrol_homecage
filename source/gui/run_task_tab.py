@@ -10,7 +10,8 @@ from source.gui.settings import get_setting, user_folder
 from source.gui.dialogs import Controls_dialog
 from source.gui.custom_controls_dialog import Custom_controls_dialog, Custom_gui
 from source.gui.plotting import Task_plot
-from source.gui.utility import init_keyboard_shortcuts, NestedMenu, TaskInfo
+from source.gui.animals_tab import AnimalOverviewTable
+from source.gui.utility import init_keyboard_shortcuts, NestedMenu, TaskInfo, AccessControlInfo
 from source.gui.hardware_variables_dialog import set_hardware_variables, hw_vars_defined_in_setup
 
 
@@ -114,9 +115,39 @@ class Run_task_tab(QtWidgets.QWidget):
 
         self.upload_button.clicked.connect(self.setup_task)
 
+        # Access Control groupbox
+        self.ac_groupbox = QtWidgets.QGroupBox("Access Control")
+        self.ac_start_button = QtWidgets.QPushButton("Start")
+        self.ac_start_button.setIcon(QtGui.QIcon("source/gui/icons/play.svg"))
+        self.ac_stop_button = QtWidgets.QPushButton("Stop")
+        self.ac_stop_button.setIcon(QtGui.QIcon("source/gui/icons/stop.svg"))
+        self.access_control_info = AccessControlInfo()
+
+        ac_group_layout = QtWidgets.QGridLayout()
+        ac_group_layout.addWidget(self.access_control_info.print_label, 0, 1)
+        ac_group_layout.addWidget(self.access_control_info.print_text, 0, 2)
+        ac_group_layout.addWidget(self.access_control_info.state_label, 1, 1)
+        ac_group_layout.addWidget(self.access_control_info.state_text, 1, 2)
+        ac_group_layout.addWidget(self.ac_start_button, 0, 0)
+        ac_group_layout.addWidget(self.ac_stop_button, 1, 0)
+        ac_group_layout.setContentsMargins(pad, pad, pad, pad)
+        self.ac_groupbox.setLayout(ac_group_layout)
+
+        self.ac_start_button.clicked.connect(self.start_access_control)
+        self.ac_stop_button.clicked.connect(self.stop_access_control)
+
+        # Animal Table
+
+        self.animal_table_groupbox = QtWidgets.QGroupBox("Animals")
+        self.animal_table = AnimalOverviewTable(self)
+        self.animal_table.setEnabled(False)
+        animal_table_layout = QtWidgets.QVBoxLayout()
+        animal_table_layout.addWidget(self.animal_table)
+        self.animal_table_groupbox.setLayout(animal_table_layout)
+
         # Session groupbox.
 
-        self.session_groupbox = QtWidgets.QGroupBox("Session")
+        self.session_groupbox = QtWidgets.QGroupBox("pyControl")
 
         self.start_button = QtWidgets.QPushButton("Start")
         self.start_button.setIcon(QtGui.QIcon("source/gui/icons/play.svg"))
@@ -151,7 +182,7 @@ class Run_task_tab(QtWidgets.QWidget):
         self.top_section = QtWidgets.QWidget()
         top_layout = QtWidgets.QHBoxLayout(self.top_section)
         top_layout.addWidget(self.board_groupbox)
-        top_layout.addWidget(self.task_groupbox)
+        # top_layout.addWidget(self.task_groupbox)
         top_layout.addWidget(self.file_groupbox)
         top_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -164,9 +195,11 @@ class Run_task_tab(QtWidgets.QWidget):
         # Main layout
         self.run_layout = QtWidgets.QGridLayout()
         self.run_layout.addWidget(self.top_section, 0, 0)
-        self.run_layout.addWidget(self.session_groupbox, 1, 0)
-        self.run_layout.addWidget(self.vsplitter, 2, 0)
-        self.run_layout.setRowStretch(2, 1)
+        self.run_layout.addWidget(self.ac_groupbox, 1, 0)
+        self.run_layout.addWidget(self.animal_table_groupbox, 2, 0)
+        self.run_layout.addWidget(self.session_groupbox, 3, 0)
+        self.run_layout.addWidget(self.vsplitter, 4, 0)
+        self.run_layout.setRowStretch(4, 1)
 
         self.setLayout(self.run_layout)
 
@@ -508,6 +541,12 @@ class Run_task_tab(QtWidgets.QWidget):
         self.GUI_main.settings_action.setEnabled(True)  # settings shouldn't be opened when task is running
         self.GUI_main.tab_widget.setTabEnabled(1, True)  # Enable setups tab.
         self.GUI_main.tab_widget.setTabEnabled(2, True)  # Enable setups tab.
+
+    def start_access_control(self):
+        pass
+
+    def stop_access_control(self):
+        pass
 
     # Timer updates
 

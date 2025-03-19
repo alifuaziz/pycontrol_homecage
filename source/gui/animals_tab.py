@@ -179,19 +179,38 @@ class Animals_tab(QWidget):
 class AnimalOverviewTable(QTableWidget):
     """Table for displaying information and setting for connected cameras."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent, mode="edit"):
+
         super(AnimalOverviewTable, self).__init__(parent)
         self.setups_tab = parent
-        self.header_names = [
-            "Name",
-            "RFID",
-            "Sex",
-            "Weight (g)",
-            "Task",
-            "Training",
-            "Open Record",
-            "New Animal",
-        ]  # read only bool
+        assert mode in ["edit", "assign", "view"], "Invalid mode"
+        self.mode = mode
+        """Table modes:
+        'edit' : where animal details can be modified
+        'assign' : where animals are assigned to homecage
+        'view' : where animal status is viewed
+        """
+        if self.mode == "edit":
+            self.header_names = [
+                "Name",
+                "RFID",
+                "Sex",
+                "Weight (g)",
+                "Task",
+                "Training",
+                "Open Record",
+                "New Animal",
+            ]  # read only bool
+        elif self.mode == "assign":
+            self.header_names = [
+                "Name",
+                "RFID",
+                "Sex",
+                "Weight (g)",
+                "Task",
+                "Training",
+                "Assign to open homecage",
+            ]  # read only bool
         self.setColumnCount(len(self.header_names))
         self.setRowCount(0)
         self.verticalHeader().setVisible(False)
@@ -277,10 +296,14 @@ class Animal_table_item:
         self.open_record_button.clicked.connect(self.open_record_file)
 
         # Preview button.
-        self.add_new_animal_button = QPushButton("Remove Animal")
-        self.add_new_animal_button.clicked.connect(self.remove_animal_row)
+        self.removed_animal_row = QPushButton("Remove Animal")
+        self.removed_animal_row.clicked.connect(self.remove_animal_row)
 
-        # Populate the table
+        # Assign button
+        self.assign_homecage_row = QPushButton("Assign Homecage")
+        self.assign_homecage_row.clicked.connect(self.assign_homecage)
+
+        # Populate the table. This should be populated based on the table mode
         self.setups_table.insertRow(0)
         self.setups_table.setCellWidget(0, 0, self.name_edit)
         self.setups_table.setCellWidget(0, 1, self.rfid_edit)
@@ -288,8 +311,11 @@ class Animal_table_item:
         self.setups_table.setCellWidget(0, 3, self.weight_edit)
         self.setups_table.setCellWidget(0, 4, self.animal_training_checkbox)
         self.setups_table.setCellWidget(0, 5, self.animal_task)
-        self.setups_table.setCellWidget(0, 6, self.open_record_button)
-        self.setups_table.setCellWidget(0, 7, self.add_new_animal_button)
+        if self.setups_table.mode == "edit":
+            self.setups_table.setCellWidget(0, 6, self.open_record_button)
+            self.setups_table.setCellWidget(0, 7, self.removed_animal_row)
+        elif self.setups_table.mode == "assign":
+            self.setups_table.setCellWidget(0, 6, self.assign_homecage_row)
 
     def animal_name_changed(self):
         """Called when name text of setup is edited."""
@@ -339,6 +365,13 @@ class Animal_table_item:
         self.settings.downsampling_factor = int(self.animal_training_checkbox.currentText())
         self.setups_tab.update_saved_setups(setup=self)
 
+    def assign_homecage_row(self): 
+        """Called to assign to the currently open homecage"""
+        self.homecage_tab.currently_open_homecage.animals.append(self.settings) # Append animal to list of homecage animals
+        self.homecage_table.refresh() # refresh the homecage table to reflect changes
+        # Reorder the animals tab based on which homecage is open
+        print('Animal table reordering not implemented yet')        
+        
     def open_record_file(self):
         """Open a .txt file when the button is clicked."""
         file_path = os.path.join(user_folder("records"), f"{self.settings.RFID}.txt")
