@@ -1,10 +1,18 @@
 [
     {
-        "name": "SFDSAFDASDF",
+        "name": "asdfsadfa a",
         "RFID": "1234",
-        "sex": 97,
-        "weight": 10000,
-        "task": 0,
-        "training": 1
+        "sex": "Female",
+        "weight": 92.0,
+        "task": "random_interval_rewards_poke9_withProbability.py",
+        "training": false
+    },
+    {
+        "name": "asdf",
+        "RFID": "invalid_string",
+        "sex": "None",
+        "weight": 1,
+        "task": "None",
+        "training": false
     }
 ]

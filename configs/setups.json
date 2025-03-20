@@ -1,7 +1,7 @@
 [
     {
-        "name": "Default Setup",
-        "pyc_port": "",
-        "ac_port": "COM8"
+        "name": "default setup",
+        "pyc_port": "COM8",
+        "ac_port": "COM3"
     }
 ]
