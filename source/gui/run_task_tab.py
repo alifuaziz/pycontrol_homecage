@@ -27,6 +27,7 @@ class Run_task_tab(QtWidgets.QWidget):
         # Variables.
         self.GUI_main = self.parent()
         self.pyc_board = None  # Pycboard class instance.
+        self.ac_board = None  # Access control class instance.
         self.task = None  # Task currently uploaded on pyboard.
         self.task_hash = None  # Used to check if file has changed.
         self.data_dir = None  # Folder to save data files.
@@ -243,8 +244,8 @@ class Run_task_tab(QtWidgets.QWidget):
         # Called regularly when framework not running.
         if self.GUI_main.setups_tab.available_setups_changed:
             self.board_select.clear()
-            if self.GUI_main.setups_tab.setup_names:
-                self.board_select.addItems(self.GUI_main.setups_tab.setup_names)
+            if self.GUI_main.homecage_tab.homecage_names:
+                self.board_select.addItems(self.GUI_main.homecage_tab.homecage_names)
                 if not self.connected:
                     self.connect_button.setEnabled(True)
             else:  # No setups available to connect to.

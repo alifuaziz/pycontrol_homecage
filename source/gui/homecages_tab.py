@@ -42,7 +42,7 @@ class Homecage_tab(QWidget):
         self.GUI = parent
         self.save_path = os.path.join(user_folder("config"), "homecages.json")
         self.homecages = {}  # Dict of setups: {name: Homecage_table_item}
-        self.preview_showing = False
+        self.homecage_names = []
 
         # Initialize_camera_groupbox
         self.camera_table_groupbox = QGroupBox("Homecage Table")
