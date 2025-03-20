@@ -179,7 +179,7 @@ class AnimalOverviewTable(QTableWidget):
 
     def __init__(self, parent, mode="edit"):
         super(AnimalOverviewTable, self).__init__(parent)
-        self.setups_tab = parent
+        self.animal_tab = parent
         assert mode in ["edit", "assign", "view"], "Invalid mode"
         self.mode = mode
         headers = {
@@ -232,17 +232,17 @@ class AnimalOverviewTable(QTableWidget):
                 break
 
     def add(self):
-        row_position = self.rowCount()
-        self.insertRow(row_position)
-        # Needs an idenfitier for itself.
-        Animal_table_item(
+        new_animal = AnimalSettingsConfig(
+            name="", RFID="invalid_string", sex="None", weight=1, task="None", training=False
+        )
+        self.animal_tab.animals_dict[new_animal.RFID] = Animal_table_item(
             self,
-            name="",
-            RFID="",
-            sex=0,
-            weight=0,
-            task="",
-            training=False,
+            new_animal.name,
+            new_animal.RFID,
+            new_animal.sex,
+            new_animal.weight,
+            new_animal.task,
+            new_animal.training,
         )
 
 
@@ -252,8 +252,8 @@ class Animal_table_item:
     def __init__(self, setups_table, name, RFID, sex, weight, task, training, config_valid=True):
         self.settings = AnimalSettingsConfig(name=name, RFID=RFID, sex=sex, weight=weight, task=task, training=training)
 
-        self.setups_table = setups_table
-        self.animals_tab = setups_table.setups_tab
+        self.animal_table = setups_table
+        self.animals_tab = setups_table.animal_tab
         self.config_valid = config_valid
 
         # Name edit
@@ -301,18 +301,18 @@ class Animal_table_item:
         self.assign_homecage_row.clicked.connect(self.assign_homecage)
 
         # Populate the table. This should be populated based on the table mode
-        self.setups_table.insertRow(0)
-        self.setups_table.setCellWidget(0, 0, self.name_edit)
-        self.setups_table.setCellWidget(0, 1, self.rfid_edit)
-        self.setups_table.setCellWidget(0, 2, self.sex_edit)
-        self.setups_table.setCellWidget(0, 3, self.weight_edit)
-        self.setups_table.setCellWidget(0, 4, self.animal_training_checkbox)
-        self.setups_table.setCellWidget(0, 5, self.animal_task)
-        if self.setups_table.mode == "edit":
-            self.setups_table.setCellWidget(0, 6, self.open_record_button)
-            self.setups_table.setCellWidget(0, 7, self.add_remove_row)
-        elif self.setups_table.mode == "assign":
-            self.setups_table.setCellWidget(0, 6, self.assign_homecage_row)
+        self.animal_table.insertRow(0)
+        self.animal_table.setCellWidget(0, 0, self.name_edit)
+        self.animal_table.setCellWidget(0, 1, self.rfid_edit)
+        self.animal_table.setCellWidget(0, 2, self.sex_edit)
+        self.animal_table.setCellWidget(0, 3, self.weight_edit)
+        self.animal_table.setCellWidget(0, 4, self.animal_training_checkbox)
+        self.animal_table.setCellWidget(0, 5, self.animal_task)
+        if self.animal_table.mode == "edit":
+            self.animal_table.setCellWidget(0, 6, self.open_record_button)
+            self.animal_table.setCellWidget(0, 7, self.add_remove_row)
+        elif self.animal_table.mode == "assign":
+            self.animal_table.setCellWidget(0, 6, self.assign_homecage_row)
 
     def animal_name_changed(self):
         """Called when name text of setup is edited."""
@@ -377,14 +377,14 @@ class Animal_table_item:
     def remove_animal_row(self):
         """"""
         reply = QMessageBox.question(
-            self.setups_table,
+            self.animal_table,
             "Remove Animal",
             f"Are you sure you want to remove the animal with RFID {self.settings.RFID}?",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            self.setups_table.removeRow(self.setups_table.indexAt(self.rfid_edit.pos()).row())
+            self.animal_table.removeRow(self.animal_table.indexAt(self.rfid_edit.pos()).row())
             self.animals_tab.saved_animals.pop(self.settings.RFID)
             self.animals_tab.update_saved_setups(self)
             self.check_valid_animal_config()
