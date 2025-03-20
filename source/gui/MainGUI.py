@@ -53,10 +53,10 @@ class MainGUI(QMainWindow):
         print(self.available_ports)
 
         # Initialise tabs
-        self.run_task_tab = Run_task_tab(self)
         self.setups_tab = Setups_tab(self)
-        self.animals_tab = Animals_tab(self)
         self.homecage_tab = Homecage_tab(self)
+        self.animals_tab = Animals_tab(self)
+        self.run_task_tab = Run_task_tab(self)
 
         # Add tabs to tab widget
         self.tab_widget = QTabWidget(self)

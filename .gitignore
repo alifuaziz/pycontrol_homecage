@@ -17,3 +17,5 @@ data_new/*
 Errorlog.txt
 src/pycontrol_homecage/config.json
 configs/*
+configs/animals.json
+configs/setups.json

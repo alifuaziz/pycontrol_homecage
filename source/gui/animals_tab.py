@@ -48,14 +48,10 @@ class Animals_tab(QWidget):
     def __init__(self, parent=None):
         super(Animals_tab, self).__init__(parent)
         self.GUI = parent
-        self.save_path = os.path.join(user_folder("config"), "animals.json")
-        self.animals_dict = {}  # Dict of setups: {RFID: Animal_table_item}
-        self.animal_names = []  # List of the names of animals
+
         # Initialize_camera_groupbox
         self.animal_table_groupbox = QGroupBox("Animal table")
-        self.animal_table = AnimalOverviewTable(parent=self)
-        self.animal_table.setMinimumSize(1, 1)
-        self.animal_table.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.animal_table = AnimalOverviewTable(animals_tab=self)
 
         self.animal_table_layout = QVBoxLayout()
         self.animal_table_layout.addWidget(self.animal_table)
@@ -65,7 +61,82 @@ class Animals_tab(QWidget):
         self.page_layout.addWidget(self.animal_table_groupbox)
         self.setLayout(self.page_layout)
 
-        # Load saved setup info.
+    # Refresh timer / tab changing logic -------------------------------------------------------------------------------
+
+    def tab_selected(self):
+        """Called when tab selected."""
+        pass
+
+    # Reading / Writing the Camera setups saved function --------------------------------------------------------
+
+
+class AnimalOverviewTable(QTableWidget):
+    """Table for displaying information and setting for connected cameras.
+    Table modes
+    'edit' : where animal details can be modified
+    'assign' : where animals are assigned to homecage
+    'view' : where animal status is viewed
+    """
+
+    def __init__(self, animals_tab, mode="edit"):
+        super(AnimalOverviewTable, self).__init__(animals_tab)
+        self.animals_tab = animals_tab
+        self.GUI = self.animals_tab.GUI
+        assert mode in ["edit", "assign", "view"], "Invalid mode"
+        self.mode = mode
+        if self.mode == "edit":
+            self.header_names = [
+                "Name",
+                "RFID",
+                "Sex",
+                "Weight (g)",
+                "Task",
+                "Training",
+                "Open Record",
+                "New Animal",
+            ]
+        elif self.mode == "assign":
+            self.header_names = [
+                "Name",
+                "RFID",
+                "Sex",
+                "Weight (g)",
+                "Task",
+                "Training",
+                "Assign to open homecage",
+            ]
+        elif self.mode == "view":
+            self.header_names = [
+                "Name",
+                "RFID",
+                "Sex",
+                "Weight (g)",
+                "Task",
+                "Training",
+            ]
+        self.setColumnCount(len(self.header_names))
+        self.verticalHeader().setVisible(False)
+        self.setRowCount(0)
+        self.setHorizontalHeaderLabels(self.header_names)
+        for i in range(len(self.header_names)):
+            resize_mode = QHeaderView.ResizeMode.Stretch if i < 2 else QHeaderView.ResizeMode.ResizeToContents
+            self.horizontalHeader().setSectionResizeMode(i, resize_mode)
+        self.setMinimumSize(1, 1)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+        if self.mode == "edit":  # This is only present if you are editing the table
+            self.insertRow(self.rowCount())
+            add_button = QPushButton("Add New Animal")
+            add_button.clicked.connect(self.add)
+            self.setCellWidget(self.rowCount() - 1, len(self.header_names) - 1, add_button)
+
+        ## Table data
+
+        self.animals_dict = {}  # Dict of setups: {RFID: Animal_table_item}
+        self.animal_names = []  # List of the names of animals
+        self.save_path = os.path.join(user_folder("config"), "animals.json")
+
+        # Loading the animals into the animal table
         if not os.path.exists(self.save_path):
             self.saved_animals = []
             default_animal = AnimalSettingsConfig(**default_animal_settings)
@@ -77,7 +148,7 @@ class Animals_tab(QWidget):
 
         for animal in self.saved_animals:
             self.animals_dict[animal.RFID] = Animal_table_item(
-                self.animal_table,
+                self,
                 name=animal.name,
                 RFID=animal.RFID,
                 sex=animal.sex,
@@ -86,17 +157,42 @@ class Animals_tab(QWidget):
                 training=animal.training,
             )
 
-        self.refresh()
         self.update_available_animals()
         self.setups_changed = False
 
-    # Refresh timer / tab changing logic -------------------------------------------------------------------------------
+    def update_available_animals(self):
+        """Should be called when animals are added or renamed"""
+        animal_names = [animal.settings.name for animal in self.animals_dict.values()]
+        if animal_names != self.animal_names:
+            self.available_animals_changed = True
+            self.animal_names = animal_names
+        else:
+            self.available_animals_changed = False
+        print("animal_names", self.animal_names)
 
-    def tab_selected(self):
-        """Called when tab selected."""
-        self.refresh()
+    def refresh(self):
+        """Check for new and removed cameras and updates the setups table."""
+        pass
 
-    # Reading / Writing the Camera setups saved function --------------------------------------------------------
+    def get_animal_labels(self) -> list[str]:
+        """Get the labels of the available cameras. The label is the camera's user set name if available, else unique ID."""
+        return [setup.get_label() for setup in self.animals_dict.values()]
+
+    def get_animal_settings_from_label(self, label: str) -> AnimalSettingsConfig:
+        """Get the camera settings config datastruct from the setups table."""
+        for setup in self.animals_dict.values():
+            if setup.settings.name is None:
+                query_label = setup.settings.unique_id
+            else:
+                query_label = setup.settings.name
+            if query_label == label:
+                return setup.settings
+        return None
+
+    def get_available_tasks(self):
+        """get the list of tasks in the task folder"""
+        tasks_folder = user_folder("tasks")
+        return [f for f in os.listdir(tasks_folder) if f.endswith(".py")]
 
     def get_saved_setup(self, RFID: str = None) -> AnimalSettingsConfig:
         """Get a saved CameraSettingsConfig object from a name or unique_id from self.saved_setups."""
@@ -125,106 +221,6 @@ class Animals_tab(QWidget):
             with open(self.save_path, "w") as f:
                 json.dump([asdict(setup) for setup in self.saved_animals], f, indent=4)
 
-    def update_available_animals(self):
-        """Should be called when animals are added or renamed"""
-        animal_names = [animal.settings.name for animal in self.animals_dict.values()]
-        if animal_names != self.animal_names:
-            self.available_animals_changed = True
-            self.animal_names = animal_names
-        else:
-            self.available_animals_changed = False
-        print("animal_names", self.animal_names)
-
-    def refresh(self):
-        """Check for new and removed cameras and updates the setups table."""
-        pass
-
-    def get_camera_labels(self) -> list[str]:
-        """Get the labels of the available cameras. The label is the camera's user set name if available, else unique ID."""
-        return [setup.get_label() for setup in self.animals_dict.values()]
-
-    def get_camera_unique_id_from_label(self, camera_label: str) -> str:
-        """Get the unique_id of the camera from the label"""
-        for setup in self.animals_dict.values():
-            if setup.settings.name == camera_label:
-                return setup.settings.unique_id
-            elif setup.settings.unique_id == camera_label:
-                return setup.settings.unique_id
-        return None
-
-    def get_animal_settings_from_label(self, label: str) -> AnimalSettingsConfig:
-        """Get the camera settings config datastruct from the setups table."""
-        for setup in self.animals_dict.values():
-            if setup.settings.name is None:
-                query_label = setup.settings.unique_id
-            else:
-                query_label = setup.settings.name
-            if query_label == label:
-                return setup.settings
-        return None
-
-    def get_available_tasks(self):
-        """get the list of tasks in the task folder"""
-        tasks_folder = user_folder("tasks")
-        return [f for f in os.listdir(tasks_folder) if f.endswith(".py")]
-
-
-class AnimalOverviewTable(QTableWidget):
-    """Table for displaying information and setting for connected cameras.
-    Table modes
-    'edit' : where animal details can be modified
-    'assign' : where animals are assigned to homecage
-    'view' : where animal status is viewed
-    """
-
-    def __init__(self, parent, mode="edit"):
-        super(AnimalOverviewTable, self).__init__(parent)
-        self.animal_tab = parent
-        assert mode in ["edit", "assign", "view"], "Invalid mode"
-        self.mode = mode
-        headers = {
-            "edit": [
-                "Name",
-                "RFID",
-                "Sex",
-                "Weight (g)",
-                "Task",
-                "Training",
-                "Open Record",
-                "New Animal",
-            ],
-            "assign": [
-                "Name",
-                "RFID",
-                "Sex",
-                "Weight (g)",
-                "Task",
-                "Training",
-                "Assign to open homecage",
-            ],
-            "view": [
-                "Name",
-                "RFID",
-                "Sex",
-                "Weight (g)",
-                "Task",
-                "Training",
-            ],
-        }
-        self.header_names = headers[self.mode]
-        self.setColumnCount(len(self.header_names))
-        self.setRowCount(0)
-        self.insertRow(self.rowCount())
-        add_button = QPushButton("Add New Animal")
-        add_button.clicked.connect(self.add)
-        self.setCellWidget(self.rowCount() - 1, len(self.header_names) - 1, add_button)
-        self.verticalHeader().setVisible(False)
-
-        self.setHorizontalHeaderLabels(self.header_names)
-        for i in range(len(self.header_names)):
-            resize_mode = QHeaderView.ResizeMode.Stretch if i < 2 else QHeaderView.ResizeMode.ResizeToContents
-            self.horizontalHeader().setSectionResizeMode(i, resize_mode)
-
     def remove(self, rfid):
         for row in range(self.rowCount()):
             if self.cellWidget(row, 1).text() == rfid:
@@ -235,7 +231,7 @@ class AnimalOverviewTable(QTableWidget):
         new_animal = AnimalSettingsConfig(
             name="", RFID="invalid_string", sex="None", weight=1, task="None", training=False
         )
-        self.animal_tab.animals_dict[new_animal.RFID] = Animal_table_item(
+        self.animals_tab.animals_dict[new_animal.RFID] = Animal_table_item(
             self,
             new_animal.name,
             new_animal.RFID,
@@ -249,11 +245,12 @@ class AnimalOverviewTable(QTableWidget):
 class Animal_table_item:
     """Class representing single camera in the Camera Tab table."""
 
-    def __init__(self, setups_table, name, RFID, sex, weight, task, training, config_valid=True):
+    def __init__(self, animals_table, name, RFID, sex, weight, task, training, config_valid=True):
         self.settings = AnimalSettingsConfig(name=name, RFID=RFID, sex=sex, weight=weight, task=task, training=training)
 
-        self.animal_table = setups_table
-        self.animals_tab = setups_table.animal_tab
+        self.animals_table = animals_table
+        self.homecage_tab = self.animals_table.GUI.homecage_tab
+        self.homecage_table = self.animals_table.GUI.homecage_tab.homecage_table
         self.config_valid = config_valid
 
         # Name edit
@@ -301,33 +298,33 @@ class Animal_table_item:
         self.assign_homecage_row.clicked.connect(self.assign_homecage)
 
         # Populate the table. This should be populated based on the table mode
-        self.animal_table.insertRow(0)
-        self.animal_table.setCellWidget(0, 0, self.name_edit)
-        self.animal_table.setCellWidget(0, 1, self.rfid_edit)
-        self.animal_table.setCellWidget(0, 2, self.sex_edit)
-        self.animal_table.setCellWidget(0, 3, self.weight_edit)
-        self.animal_table.setCellWidget(0, 4, self.animal_training_checkbox)
-        self.animal_table.setCellWidget(0, 5, self.animal_task)
-        if self.animal_table.mode == "edit":
-            self.animal_table.setCellWidget(0, 6, self.open_record_button)
-            self.animal_table.setCellWidget(0, 7, self.add_remove_row)
-        elif self.animal_table.mode == "assign":
-            self.animal_table.setCellWidget(0, 6, self.assign_homecage_row)
+        self.animals_table.insertRow(0)
+        self.animals_table.setCellWidget(0, 0, self.name_edit)
+        self.animals_table.setCellWidget(0, 1, self.rfid_edit)
+        self.animals_table.setCellWidget(0, 2, self.sex_edit)
+        self.animals_table.setCellWidget(0, 3, self.weight_edit)
+        self.animals_table.setCellWidget(0, 4, self.animal_training_checkbox)
+        self.animals_table.setCellWidget(0, 5, self.animal_task)
+        if self.animals_table.mode == "edit":
+            self.animals_table.setCellWidget(0, 6, self.open_record_button)
+            self.animals_table.setCellWidget(0, 7, self.add_remove_row)
+        elif self.animals_table.mode == "assign":
+            self.animals_table.setCellWidget(0, 6, self.assign_homecage_row)
 
     def animal_name_changed(self):
         """Called when name text of setup is edited."""
         name = str(self.name_edit.text())
         if name and name not in [
-            settings.name for settings in self.animals_tab.saved_animals if settings.RFID != self.settings.RFID
+            settings.name for settings in self.animals_table.saved_animals if settings.RFID != self.settings.RFID
         ]:
             self.settings.name = name
         else:
             self.settings.name = None
             self.name_edit.setText("")
             self.name_edit.setPlaceholderText("Set a name")
-        self.animals_tab.update_saved_setups(animal=self)
-        self.animals_tab.setups_changed = True
-        self.animals_tab.update_available_animals()
+        self.animals_table.update_saved_setups(animal=self)
+        self.animals_table.setups_changed = True
+        self.animals_table.update_available_animals()
 
     def get_label(self):
         """Return name if defined else unique ID."""
@@ -336,33 +333,49 @@ class Animal_table_item:
     def animal_weight_changed(self):
         """Called when fps text of setup is edited."""
         self.settings.weight = float(self.weight_edit.text())
-        self.animals_tab.update_saved_setups(animal=self)
+        self.animals_table.update_saved_setups(animal=self)
         self.check_valid_animal_config()
 
     def animal_sex_changed(self):
         """"""
         self.settings.sex = self.sex_edit.currentText()
-        self.animals_tab.update_saved_setups(animal=self)
+        self.animals_table.update_saved_setups(animal=self)
         self.check_valid_animal_config()
 
     def animal_task_changed(self):
         """Change the pixel format"""
         self.settings.task = self.animal_task.currentText()
-        self.animals_tab.update_saved_setups(animal=self)
+        self.animals_table.update_saved_setups(animal=self)
         self.check_valid_animal_config()
 
     def animal_training_changed(self):
         """Called when the downsampling factor of the seutp is edited"""
         self.settings.training = self.animal_training_checkbox.isChecked()
-        self.animals_tab.update_saved_setups(animal=self)
+        self.animals_table.update_saved_setups(animal=self)
         self.check_valid_animal_config()
 
     def assign_homecage(self):
         """Called to assign to the currently open homecage"""
-        self.homecage_tab.currently_open_homecage.animals.append(
-            self.settings
-        )  # Append animal to list of homecage animals
-        self.homecage_table.refresh()  # refresh the homecage table to reflect changes
+        for homecage in self.homecage_tab.saved_homecages:
+            if self.settings in homecage.animals:
+                QMessageBox.information(
+                    self.animals_table,
+                    "Animal Already Assigned",
+                    f"The animal with RFID {self.settings.RFID} is already assigned to another homecage.",
+                    QMessageBox.Ok,
+                )
+            return
+        if self.settings not in self.homecage_tab.currently_open_homecage.animals:
+            QMessageBox.information(
+                self.animals_table,
+                "Animal Already Assigned",
+                f"The animal with RFID {self.settings.RFID} is already assigned to this homecage.",
+                QMessageBox.Ok,
+            )
+            self.homecage_tab.currently_open_homecage.animals.append(
+                self.settings
+            )  # Append animal to list of homecage animals
+        # self.homecage_table.refresh()  # refresh the homecage table to reflect changes
         # Reorder the animals tab based on which homecage is open
         print("Animal table reordering not implemented yet")
 
@@ -377,18 +390,17 @@ class Animal_table_item:
     def remove_animal_row(self):
         """"""
         reply = QMessageBox.question(
-            self.animal_table,
+            self.animals_table,
             "Remove Animal",
             f"Are you sure you want to remove the animal with RFID {self.settings.RFID}?",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            self.animal_table.removeRow(self.animal_table.indexAt(self.rfid_edit.pos()).row())
-            self.animals_tab.saved_animals.pop(self.settings.RFID)
-            self.animals_tab.update_saved_setups(self)
+            self.animals_table.removeRow(self.animals_table.indexAt(self.rfid_edit.pos()).row())
+            self.animals_table.saved_animals.pop(self.settings.RFID)
+            self.animals_table.update_saved_setups(self)
             self.check_valid_animal_config()
-            self.animals_tab.refresh()
 
     def check_valid_animal_config(self):
         """Return true if the animal is valid and can be added"""
@@ -404,6 +416,6 @@ class Animal_table_item:
             if os.path.isfile(task_path) and not training:
                 # Add animal button is set to be enabled.
                 self.assign_homecage_row.setEnabled(True)
-                self.animals_tab.update_saved_setups(self)
+                self.animals_table.update_saved_setups(self)
                 self.add_remove_row.setText("Remove Row")
         self.assign_homecage_row.setEnabled(False)

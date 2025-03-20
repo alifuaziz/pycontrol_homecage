@@ -140,7 +140,7 @@ class Run_task_tab(QtWidgets.QWidget):
         # Animal Table
 
         self.animal_table_groupbox = QtWidgets.QGroupBox("Animals")
-        self.animal_table = AnimalOverviewTable(self)
+        self.animal_table = AnimalOverviewTable(self.GUI_main.animals_tab)
         self.animal_table.setEnabled(False)
         animal_table_layout = QtWidgets.QVBoxLayout()
         animal_table_layout.addWidget(self.animal_table)

@@ -31,7 +31,7 @@ class HomecageConifg:
     animals: list[AnimalSettingsConfig]
 
 
-default_homecage_dict = {"name": "", "setup": None, "animals": None}
+default_homecage_dict = {"name": "", "setup": None, "animals": []}
 
 
 class Homecage_tab(QWidget):
@@ -40,7 +40,6 @@ class Homecage_tab(QWidget):
     def __init__(self, parent=None):
         super(Homecage_tab, self).__init__(parent)
         self.GUI = parent
-        self.save_path = os.path.join(user_folder("config"), "homecages.json")
         self.homecages = {}  # Dict of setups: {name: Homecage_table_item}
         self.homecage_names = []
 
@@ -59,6 +58,7 @@ class Homecage_tab(QWidget):
         self.setLayout(self.page_layout)
 
         # Load saved setup info.
+        self.save_path = os.path.join(user_folder("config"), "homecages.json")
         if not os.path.exists(self.save_path):
             self.saved_homecages = [HomecageConifg(**default_homecage_dict)]
         else:
@@ -96,14 +96,14 @@ class Homecage_tab(QWidget):
 
         if name:
             try:
-                return next(setup for setup in self.saved_homecages if setup.name == name)
+                return next(homecage for homecage in self.saved_homecages if homecage.name == name)
             except StopIteration:
                 pass
         return None
 
     def update_saved_setups(self, setup):
         """Updates the saved setups"""
-        saved_setup = self.get_saved_homcage(name=setup.settings.name)
+        saved_setup = self.get_saved_homcage(name=setup.homecage.name)
         # if saved_setup == setup.settings:
         #     return
         if saved_setup:
@@ -111,7 +111,7 @@ class Homecage_tab(QWidget):
         # if the setup has a name
         # if setup.settings.label:
         # add the setup config to the saved setups list
-        self.saved_homecages.append(setup.settings)
+        self.saved_homecages.append(setup.homecage)
         # Save any setups in the list of setups
         if self.saved_homecages:
             with open(self.save_path, "w") as f:
@@ -124,21 +124,12 @@ class Homecage_tab(QWidget):
 
     def update_available_homecages(self):
         """Called when homecages become available or are edited"""
-        homecage_names = sorted([homecage.homecage.name for homecage in self.homecages.values()])
+        homecage_names = set([homecage.name for homecage in self.saved_homecages])
         if homecage_names != self.homecage_names:
             self.avaialble_homecages_changed = True
             self.homecage_names = homecage_names
         else:
             self.avaialble_homecages_changed = False
-
-    def get_camera_unique_id_from_label(self, camera_label: str) -> str:
-        """Get the unique_id of the camera from the label"""
-        for setup in self.homecages.values():
-            if setup.settings.name == camera_label:
-                return setup.settings.unique_id
-            elif setup.settings.unique_id == camera_label:
-                return setup.settings.unique_id
-        return None
 
     def get_animal_settings_from_label(self, label: str) -> AnimalSettingsConfig:
         """Get the camera settings config datastruct from the setups table."""
@@ -162,13 +153,17 @@ class HomecageOverviewTable(QTableWidget):
         self.setColumnCount(len(self.header_names))
         self.setRowCount(0)
         self.verticalHeader().setVisible(False)
-
         self.setHorizontalHeaderLabels(self.header_names)
         for i in range(len(self.header_names)):
             resize_mode = QHeaderView.ResizeMode.Stretch if i < 1 else QHeaderView.ResizeMode.ResizeToContents
             self.horizontalHeader().setSectionResizeMode(i, resize_mode)
 
-        self.add_homecage_row()
+        # Add new homecage button
+        self.add_new_homecage_button = QPushButton("Add New Homecage")
+        self.add_new_homecage_button.clicked.connect(self.add_homecage_row)
+        self.insertRow(self.rowCount())
+        self.setCellWidget(self.rowCount() - 1, 0, self.add_new_homecage_button)
+        self.setSpan(self.rowCount() - 1, 0, 1, self.columnCount())
 
     def add_homecage_row(self):
         """Button to preview the camera in the row"""
@@ -226,7 +221,7 @@ class Homecage_table_item:
     def homecage_name_changed(self):
         """Called when name text of setup is edited."""
         name = str(self.name_edit.text())
-        if name and name not in [setup.settings.name for setup in self.homecage_tab.setups.values()]:
+        if name and name not in [homecage.name for homecage in self.homecage_tab.saved_homecages]:
             self.homecage.name = name
         else:
             self.homecage.name = None
@@ -241,10 +236,13 @@ class Homecage_table_item:
 
     def open_assign_animal_table(self):
         """Opens a table that can be used to assign animals to the homecage selected"""
-        self.homecage_tab.animal_overview_table = AnimalOverviewTable(parent=self.homecage_tab, mode="assign")
+        self.homecage_tab.animal_overview_table = AnimalOverviewTable(
+            animals_tab=self.homecage_tab.GUI.animals_tab, mode="assign"
+        )
         self.homecage_tab.page_layout.addWidget(self.homecage_tab.animal_overview_table)
         self.homecage_tab.currently_open_homecage = self.homecage
         # Assign the close animal table to the button now
+        self.assign_animals.clicked.disconnect(self.open_assign_animal_table)
         self.assign_animals.clicked.connect(self.close_assign_animal_table)
         self.assign_animals.setText("Close animal tab")
 
