@@ -215,20 +215,10 @@ class SetupTable(QTableWidget):
             print("Failed to connect", flush=True)
 
     def _fill_setup_df_row(self, sender_name: list[str]) -> None:
-        """
-        Alif guessing:
-        The default of the connection is:
-        - Once connected, that entry in the table should reflect this.
-        - If it has just been connected, the setup is not in use.
-        - IF it has just been connected, the setups also has no mice in it ()
-        """
         _, com_, _ = sender_name
-        # Connnected to the pyboard
-        database.setup_df["connected"].loc[database.setup_df["COM"] == com_] = True
-        # The setups starts off not in use?
-        database.setup_df["in_use"].loc[database.setup_df["COM"] == com_] = False
-        # Number of mice set to 0?
-        database.setup_df["n_mice"].loc[database.setup_df["COM"] == com_] = 0
+        database.setup_df["connected"].loc[database.setup_df["COM"] == com_] = True # Connected to AC board
+        database.setup_df["in_use"].loc[database.setup_df["COM"] == com_] = False # Setup not in use on init
+        database.setup_df["n_mice"].loc[database.setup_df["COM"] == com_] = 0 # Number of mice in setup on init
 
     def _refresh(self):
         """Refresh the table.

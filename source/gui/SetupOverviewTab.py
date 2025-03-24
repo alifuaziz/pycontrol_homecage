@@ -239,7 +239,7 @@ class SetupsOverviewTab(QWidget):
             )
 
         if any(isChecked):
-            sure = AreYouSureDialog()
+            sure = AreYouSureDialog(question_text="Are you should you would like to remove the selected setups?")
             sure.exec_()
             if sure.GO:
                 database.setup_df = database.setup_df.drop(database.setup_df.index[isChecked])
