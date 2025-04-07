@@ -12,8 +12,7 @@ class RWD_QT:
             print("RWD_QT setup OK.")
         else:
             print("RWD_QT setup error")
-            print(ack1)
-            print(ack2)
+            print(ack1, "!=", ack2, '!= b"\xc0"')
 
     def write_read(self, buf, delay):
         # Write buf to UART when cts pin is low, wait specified

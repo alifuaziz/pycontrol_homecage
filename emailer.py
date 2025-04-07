@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 
-from .utils import get_users, get_user_dicts
+from source.utils import get_users, get_user_dicts
 from source.gui.settings import user_folder
 
 lines_ = open(user_folder("user_path"), "r").readlines()
