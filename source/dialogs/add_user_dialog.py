@@ -55,22 +55,31 @@ class AddUserDialog(QtWidgets.QDialog):
         # Get Username
         self.user = str(self.textName.text())
         sender_email, password = get_pyhomecage_email()
-        print(sender_email)
-        print(password)
         # Disable user from editing
         self.textName.setEnabled(False)
         self.textEmail.setEnabled(False)
         # Create Confirmation message
         self.code = "".join(random.choice(ascii_lowercase) for _ in range(20))  # Generate confirmation code
         # Send confirmation email
-        self.send_email(
-            message="""\
+        try:
+            self.send_email(
+                message="""\
         Subject: Pyhomecage email confirmation code"""
-            + str(self.code),
-            sender_email=sender_email,
-            password=password,
-            receiver_email=self.receiver_email,
-        )
+                + str(self.code),
+                sender_email=sender_email,
+                password=password,
+                receiver_email=self.receiver_email,
+            )
+            # Confirm email has been sent
+            QtWidgets.QMessageBox.information(
+                self,
+                "Email Sent",
+                f"A confirmation code has been sent to {self.receiver_email}. Please check your email.",
+            )
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Email Error", f"Failed to send confirmation email: {e}")
+            self.textName.setEnabled(True)
+            self.textEmail.setEnabled(True)
 
     def send_email(self, message: str, sender_email: str, password: str, receiver_email: str) -> None:
         # Email setup
