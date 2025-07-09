@@ -9,10 +9,9 @@ pyhomecage_conf.py
 .tox*
 *egg-info*
 .coverage
-*config.json
 data/*
 data_old/*
 data_new/*
 *egg-info
 Errorlog.txt
-src/pycontrol_homecage/config.json
+configs/config.json

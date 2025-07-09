@@ -125,10 +125,7 @@ def create_empty_csv(pth: str) -> None:
 
 if __name__ == "__main__":
 
-    def setup_folders():
-        if not os.path.isdir(DATA_DIR):
-            os.mkdir(DATA_DIR)
-        create_paths_and_empty_csvs(all_paths)
-        create_user_file()
-
-    setup_folders()
+    if not os.path.isdir(DATA_DIR):
+        os.mkdir(DATA_DIR)
+    create_paths_and_empty_csvs(get_paths())
+    create_user_file()
