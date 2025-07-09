@@ -22,8 +22,8 @@ from source.communication.messages import (
 
 
 class Access_control(Pycboard):
-    # Class that runs on the main computer to provide an API for inferfacting with
-    # the access control module
+    """Inherits from Pycboard and replaces pyControl functionality with Access Control specific behaviour.
+    This allows interface with the access control hardward"""
 
     def __init__(self, serial_port, print_func=print):
         self.serial_port = serial_port
@@ -59,7 +59,9 @@ class Access_control(Pycboard):
         self.exec(inspect.getsource(_receive_file))  # define receive file function.
         self.exec("import os; import gc; import sys; import pyb")
         self.status["usb_mode"] = self.eval("pyb.usb_mode()").decode()
-        if self.data_logger: # This is required since the system handler requires both the pycboard and the acboard to init
+        if (
+            self.data_logger
+        ):  # This is required since the system handler requires both the pycboard and the acboard to init
             self.data_logger.reset()
 
     def _init_logger(self) -> None:

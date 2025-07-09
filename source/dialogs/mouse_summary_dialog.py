@@ -17,6 +17,7 @@ class MouseSummaryDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(self.textName)
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     dialog = MouseSummaryDialog()
