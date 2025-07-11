@@ -15,6 +15,7 @@ class uRFID:
 
     def read_tag(self):
         # Return the ID of the most recent tag read, if not tag has been read return None.
+        self.uart.write(b"RAT\r")  # Call Read Animal Tag function.
         read_bytes = self.uart.read()
         if not read_bytes:
             return
