@@ -5,6 +5,7 @@ from time import sleep
 class uRFID:
     # Class for using the Priority 1 Design Micro RFID module to read FDX-B tags.
     # http://www.priority1design.com.au/rfid_reader_modules.html
+    # Ref: https://www.priority1design.com.au/rfidrw-e-ttl.pdf
 
     def __init__(self, bus):
         self.uart = UART(bus)
@@ -17,10 +18,13 @@ class uRFID:
         # Return the ID of the most recent tag read, if not tag has been read return None.
         self.uart.write(b"RAT\r")  # Call Read Animal Tag function.
         read_bytes = self.uart.read()
-        if not read_bytes:
-            return
-        try:
-            ID = int(read_bytes[-13:-1])
-            return ID
-        except ValueError:
-            return
+        if read_bytes is None:
+            return None  # No messages in UART
+        else:
+            msgs = read_bytes.split(b"\r")  # Split message by <crn>
+        for msg in msgs:
+            if msg is b"?1":
+                return None  # Error: No read
+            else:
+                parts = msg.split(b"_")  # Split valid message into component parts
+                return parts[1]  # Return the second part of the message
