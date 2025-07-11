@@ -1,4 +1,3 @@
-
 import pyb
 from pyb import Pin
 from pyAccessControl.access_control_1_0 import Access_control_upy
@@ -16,38 +15,40 @@ class handler:
         myled.on()
         AC_handler = Access_control_upy()
         AC_handler.loadcell.tare()
-        micros = pyb.Timer(
-            2, prescaler=83, period=0x3FFFFFFF
-        )  # just a microsecond timer
+        micros = pyb.Timer(2, prescaler=83, period=0x3FFFFFFF)  # just a microsecond timer
 
         enable_pin_1 = pyb.Pin("X11", pyb.Pin.OUT)  # Enables/disables the drivers on the + side of doors 1 & 2.
         enable_pin_2 = pyb.Pin("X12", pyb.Pin.OUT)  # Enables/disables the drivers on the + side of doors 3 & 4.
         enable_pin_1.value(1)  # Enable drivers.
         enable_pin_2.value(1)
 
-        highside_pins = [pyb.Pin(p, pyb.Pin.OUT) for p in ("Y3", "Y5", "Y12", "X6")]  # Controls whether + side of door is driven to 12V or 0V.
-        lowside_pins = [pyb.Pin(p, pyb.Pin.OUT) for p in ("Y4", "Y6", "Y11", "X5")]  # Controls whether - side of door is driven to 12V or 0V.
+        highside_pins = [
+            pyb.Pin(p, pyb.Pin.OUT) for p in ("Y3", "Y5", "Y12", "X6")
+        ]  # Controls whether + side of door is driven to 12V or 0V.
+        lowside_pins = [
+            pyb.Pin(p, pyb.Pin.OUT) for p in ("Y4", "Y6", "Y11", "X5")
+        ]  # Controls whether - side of door is driven to 12V or 0V.
         signal_pins = [pyb.ADC(p) for p in ("X1", "X2", "X3", "X4")]  # Pins used to sense voltage on + side of doors.
 
         for i in range(4):  # Drive both sides of all doors to 0V.
             highside_pins[i].value(0)
             lowside_pins[i].value(0)
 
-        P_read_en1 = signal_pin(signal_pins[0], enable_pin_1, enable_pin_2)  
-        P_read_en2 = signal_pin(signal_pins[1], enable_pin_1, enable_pin_2)  
-        P_read_ex1 = signal_pin(signal_pins[2], enable_pin_1, enable_pin_2)  
-        P_read_ex2 = signal_pin(signal_pins[3], enable_pin_1, enable_pin_2)  
+        P_read_en1 = signal_pin(signal_pins[0], enable_pin_1, enable_pin_2)
+        P_read_en2 = signal_pin(signal_pins[1], enable_pin_1, enable_pin_2)
+        P_read_ex1 = signal_pin(signal_pins[2], enable_pin_1, enable_pin_2)
+        P_read_ex2 = signal_pin(signal_pins[3], enable_pin_1, enable_pin_2)
 
-        P_mag_en1 = magnet_pin(highside_pins[0], lowside_pins[0])  
-        P_mag_en2 = magnet_pin(highside_pins[1], lowside_pins[1])  
-        P_mag_ex1 = magnet_pin(highside_pins[2], lowside_pins[2])  
-        P_mag_ex2 = magnet_pin(highside_pins[3], lowside_pins[3])  
+        P_mag_en1 = magnet_pin(highside_pins[0], lowside_pins[0])
+        P_mag_en2 = magnet_pin(highside_pins[1], lowside_pins[1])
+        P_mag_ex1 = magnet_pin(highside_pins[2], lowside_pins[2])
+        P_mag_ex2 = magnet_pin(highside_pins[3], lowside_pins[3])
 
         MAGs = [P_mag_en1, P_mag_en2, P_mag_ex1, P_mag_ex2]
 
         com = pyb.USB_VCP()
 
-        ONE_MOUSE = 8
+        ONE_MOUSE = 50
         # TWO_MICE = 40
         TWO_MICE = 100
         NEWSTATE = True
@@ -106,9 +107,7 @@ class handler:
                         NEWSTATE = False
 
                     if P_read_en1.value() == 0:  # if entry door is closed again
-                        com.write(
-                            build_msg("door0_closed:" + str(P_read_en1.measured_value))
-                        )
+                        com.write(build_msg("door0_closed:" + str(P_read_en1.measured_value)))
                         ## This is an extra check step to try to help prevent the door from being unnecessarily closed
                         weight = AC_handler.loadcell.weigh()
                         if weight < ONE_MOUSE:
@@ -125,9 +124,7 @@ class handler:
                             pyb.delay(self.forced_delay)
                             last_check = micros.counter()
                     else:
-                        com.write(
-                            build_msg("door0_open:" + str(P_read_en1.measured_value))
-                        )
+                        com.write(build_msg("door0_open:" + str(P_read_en1.measured_value)))
                     weight = AC_handler.loadcell.weigh()
                     # if weight>ONE_MOUSE:
                     #    if millis_since_check_wait_close is None:
@@ -165,7 +162,7 @@ class handler:
                             for ix, j in enumerate(weights[1:-1])
                         ]
                         + [0]
-                        )
+                    )
                     filt_sum = float(sum(filt_w))
                     filt_w2 = [wtmp / filt_sum for wtmp in filt_w]
                     weight = sum([i * j for i, j in zip(weights, filt_w2)])
@@ -194,8 +191,6 @@ class handler:
                         while getRFID:
                             rfid = AC_handler.rfid.read_tag()
                             pyb.delay(50)
-                            # rfid = '116000039959'
-                            rfid = '152879198880'
                             # if read an RFID TAG
                             if rfid is not None:
                                 com.write(build_msg("RFID:" + str(rfid)))
@@ -244,9 +239,7 @@ class handler:
 
                     # if door entry to chamber is closed again
                     if P_read_en2.value() == 0:
-                        weight = (
-                            AC_handler.loadcell.weigh()
-                        )  # - self.baseline_read   #RETURN
+                        weight = AC_handler.loadcell.weigh()  # - self.baseline_read   #RETURN
                         pyb.delay(10)
 
                         if weight < ONE_MOUSE:
@@ -258,17 +251,13 @@ class handler:
                             NEWSTATE = True
                             pyb.delay(self.forced_delay)
 
-                if (
-                    state == "mouse_training"
-                ):  # now the mouse is in the training apparatus
+                if state == "mouse_training":  # now the mouse is in the training apparatus
                     if NEWSTATE:
                         com.write(build_msg("state:" + state))
                         NEWSTATE = False
 
                     for mag in range(4):
-                        if (
-                            mag in [0, 1, 3]
-                        ):  # 2 is the magnet that is not closed, so the animal can leave.
+                        if mag in [0, 1, 3]:  # 2 is the magnet that is not closed, so the animal can leave.
                             MAGs[mag].value(1)
                         else:
                             MAGs[mag].value(0)
@@ -306,9 +295,7 @@ class handler:
 
                 if (state == "mouse_training") or (state == "allow_entry"):
                     ##here re-baseline the scale
-                    if abs(micros.counter() - last_check) > (
-                        10**6
-                    ):  # do handshake once per second
+                    if abs(micros.counter() - last_check) > (10**6):  # do handshake once per second
                         last_check = micros.counter()
 
                         # if abs(CW-self.baseline_read)<1:
@@ -330,8 +317,7 @@ class handler:
                         else:
                             num_times_checked_for_error = 0
                             self.baseline_read = (
-                                self.baseline_alpha * Wbase
-                                + (1 - self.baseline_alpha) * self.baseline_read
+                                self.baseline_alpha * Wbase + (1 - self.baseline_alpha) * self.baseline_read
                             )
 
                 if state == "allow_exit":
@@ -364,9 +350,7 @@ class handler:
                         weight = AC_handler.loadcell.weigh() - self.baseline_read
                         pyb.delay(10)
 
-                        if (
-                            weight < ONE_MOUSE
-                        ):  # in this case the mouse has left and we restart
+                        if weight < ONE_MOUSE:  # in this case the mouse has left and we restart
                             state = "allow_entry"
                             NEWSTATE = True
                             pyb.delay(self.forced_delay)
@@ -382,7 +366,7 @@ class handler:
                     for mag in range(4):
                         MAGs[mag].value(0)
 
-                # Debugging signals from host 
+                # Debugging signals from host
                 sent_data = com.readline()
                 if sent_data is not None:
                     sent_data = sent_data.decode("utf8")

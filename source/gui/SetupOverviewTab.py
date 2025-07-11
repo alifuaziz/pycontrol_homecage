@@ -94,7 +94,12 @@ class SetupsOverviewTab(QWidget):
         """Open interface to pyboard in the operant chamber that allows you to run tasks
         behavioural tasks on the pyboard"""
 
-        self._is_any_setup_connected()
+        # Check if any setups are connected
+        if len(database.controllers) == 0:
+            boxM = QMessageBox()
+            boxM.setIcon(QMessageBox.Information)
+            boxM.setText("You must be connected to a setup to update it")
+            boxM.exec()
 
         checked_setup_idx = self._is_single_setup_selected()
 
@@ -131,14 +136,6 @@ class SetupsOverviewTab(QWidget):
                 isChecked.append(row)
 
         return isChecked if len(isChecked) == 1 else []
-
-    def _is_any_setup_connected(self) -> None:
-        """Are any setups connected. Raises a flag if not setups are connected"""
-        if len(database.controllers) == 0:
-            boxM = QMessageBox()
-            boxM.setIcon(QMessageBox.Information)
-            boxM.setText("You must be connected to a setup to update it")
-            boxM.exec()
 
     def update_setup(self) -> None:
         isChecked = []
@@ -199,7 +196,7 @@ class SetupsOverviewTab(QWidget):
         database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
 
     def _refresh(self):
-        """Find which training setups are available"""
+        """Find which pyControl Boards are available"""
 
         if self._setups_have_changed():
             self.cat_combo_box.clear()
@@ -210,7 +207,7 @@ class SetupsOverviewTab(QWidget):
                 if i not in (database.setup_df["COM"].tolist() + database.setup_df["COM_AC"].tolist())
             ]
 
-            self.cat_combo_box.addItems(["Select Training Setup"] + list(ports))
+            self.cat_combo_box.addItems(["Select pyControl Board"] + list(ports))
             self.cact_combo_box.addItems(["Select Access Control"] + list(ports))
 
         self.setup_table_widget._refresh()
@@ -226,7 +223,7 @@ class SetupsOverviewTab(QWidget):
             for i in find_pyboards()
             if i not in (database.setup_df["COM"].tolist() + database.setup_df["COM_AC"].tolist())
         ]
-        prev = ["Select Training Setup"] + list(ports)
+        prev = ["Select pyControl Board"] + list(ports)
         new_prop_cat = [self.cat_combo_box.itemText(i) for i in range(self.cat_combo_box.count())]
         return new_prop_cat != prev
 
