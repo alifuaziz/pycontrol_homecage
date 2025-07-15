@@ -98,7 +98,7 @@ def create_empty_csv(pth: str) -> None:
                 "Mouse_ID",
                 "RFID",
                 "Sex",
-                "Age",create_paths_and_empty_csvs
+                "Age",
                 "Experiment",
                 "Protocol",
                 "Stage",

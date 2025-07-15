@@ -82,7 +82,7 @@ class MainGUI(QMainWindow):
         3. Prints any messages that have entered the message queue
         """
         for controller in database.controllers.values():
-            controller.check_for_data()
+            controller.process_data()
 
             if self.system_tab.plot_isactive:
                 self.system_tab.experiment_plot.update()

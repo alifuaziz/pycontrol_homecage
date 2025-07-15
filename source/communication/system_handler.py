@@ -13,11 +13,13 @@ from source.communication.messages import (
     MessageSource,
     emit_print_message,
 )
-from source.communication.data_logger import Data_logger
+from source.communication.data_logger import Data_logger, Analog_writer
 
 
 class system_controller(Data_logger):
     """
+    Inherits from datalogger
+
     Functionality
     - Control a whole pycboard and acboard system
     - Log what is does to disk
@@ -29,8 +31,8 @@ class system_controller(Data_logger):
         self.setup_ID = setup_ID
         self.AC = AC
         self.AC.data_logger = self
-        self.PYC = PYC
-        self.PYC.data_logger = self
+        self.board = PYC  # board refers to pyControl board. This name inherits from Data_logger class
+        self.board.data_logger = self
         self.analog_files = {}
         self.sm_info = {}
         self.print_func = print_func
@@ -43,10 +45,10 @@ class system_controller(Data_logger):
     # Saving data
     # ------------------------------------------------------------------------------------
 
-    def check_for_data(self):
+    def process_data(self):
         """check whether either AC or the PYC board have data to deliver"""
         self.AC.process_data()
-        self.PYC.process_data()
+        self.board.process_data()
 
     def write_and_emit_data(self, new_data):
         """If data _file is open new data is written to file."""
@@ -69,7 +71,7 @@ class system_controller(Data_logger):
                             'is_assigned', 'training_log', 'Setup_ID']
 
 
-        BUG: ##NEED TO UPDATE THIS FUNCTION SO THAT ON ERROR IT CLOSES THE DATA FILES AND
+        BUG: NEED TO UPDATE THIS FUNCTION SO THAT ON ERROR IT CLOSES THE DATA FILES AND
         # UPDATES THE variables file appropriately. Also should make a note that an error
         #ocurred if it does.
 
@@ -78,7 +80,7 @@ class system_controller(Data_logger):
         if self.data_file:
             RUN_ERROR = False
             try:
-                v_ = self.PYC.get_variables()
+                v_ = self.board.get_variables()
                 self.data_file.writelines("Variables")
                 self.data_file.writelines(repr(v_))
                 if (
@@ -126,7 +128,7 @@ class system_controller(Data_logger):
                             "persistent_variables",
                         ].values[0]
                     )
-                self.PYC.reset()
+                self.board.reset()
                 RUN_ERROR = True
 
             self.data_file.close()
@@ -144,7 +146,7 @@ class system_controller(Data_logger):
             database.mouse_df = database.mouse_df.loc[:, ~database.mouse_df.columns.str.contains("^Unnamed")]
             database.mouse_df.to_csv(user_folder("mice_dataframe_filepath"))
 
-            database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"] = ""
+            database.setup_df.loc[database.setup_df["COM"] == self.board.serial_port, "Mouse_training"] = ""
             database.setup_df = database.setup_df.loc[:, ~database.setup_df.columns.str.contains("^Unnamed")]
             database.setup_df.to_csv(user_folder("setup_dir_dataframe_filepath"))
 
@@ -187,15 +189,16 @@ class system_controller(Data_logger):
 
     def disconnect(self):
         """This needs to be done for when we have multiple setups"""
-        self.PYC.close()  # This closes the connection to the behaviour board
+        self.board.close()  # This closes the connection to the behaviour board
         self.AC.close()  # This closes the connection to AC board by pyboard class
 
-    def process_data_AC(self, new_data):
-        # the time at which the data was received
-        now = datetime.now().strftime("%Y-%m-%d-%H%M%S")
-
-        exp_running_now = database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port]["Experiment"].values
-
+    def process_data_AC(self, new_data: list):
+        """
+        Arguments:
+            new_data: list of the messages coming from the access control
+                with formatting for the type of message and content of the message
+                Examples: 'state:allow_entry', 'weight:50', 'RFID:100000'
+        """
         # if exp_running_now != 'none':  # YW 11/02/21 NOT SURE WHY THIS CHECK IS HERE
         for msg in new_data:
             # Message to print the message to the system overview.
@@ -218,15 +221,14 @@ class system_controller(Data_logger):
         to handle these states.
         """
         # update access control state in the database
-        database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "AC_state"] = state
+        database.setup_df.loc[database.setup_df["COM"] == self.board.serial_port, "AC_state"] = state
 
         if state == "error_state":
             # Handle error state from Access control board
-            self.PYC.stop_framework()  # stops the task
+            self.board.stop_framework()  # stops the task
             time.sleep(0.05)
-            self.PYC.process_data()
+            self.board.process_data()
             self.close_files()
-
         if state == "allow_entry":
             # Reset the mouse information on entry
             self.mouse_data = {
@@ -248,12 +250,13 @@ class system_controller(Data_logger):
             self.mouse_data["exit_time"] = datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
             if self.data_file:
-                self.PYC.stop_framework()
+                self.board.stop_framework()
                 time.sleep(0.05)
-                self.PYC.process_data()
+                self.board.process_data()
                 self.close_files()
 
     def _handle_mouse_training(self) -> None:
+        """Handles the process of starting a training or task protocol for a mouse based on its RFID."""
         # Get the mouse row from the RFID number
         mouse_row = database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"]]
         # Raise an exception if mouse_row is empty
@@ -278,8 +281,6 @@ class system_controller(Data_logger):
             protocol = mouse_row["Protocol"].values[0]
             task = mouse_row["Task"].values[0]
 
-            file_name = "_".join([mouse_ID, experiment_name, task, datetime.now()]) + ".txt"
-            fullpath_to_datafile = os.path.join(self.data_dir, experiment_name, mouse_ID, protocol, file_name)
             # Save a copy of the taskfile that was run
             with open(os.path.join(get_path("tasks"), task + ".py"), "r") as f_:
                 # read the task file uploaded to pyboard
@@ -288,23 +289,26 @@ class system_controller(Data_logger):
                 with open(user_folder("mice_dir") + "_taskFile.txt", "w") as f_backup:
                     f_backup.writelines(dat_)
 
-            # Open the data file (using the datalogger class)
+            # Create path to the data file
+            file_name = "_".join([mouse_ID, experiment_name, task, datetime.now().strftime("%Y-%m-%d-%H%M%S")])
+            fullpath_to_datafile = os.path.join(self.data_dir, experiment_name, mouse_ID, protocol, file_name)
+            os.makedirs(fullpath_to_datafile, exist_ok=True)
+            # Open the data file (inherited from datalogger class)
             self.open_data_file(
-                data_dir=fullpath_to_datafile,
-                experiment_name=experiment_name,
-                setup_ID=self.setup_ID,
-                subject_ID=mouse_ID,
-                datetime_now=datetime.now(),
+                data_dir=fullpath_to_datafile,  # Path to where the pyControl task record gets saved
+                experiment_name=experiment_name,  # Name of experiement which is being run
+                setup_ID=self.setup_ID,  # Experimental setup being run
+                subject_ID=mouse_ID,  # Which mouse is being run
             )
+            # Start pyControl Board framework
+            self.board.start_framework()
 
-            self.PYC.start_framework()
-
-            # Update database on entry
+            #  --------------- Update database on entry -------------------
             database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "Current_weight"] = (
                 self.mouse_data["weight"]
             )
             database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "is_training"] = True
-            database.setup_df.loc[database.setup_df["COM"] == self.PYC.serial_port, "Mouse_training"] = mouse_ID
+            database.setup_df.loc[database.setup_df["COM"] == self.board.serial_port, "Mouse_training"] = mouse_ID
             # Update the tables from queue
             database.update_table_queue.append("setup_tab.list_of_setups")
             database.update_table_queue.append("system_tab.list_of_setups")
@@ -326,21 +330,21 @@ class system_controller(Data_logger):
         )
         #################################### Not working!
         # Set the state machine for the task
-        self.PYC.setup_state_machine(sm_name=task)
+        self.board.setup_state_machine(sm_name=task)
         # Set the `set_variables` for the task
         if not pd.isnull(mouse_info_row["set_variables"].values):
             # Dictionary of set variables are used to set Pycontrol board
             set_variables = eval(mouse_info_row["set_variables"].values[0])
             if set_variables:
                 for k, v in set_variables.items():
-                    self.PYC.set_variable(k[2:], eval(v))
+                    self.board.set_variable(k[2:], eval(v))
         # Set the `persistent_variables` for the task
         if not pd.isnull(mouse_info_row["persistent_variables"].values):
             persistent_variables = eval(mouse_info_row["persistent_variables"].values[0])
             if persistent_variables:
                 for k, v in persistent_variables.items():
                     if v != "auto":
-                        self.PYC.set_variable(k[2:], eval(v))
+                        self.board.set_variable(k[2:], eval(v))
 
     def run_mouse_protocol(self, mouse_info_row: pd.Series) -> str:
         # If running a real protocol, handle (potential) update of protocol.
@@ -394,17 +398,17 @@ class system_controller(Data_logger):
         database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "Task"] = task
         database.mouse_df.loc[database.mouse_df["RFID"] == self.mouse_data["RFID"], "Stage"] = stage
 
-        self.PYC.setup_state_machine(sm_name=task)
+        self.board.setup_state_machine(sm_name=task)
 
         # handle setting varibles
 
         for k, defV in eval(updated_stage_row["defaultV"]):
             # Persistant veriables. They are set the same for every instance of the pycontrol statemachine
-            self.PYC.set_variable(k, float(defV))
+            self.board.set_variable(k, float(defV))
 
         if len(mouse_df_log) > 0:
             if not newStage:  # newStage is False
                 for k in updated_stage_row["trackV"]:
                     # Updated variables. They are changed based on the behaviour of the animal.
-                    self.PYC.set_variable(k, float(pycontrol_variables_dict[k]))
+                    self.board.set_variable(k, float(pycontrol_variables_dict[k]))
         return task

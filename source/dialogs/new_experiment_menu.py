@@ -7,12 +7,10 @@ from PyQt5 import QtWidgets, QtCore
 from pyqtgraph import Qt
 from pyqtgraph.Qt import QtGui
 
-from ..utils import get_tasks
-from source.tables import (
-    MouseListTable,
-    NewExperimentSetupTable,
-    VariablesTable,
-)
+from ..utils import get_tasks, get_path
+from source.tables import NewExperimentSetupTable, VariablesTable
+from source.tables.MouseListTable import MouseListTable
+
 import db as database
 from source.gui.settings import user_folder
 from . import InformationDialog
@@ -100,6 +98,13 @@ class NewExperimentDialog(QtWidgets.QDialog):
         self.exp_GOButton.setText("Set")
         self.exp_GOButton.clicked.connect(self.set_name)
 
+        self.btn_task_info = QtWidgets.QPushButton("I")
+        self.btn_task_info.setToolTip("Task Info")
+        self.btn_task_info.clicked.connect(
+            lambda: InformationDialog("Make Sure you have added your tasks to the `data/tasks/` directory").exec_()
+        )
+        self.btn_task_info.setMaximumWidth(self.btn_task_info.sizeHint().height())
+
         self.name_layout = QtWidgets.QHBoxLayout()
         self.name_layout2 = QtWidgets.QHBoxLayout()
         self.name_layout.addWidget(self.expLabel)
@@ -109,6 +114,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
         self.name_layout2.addWidget(self.protocol_combo)
         self.name_layout2.addWidget(self.exp_GOButton)
+        self.name_layout2.addWidget(self.btn_task_info)
 
         self.nameVlayout = QtWidgets.QVBoxLayout()
         self.nameVlayout.addLayout(self.name_layout)
@@ -161,9 +167,6 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
         self.left_column.addWidget(self.exp_name_groupbox)
         self.left_column.addWidget(self.setup_groupbox)
-
-        ###############################################################
-        ###############################################################
 
         #####################################################
         #############      Mouse Adder Box      #############
@@ -251,7 +254,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
 
         self.MICE = QtWidgets.QGroupBox("Mouse Overview")
         self.mice_column = QtWidgets.QVBoxLayout()
-        self.mouse_list_table = MouseListTable(tab=self)
+        self.mouse_list_table = MouseListTable(self)
 
         self.mice_column.addWidget(self.MAT)
         self.mice_column.addWidget(self.mouse_list_table)

@@ -5,3 +5,4 @@ rfid = uRFID(bus=6)
 while True:
     rfid.read_tag()
     time.sleep(1)
+    # 116000039961

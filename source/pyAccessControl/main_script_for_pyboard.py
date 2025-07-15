@@ -48,7 +48,7 @@ class handler:
 
         com = pyb.USB_VCP()
 
-        ONE_MOUSE = 50
+        ONE_MOUSE = 8
         # TWO_MICE = 40
         TWO_MICE = 100
         NEWSTATE = True

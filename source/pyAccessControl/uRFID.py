@@ -27,4 +27,4 @@ class uRFID:
                 return None  # Error: No read
             else:
                 parts = msg.split(b"_")  # Split valid message into component parts
-                return parts[1]  # Return the second part of the message
+                return parts[1].decode()  # Return the second part of the message as a string
