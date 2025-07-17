@@ -24,7 +24,7 @@ class DirectProtocolDialog(QDialog):
         super(DirectProtocolDialog, self).__init__(parent)
         pass
         self.setup_id = setup_id
-        self.PYC = database.controllers[self.setup_id].PYC
+        self.board = database.controllers[self.setup_id].board
         self.setup_df = database.setup_df
         self.global_layout = QHBoxLayout(self)
 
@@ -47,5 +47,5 @@ class DirectProtocolDialog(QDialog):
         """"""
 
     def upload_task(self, task):
-        """Function to upload the selected task, to the PYC board"""
+        """Function to upload the selected task, to the pyControl board"""
         pass

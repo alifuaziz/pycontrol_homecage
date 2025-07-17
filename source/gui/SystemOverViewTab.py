@@ -167,7 +167,7 @@ class SystemOverviewTab(QWidget):
                     # k = str(len(experiment['subjects']))
                     experiment["subjects"][row["Setup_ID"]] = row["Mouse_training"]
                     handler_ = [setup for k, setup in database.controllers.items() if k == row["Setup_ID"]][0]
-                    experiment["sm_infos"][row["Setup_ID"]] = handler_.PYC.sm_info
+                    experiment["sm_infos"][row["Setup_ID"]] = handler_.board.sm_info
                     experiment["handlers"][row["Setup_ID"]] = handler_
 
             self.experiment_plot.setup_experiment(experiment)

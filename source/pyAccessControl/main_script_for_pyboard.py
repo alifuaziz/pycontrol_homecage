@@ -96,10 +96,6 @@ class handler:
                         last_check = micros.counter()
                         MAGs[0].value(1)
                         pyb.delay(self.forced_delay)
-                    # if P_read_en1.value():
-                    #    state = 'wait_close'
-                    #    NEWSTATE = True; pyb.delay(self.forced_delay)
-                    #    last_check = micros.counter()
 
                 if state == "wait_close":
                     if NEWSTATE:
@@ -410,3 +406,7 @@ class handler:
             state = "error_state"
             com.write(build_msg("state:" + str(state)))
             com.write(build_msg(str(e)))
+
+
+if __name__ == "__main__":
+    handler().run()

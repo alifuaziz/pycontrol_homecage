@@ -23,17 +23,12 @@ ac_board = Access_control("COM5")
 
 sc = system_controller(AC=ac_board, PYC=pyc_board)
 # Instead of directly setting up the task, use the RFID signal read from the Access control board to setup the task
-print("allow_entry")
 sc.process_data_AC(new_data=["state:allow_entry"])  # Reset Mouse data
 sc.process_data_AC(new_data=["weight:50"])  # Set Mouse data to 50gstate:
 sc.process_data_AC(new_data=["RFID:116000039961"])  # Set RFID
+sc.process_data_AC(new_data=["state:enter_training_chamber"])
 sc.process_data_AC(new_data=["state:mouse_training"])  # Handle the mouse training
-#### Direct interface with pyc_board does not do logging of data correctly ### This should be interfaced with via the system_controller.
-# pyc_board.load_hardware_definition(
-#     r"C:\Program Files\pycontrol_homecage\hardware_definitions\hardware_definition_9_poke_boxes.py"
-# )
-# pyc_board.setup_state_machine("2step", uploaded=False)
-# pyc_board.start_framework()
+
 try:
     while True:
         time.sleep(1)

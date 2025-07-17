@@ -23,8 +23,8 @@ class uRFID:
         else:
             msgs = read_bytes.split(b"\r")  # Split message by <crn>
         for msg in msgs:
-            if msg is b"?1":
-                return None  # Error: No read
-            else:
+            try:
                 parts = msg.split(b"_")  # Split valid message into component parts
                 return parts[1].decode()  # Return the second part of the message as a string
+            except:
+                return None

@@ -27,7 +27,7 @@ class DirectPyboardDialog(QDialog):
         self.selected_task = "None"
 
         # POint to PYC board
-        self.PYC = database.controllers[self.setup_id].PYC
+        self.board = database.controllers[self.setup_id].board
         self.reject = self._done
 
         # Layout
@@ -61,16 +61,16 @@ class DirectPyboardDialog(QDialog):
             self.selected_task = self.task_combo.currentText()
             if self.task_combo.currentText() != "None":
                 self.print_msg("Uploading: " + str(self.selected_task))
-                self.PYC.setup_state_machine(sm_name=self.selected_task)
-                self.PYC.start_framework()
+                self.board.setup_state_machine(sm_name=self.selected_task)
+                self.board.start_framework()
             self.start_stop_button.setText("Stop")
         elif self.start_stop_button.text() == "Stop":
-            self.PYC.stop_framework()
+            self.board.stop_framework()
             self.start_stop_button.setText("Start")
 
     def _done(self) -> None:
         if self.onClose_chechbox.isChecked():
-            self.PYC.stop_framework()  # stop the framework
+            self.board.stop_framework()  # stop the framework
 
         del database.print_consumers[MessageRecipient.direct_pyboard_dialog]
         self.accept()  # close the dialog

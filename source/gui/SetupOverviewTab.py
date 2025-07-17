@@ -157,8 +157,9 @@ class SetupsOverviewTab(QWidget):
             checked_setup_id = self.setup_table_widget.item(checked_row, setup_col).text()
             for k, G in database.controllers.items():
                 if k == checked_setup_id:
+                    print(k)
                     #
-                    self.configure_box_dialog = ConfigureBoxDialog(k)
+                    self.configure_box_dialog = ConfigureBoxDialog(setup_id=k)
                     database.print_consumers[MessageRecipient.configure_box_dialog] = (
                         self.configure_box_dialog.print_msg
                     )

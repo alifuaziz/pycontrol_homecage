@@ -95,11 +95,11 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
                     print(exp_name)
                     handler_ = [setup_ for k, setup_ in database.controllers.items() if k == setup][0]
 
-                    handler_.PYC.stop_framework()
+                    handler_.board.stop_framework()
                     time.sleep(0.05)
-                    handler_.PYC.process_data()
+                    handler_.board.process_data()
                     handler_.close_files()
-                    handler_.PYC.reset()
+                    handler_.board.reset()
 
                     database.exp_df.loc[database.exp_df["Name"] == exp_name, "Active"] = False
                     database.setup_df.loc[database.setup_df["Setup_ID"] == setup, "Experiment"] = None

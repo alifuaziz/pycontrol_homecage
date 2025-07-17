@@ -19,7 +19,7 @@ class ConfigureBoxDialog(QDialog):
         self.load_framework_button.clicked.connect(self.load_framework)
 
         self.load_ac_framework_button = QPushButton("Load Access control \nframework", self)
-        self.load_ac_framework_button.clicked.connect(self.load_ac_framework)
+        self.load_ac_framework_button.clicked.connect(self.load_access_control_framework)
         self.load_hardware_definition_button = QPushButton("Load hardware definition", self)
         self.load_hardware_definition_button.clicked.connect(self.load_hardware_definition)
         self.disable_flashdrive_button = QPushButton("Disable flashdrive")
@@ -29,6 +29,7 @@ class ConfigureBoxDialog(QDialog):
         layout2.addWidget(self.disable_flashdrive_button)
         layout2.addWidget(self.load_ac_framework_button)
 
+        self.setup_id = setup_id
         self.ac = database.controllers[self.setup_id].AC
         self.reject = self._done
 
@@ -57,7 +58,11 @@ class ConfigureBoxDialog(QDialog):
         layoutH.addWidget(self.log_textbox)
         database.print_consumers[MessageRecipient.configure_box_dialog] = self.print_msg
 
-    def load_ac_framework(self):
+    # ------------------------------------
+    # Loading Framework Commands
+    # ------------------------------------
+
+    def load_access_control_framework(self):
 
         self.log_textbox.insertPlainText("Loading access control framework...")
         database.controllers[self.setup_id].AC.reset()
@@ -71,8 +76,10 @@ class ConfigureBoxDialog(QDialog):
         self.log_textbox.moveCursor(QTextCursor.End)
 
     def disable_flashdrive(self):
-        database.controllers[self.setup_id].PYC.disable_flashdrive()
+        database.controllers[self.setup_id].board.disable_flashdrive()
 
+    def load_hardware_definition(self):
+        """Load a hardware definition for the Setup's pyControl board"""
         hwd_path = QFileDialog.getOpenFileName(
             self,
             "Select hardware definition:",
@@ -81,12 +88,14 @@ class ConfigureBoxDialog(QDialog):
         )[0]
 
         self.log_textbox.insertPlainText("uploading hardware definition...")
-        self.log_textbox.moveCursor(QtGui.QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.End)
 
-        database.controllers[self.setup_id].PYC.load_hardware_definition(hwd_path)
+        database.controllers[self.setup_id].board.load_hardware_definition(hwd_path)
         self.log_textbox.insertPlainText("done!")
-        # setup.load_hardware_definition(hwd_path)
 
+    # ------------------------------------
+    # Access Control Commands
+    # ------------------------------------
     def tare(self):
         self.ac.serial.write(b"tare")
 
@@ -101,6 +110,10 @@ class ConfigureBoxDialog(QDialog):
 
     def weigh(self):
         self.ac.serial.write(b"weigh")
+
+    # ------------------------------------
+    # Framework Commands
+    # ------------------------------------
 
     def _done(self):
         del database.print_consumers[MessageRecipient.configure_box_dialog]
