@@ -91,12 +91,11 @@ class Access_control(Pycboard):
     # Access Control operations.
     # ------------------------------------------------------------------------------------
 
-    def load_framework(self) -> None:
+    def load_framework(self, auto_run=True) -> None:
         """
-        Copy the pyControl framework folder to the board. Then run the main script that runs the firmware on the board.
-        The commands run on the board are:
-        from access_control_upy.access_control_1_0 import Access_control_upy
-        access_control = Access_control_upy()
+        Copy the Access Control framework folder to the micropythonboard.
+        if auto_run = True:
+            The Firmware automatically starts
         """
 
         self.print("\nTransfering Access Control framework to pyboard.", end="")
@@ -119,8 +118,10 @@ class Access_control(Pycboard):
             print("Could not instantiate Access_control.")
             raise (e)
         try:  # Begin Running
-            self.exec("from main import handler")
-            self.exec_raw_no_follow("handler().run()")
+            if auto_run:
+                self.print("\nBeginning Access Control Firmware...")
+                self.exec("from main import handler")
+                self.exec_raw_no_follow("handler().run()")
         except PyboardError as e:
             raise (e)
         print("OK")
