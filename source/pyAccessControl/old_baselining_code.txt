@@ -1,0 +1,32 @@
+'''
+Code snippet from Yves Implementation to rebaseline the loadcell due to drift. 
+Implemented using an exponential moving average approach for maintaining an estimate of the baseline.
+'''
+
+
+                if (state == "mouse_training") or (state == "allow_entry"):
+                    ##here re-baseline the scale
+                    if abs(micros.counter() - last_check) > (10**6):  # do handshake once per second
+                        last_check = micros.counter()
+
+                        # if abs(CW-self.baseline_read)<1:
+                        Wbase = float(AC_handler.loadcell.weigh(times=1))
+                        com.write(build_msg("Wbase:" + str(Wbase)))
+                        # com.write(build_msg('Wbase:' + str(Wbase)))
+
+                        # if one Wbase weight is greater than the weight of one mouse, then double check
+                        # that weight by weighing 10 times. If that weight is still above the weight of one
+                        # mouse, then come back in 1s and check again. If the weight is still too high, go
+                        # into an error state
+                        if Wbase > ONE_MOUSE:
+                            CW = AC_handler.loadcell.weigh(times=2)
+                            if float(CW) > ONE_MOUSE:
+                                if num_times_checked_for_error > 30:
+                                    state = "error_state"
+                                    com.write(build_msg("state:" + str(state)))
+                                num_times_checked_for_error += 1
+                        else:
+                            num_times_checked_for_error = 0
+                            self.baseline_read = (
+                                self.baseline_alpha * Wbase + (1 - self.baseline_alpha) * self.baseline_read
+                            )

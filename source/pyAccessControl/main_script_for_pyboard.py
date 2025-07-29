@@ -13,6 +13,9 @@ class handler:
         myled = pyb.LED(1)
         myled2 = pyb.LED(2)
         myled.on()
+        micros = pyb.Timer(2, prescaler=83, period=0x3FFFFFFF)  # Microsecond timer
+
+        # -------- Loadcell Operations --------
         AC_handler = Access_control_upy()
         AC_handler.loadcell.tare()
         micros = pyb.Timer(2, prescaler=83, period=0x3FFFFFFF)  # just a microsecond timer
@@ -194,7 +197,6 @@ class handler:
                                 state = "enter_training_chamber"
                                 NEWSTATE = True
                                 pyb.delay(self.forced_delay)
-
                             # if no RFID tag read in 20s
                             if (time.time() - st_check) > 30:
                                 getRFID = False
@@ -216,7 +218,6 @@ class handler:
                             MAGs[mag].value(1)
                         else:
                             MAGs[mag].value(0)
-
                     # if the mouse had opened the door to training chamber
                     weight = AC_handler.loadcell.weigh(times=1)
                     # if P_read_en2.value()==1:
@@ -224,7 +225,6 @@ class handler:
                         state = "check_mouse_in_training"
                         NEWSTATE = True
                         pyb.delay(self.forced_delay)
-
                 # once the door to the training chamber has closed again, make sure that
                 # the mouse has left
                 if state == "check_mouse_in_training":
@@ -270,10 +270,6 @@ class handler:
                         com.write(build_msg("state:" + state))
                         NEWSTATE = False
 
-                    # YVES UPDATE 160221 think this is unncessary
-                    # for mag in range(4):
-                    #    MAGs[mag].value(1)
-
                     if P_read_ex1.value() == 0:
                         weight = AC_handler.loadcell.weigh()  # - self.baseline_read
                         pyb.delay(10)
@@ -288,34 +284,6 @@ class handler:
                             state = "allow_exit"
                             NEWSTATE = True
                             pyb.delay(self.forced_delay)
-
-                if (state == "mouse_training") or (state == "allow_entry"):
-                    ##here re-baseline the scale
-                    if abs(micros.counter() - last_check) > (10**6):  # do handshake once per second
-                        last_check = micros.counter()
-
-                        # if abs(CW-self.baseline_read)<1:
-                        Wbase = float(AC_handler.loadcell.weigh(times=1))
-                        com.write(build_msg("Wbase:" + str(Wbase)))
-                        # com.write(build_msg('Wbase:' + str(Wbase)))
-
-                        # if one Wbase weight is greater than the weight of one mouse, then double check
-                        # that weight by weighing 10 times. If that weight is still above the weight of one
-                        # mouse, then come back in 1s and check again. If the weight is still too high, go
-                        # into an error state
-                        if Wbase > ONE_MOUSE:
-                            CW = AC_handler.loadcell.weigh(times=2)
-                            if float(CW) > ONE_MOUSE:
-                                if num_times_checked_for_error > 30:
-                                    state = "error_state"
-                                    com.write(build_msg("state:" + str(state)))
-                                num_times_checked_for_error += 1
-                        else:
-                            num_times_checked_for_error = 0
-                            self.baseline_read = (
-                                self.baseline_alpha * Wbase + (1 - self.baseline_alpha) * self.baseline_read
-                            )
-
                 if state == "allow_exit":
                     if NEWSTATE:
                         com.write(build_msg("state:" + state))
@@ -362,7 +330,7 @@ class handler:
                     for mag in range(4):
                         MAGs[mag].value(0)
 
-                # Debugging signals from host
+                # ------------ Debugging signals from host -----------------
                 sent_data = com.readline()
                 if sent_data is not None:
                     sent_data = sent_data.decode("utf8")
@@ -401,8 +369,7 @@ class handler:
                         pyb.delay(1000)
         except Exception as e:
             for mag in range(4):
-                MAGs[mag].value(0)
-
+                MAGs[mag].value(0)  # Open all doors by default
             state = "error_state"
             com.write(build_msg("state:" + str(state)))
             com.write(build_msg(str(e)))

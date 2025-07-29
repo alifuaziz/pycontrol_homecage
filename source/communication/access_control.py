@@ -28,7 +28,7 @@ class Access_control(Pycboard):
     def __init__(self, serial_port, print_func=print):
         self.serial_port = serial_port
         self.print = print_func  # Function used for print statements.
-        self.data_logger = None  # This is set to the system_controller. Ideally this would be done on initalisation, however this could lead to a circular depenadncy
+        self.data_logger = None  # This is set to the system_controller. Ideally this would be done on initalisation, this leads to cicular dependancy
 
         # Init variables
         self.prev_read = None
@@ -93,13 +93,11 @@ class Access_control(Pycboard):
 
     def load_framework(self, auto_run=True) -> None:
         """
-        Copy the Access Control framework folder to the micropythonboard.
+        Copy the Access Control framework folder to the micropython board.
         if auto_run = True:
             The Firmware automatically starts
         """
-
         self.print("\nTransfering Access Control framework to pyboard.", end="")
-
         self.transfer_folder(
             user_folder("access_control_dir"), file_type="py", show_progress=True
         )  # upload access control framework
@@ -119,7 +117,7 @@ class Access_control(Pycboard):
             raise (e)
         try:  # Begin Running
             if auto_run:
-                self.print("\nBeginning Access Control Firmware...")
+                self.print("\nBeginning Access Control framework...")
                 self.exec("from main import handler")
                 self.exec_raw_no_follow("handler().run()")
         except PyboardError as e:

@@ -1,10 +1,12 @@
-from machine import Pin, enable_irq, disable_irq
+from machine import Pin, enable_irq, disable_irq, RTC
 import time
+from .drift_corrector import DriftCorrector
 
 
 class HX711:
     # Class for controlling HX711 loadcell amplifier from Micropython pyboard.
     # Adapted from https://github.com/robert-hh/hx711-lopy
+    # Add loadcell drift calculations to this!
 
     def __init__(self, data_pin, clock_pin, gain=128):
         self.pSCK = Pin(clock_pin, mode=Pin.OUT)
@@ -81,3 +83,48 @@ class HX711:
 
     def power_up(self):
         self.pSCK.value(False)
+
+
+class HX711_drift_corrected(HX711):
+    """
+    HX711_drift_corrected: Drift-corrected weight measurements using HX711.
+
+    - Extends HX711 with baseline drift correction via DriftCorrector.
+    - Useful for stable, accurate animal weighing over time.
+
+    Attributes:
+    - drift_corrector: Handles baseline drift correction.
+
+    Args:
+    - data_pin (int): HX711 data GPIO (default: 22)
+    - clock_pin (int): HX711 clock GPIO (default: 21)
+    - gain (int): HX711 gain (default: 128)
+    - tau (float): Drift corrector time constant (default: 20)
+    - animal_weight (float): Expected animal weight in grams (default: 10)
+
+    Methods:
+    - weigh(times=3, timestamp=None, rfid_read=False): Returns drift-corrected weight.
+    """
+
+    def __init__(self, data_pin=22, clock_pin=21, gain=128, tau=20, animal_weight=10):
+        super().__init__(data_pin=data_pin, clock_pin=clock_pin, gain=gain)
+        self.drift_corrector = DriftCorrector(loadcell=self, tau=tau, initial_baseline=0, animal_weight=animal_weight)
+
+    def weigh(self, times=3, timestamp=None, rfid_read=False):
+        """
+        Drift-corrected weight measurement.
+        :param times: number of readings to average
+        :param timestamp: either time.time() or RTC().datetime()
+        :param rfid_read: if an RFID read confirms animal presence
+        :return: drift-corrected weight in grams
+        """
+        raw_weight = super().weigh(times)
+
+        # Get current time if not passed
+        if timestamp is None:
+            timestamp = time.time()
+
+        baseline, corrected_weight, animal_in_cage = self.drift_corrector.update(
+            timestamp=timestamp, measurement=raw_weight, rfid_read=rfid_read
+        )
+        return corrected_weight
