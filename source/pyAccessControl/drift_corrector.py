@@ -22,7 +22,8 @@ class DriftCorrector:
         self.TAU = tau
         self.mouse_weight = animal_weight
         self.THRES_RATIO = 0.4
-        self.animal_in_cage = animal_in_cage
+        self.animal_in_cage = False
+        # self.animal_in_cage = animal_in_cage
         self.last_timestamp = initial_timestamp
 
     def update(self, timestamp, measurement: float = None, rfid_read: bool = False):
@@ -36,9 +37,6 @@ class DriftCorrector:
         if isinstance(timestamp, tuple):
             if len(timestamp) == 9:
                 timestamp = time.mktime(timestamp)
-        # Check if animal is in cage
-        self.animal_in_cage = self.is_animal_in_cage(measurement, rfid_read=rfid_read)
-
         # Use timestamp instead of sample rate to update the EMA
         if self.last_timestamp is None:
             # self.last_timestamp = time.mktime(timestamp)
@@ -54,20 +52,3 @@ class DriftCorrector:
         self.weight_measurement = measurement - self.baseline_estimate
 
         return self.baseline_estimate, self.weight_measurement, self.animal_in_cage
-
-    def is_animal_in_cage(self, measurement, rfid_read=False) -> bool:
-        """Function to check if animal is in the cage based on recent weight changes"""
-
-        if rfid_read:  # If there is an RFID read, there is definitely an animal
-            self.animal_in_cage = True
-            return True
-
-        threshold = self.mouse_weight * self.THRES_RATIO  # 70% of expected animal weight as threshold
-        if abs(measurement - self.baseline_estimate) > threshold:
-            # There has been siginificant change the in the weight of the load cell
-            if self.animal_in_cage:
-                # There could be more than one animal in the cage
-                self.animal_in_cage = True
-            else:
-                # There is a negaative deflection is the animal in cage.
-                self.animal_in_cage = True
