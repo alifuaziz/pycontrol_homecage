@@ -22,4 +22,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     dialog = MouseSummaryDialog()
     dialog.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

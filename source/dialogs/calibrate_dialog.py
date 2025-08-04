@@ -213,4 +213,4 @@ if __name__ == "__main__":
     access_control = Access_control(serial_port="COM7")  # Assuming you have a way to initialize this
     dialog = CalibrationDialog(access_control)
     dialog.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
