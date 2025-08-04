@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QDialog, QLabel, QVBoxLayout
+from PyQt6.QtWidgets import QApplication
 
 
 class MouseSummaryDialog(QDialog):

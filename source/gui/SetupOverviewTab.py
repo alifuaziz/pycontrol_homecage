@@ -1,7 +1,7 @@
 from typing import List
 from source.communication.messages import MessageRecipient
 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget,
     QMainWindow,
     QGroupBox,
@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QMessageBox,
 )
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 from source.dialogs import (
     AreYouSureDialog,
@@ -111,7 +111,7 @@ class SetupsOverviewTab(QWidget):
                 if k == checked_setup_id:
                     self.direct_pyboard_dialog = DirectPyboardDialog(k)
                     # database.print_consumers[MessageRecipient.direct_pyboard_dialog] = self.direct_pyboard_dialog.print_msg
-                    self.direct_pyboard_dialog.exec_()
+                    self.direct_pyboard_dialog.exec()
                     # del database.print_consumers[MessageRecipient.direct_pyboard_box_dialog]
         else:
             info = InformationDialog(info_text="You must edit one setup at a time. You have selected 0 or >1 setup.")
@@ -163,7 +163,7 @@ class SetupsOverviewTab(QWidget):
                     database.print_consumers[MessageRecipient.configure_box_dialog] = (
                         self.configure_box_dialog.print_msg
                     )
-                    self.configure_box_dialog.exec_()
+                    self.configure_box_dialog.exec()
                     del database.print_consumers[MessageRecipient.configure_box_dialog]
 
         else:
@@ -238,7 +238,7 @@ class SetupsOverviewTab(QWidget):
 
         if any(isChecked):
             sure = AreYouSureDialog(question_text="Are you should you would like to remove the selected setups?")
-            sure.exec_()
+            sure.exec()
             if sure.GO:
                 database.setup_df = database.setup_df.drop(database.setup_df.index[isChecked])
                 self.setup_table_widget.fill_table()
@@ -257,7 +257,7 @@ class SetupsOverviewTab(QWidget):
         if any(isChecked):
             sd = CageSummaryDialog()
             sd.show()
-            sd.exec_()
+            sd.exec()
         else:
             info = InformationDialog(info_text="No setups were selected to get a summary")
             info.exec()

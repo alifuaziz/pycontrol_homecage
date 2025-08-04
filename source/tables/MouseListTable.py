@@ -1,6 +1,6 @@
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QAbstractItemView
 
 
 class MouseListTable(QTableWidget):
@@ -32,7 +32,7 @@ class MouseListTable(QTableWidget):
         self.tab = tab
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.fill_table()
 
     def fill_table(self):
@@ -53,6 +53,6 @@ class MouseListTable(QTableWidget):
                 )
 
             chkBoxItem = QTableWidgetItem()
-            chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
             self.setItem(row_index, 0, chkBoxItem)

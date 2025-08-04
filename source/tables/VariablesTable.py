@@ -1,14 +1,14 @@
 from functools import partial
 from typing import List
 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QTableWidget,
     QHeaderView,
     QPushButton,
     QComboBox,
     QTableWidgetItem,
 )
-from PyQt5.QtCore import QPersistentModelIndex
+from PyQt6.QtCore import QPersistentModelIndex
 
 from ..utils import (
     TableCheckbox,
@@ -35,9 +35,9 @@ class VariablesTable(QTableWidget):
             "",
         ]
         self.setHorizontalHeaderLabels(self.headers)
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        self.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setVisible(False)
         add_button = QPushButton("   add   ")
         self.setCellWidget(0, 5, add_button)

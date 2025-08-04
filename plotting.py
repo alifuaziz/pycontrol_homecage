@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 
 event_history_len = 200  # Length of event history to plot (# events).
@@ -350,7 +350,7 @@ class detachableTabWidget(QtWidgets.QTabWidget):
     https://stackoverflow.com/questions/47267195/in-pyqt4-is-it-possible-to-detach-tabs-from-a-qtabwidget
 
     Original by Stack Overflow user Blackwood.
-    Adapted for PyQt5 by Stack Overflow user Bridgetjs.
+    Adapted for PyQt6 by Stack Overflow user Bridgetjs.
     """
 
     def __init__(self, parent=None):
@@ -532,9 +532,9 @@ class TabBar(QtWidgets.QTabBar):
             drag.setPixmap(targetPixmap)
 
             # Initiate the drag
-            dropAction = drag.exec_(QtCore.Qt.MoveAction | QtCore.Qt.CopyAction)
+            dropAction = drag.exec(QtCore.Qt.MoveAction | QtCore.Qt.CopyAction)
 
-            # For Linux:  Here, drag.exec_() will not return MoveAction on Linux.  So it
+            # For Linux:  Here, drag.exec() will not return MoveAction on Linux.  So it
             #             must be set manually
             if self.dragDropedPos.x() != 0 and self.dragDropedPos.y() != 0:
                 dropAction = QtCore.Qt.MoveAction

@@ -1,6 +1,6 @@
 from functools import partial
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 
 from ..utils import get_tasks
 import db as database
@@ -35,7 +35,7 @@ class MouseTable(QtWidgets.QTableWidget):
         self.GUI = GUI
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.loaded = False
 
         self.fill_table()
@@ -78,8 +78,8 @@ class MouseTable(QtWidgets.QTableWidget):
                             QtWidgets.QTableWidgetItem(str(row[col_index])),
                         )
             chkBoxItem = QtWidgets.QTableWidgetItem()
-            chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-            chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
+            chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
+            chkBoxItem.setCheckState(QtCore.Qt.CheckState.Unchecked)
             self.setItem(row_index, 0, chkBoxItem)
 
     def update_task_combo(self, combo: QtWidgets.QComboBox) -> None:

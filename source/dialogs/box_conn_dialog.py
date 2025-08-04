@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QLineEdit, QVBoxLayout
+from PyQt6.QtWidgets import QDialog, QLineEdit, QVBoxLayout
 
 
 class BoxConnectionDialog(QDialog):

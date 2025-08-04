@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget,
     QGroupBox,
     QLabel,
@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QMainWindow,
 )
-from PyQt5.QtGui import QFont, QTextCursor
+from PyQt6.QtGui import QFont, QTextCursor
 
 from source.tables import SetupTable, ExperimentOverviewTable
 from plotting import Experiment_plot
@@ -142,15 +142,15 @@ class SystemOverviewTab(QWidget):
         isChecked = self.experiement_overview_table.get_checked_experiments()
         if not isChecked:
             info = InformationDialog(info_text="No setups have been selected. Please select a setup to calibrate.")
-            info.exec_()
+            info.exec()
             return
         if len(isChecked) != 1:
             info = InformationDialog(info_text="Please select exactly one setup to calibrate.")
-            info.exec_()
+            info.exec()
             return
 
         info = InformationDialog(info_text="Function Not Implemented")
-        info.exec_()
+        info.exec()
         # Open a dialog
         # Add your dialog opening code here
 
@@ -183,7 +183,7 @@ class SystemOverviewTab(QWidget):
         else:
             # Add error... idk what is means though.
             info = InformationDialog(info_text="len(databse.exp_df) == 0")
-            info.exec_()
+            info.exec()
 
     def start_new_experiment(self) -> None:
         """
@@ -209,7 +209,7 @@ class SystemOverviewTab(QWidget):
 
         # Create a dialog
         self.new_experiment_config = NewExperimentDialog(self.GUI)
-        self.new_experiment_config.exec_()
+        self.new_experiment_config.exec()
 
     def end_experiment(self):
         selected_experiments = self.experiement_overview_table.get_checked_experiments()
@@ -221,7 +221,7 @@ class SystemOverviewTab(QWidget):
             info = InformationDialog(
                 info_text="No experiments have been selected. Please select an experiment to stop it."
             )
-            info.exec_()
+            info.exec()
         self.experiement_overview_table.fill_table()
 
         self.GUI.experiment_tab.list_of_experiments.fill_table()

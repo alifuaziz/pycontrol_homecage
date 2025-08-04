@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import json
 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget,
     QMainWindow,
     QVBoxLayout,
@@ -263,7 +263,7 @@ class MouseOverViewTab(QWidget):
 
         if isChecked:
             sure = AreYouSureDialog()
-            sure.exec_()
+            sure.exec()
             if sure.GO:
                 for ch_ in isChecked:
                     database.mouse_df.loc[database.mouse_df["RFID"] == ch_, "in_system"] = False
@@ -298,7 +298,7 @@ class MouseOverViewTab(QWidget):
         if np.any(isChecked):
             sd = MouseSummaryDialog()
             sd.show()
-            sd.exec_()
+            sd.exec()
         else:
             # Raise dialog box that no boxes have been checked.
             dialog = InformationDialog(info_text="No rows were selected. Select rows to get summary")

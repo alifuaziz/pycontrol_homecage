@@ -1,5 +1,5 @@
 import os
-from PyQt5 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 
 from source.communication.pycboard import _djb2_file
 from ..utils import get_tasks
@@ -68,7 +68,7 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
 
             # These should be set just as one for each column
             chkBoxItem = QtWidgets.QTableWidgetItem()
-            chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
             chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
             self.setItem(row_index, 0, chkBoxItem)
 
@@ -77,7 +77,7 @@ class NewExperimentSetupTable(QtWidgets.QTableWidget):
 
                 chkBoxItem.setFlags(QtCore.Qt.ItemIsEnabled)
             else:
-                chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
                 chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
 
             self.setItem(row_index, 1, chkBoxItem)

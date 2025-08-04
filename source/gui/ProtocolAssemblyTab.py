@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget,
     QMainWindow,
     QGroupBox,
@@ -256,7 +256,7 @@ class ProtocolAssemblyTab(QWidget):
         #     self.trackV_combo.currentText() == "Select"
         # ):
         #     info = InformationDialog(info_text=f"Please select a value to track: {self.trackV_combo.currentText()} ")
-        #     info.exec_()
+        #     info.exec()
         #     return
         # else:
         self.stage_row["trackV"].append(self.trackV_combo.currentText())
@@ -272,7 +272,7 @@ class ProtocolAssemblyTab(QWidget):
         #     self.trackV_combo.currentText() == "Select"
         # ):
         #     info = InformationDialog(info_text=f"Please select a value to track: {self.trackV_combo.currentText()}")
-        #     info.exec_()
+        #     info.exec()
         #     return
         # else:
         self.stage_row["threshV"].append([self.threshV_combo.currentText(), self.threshV_value.text()])
@@ -304,7 +304,7 @@ class ProtocolAssemblyTab(QWidget):
             protocol_name_temp = self.protocol_namer.text()
         else:
             info = InformationDialog(info_text="You must enter a name")
-            info.exec_()
+            info.exec()
             return
 
         # Check if the protocol name is taken in the protocol directory
@@ -313,7 +313,7 @@ class ProtocolAssemblyTab(QWidget):
             info = InformationDialog(
                 info_text=f"Protocol name {protocol_name_temp}.prot already exists. Please choose a different name."
             )
-            info.exec_()
+            info.exec()
             return
 
         self.protocol_name = protocol_name_temp

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QVBoxLayout,
@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QTextEdit,
 )
-from PyQt5.QtGui import QFont, QTextCursor
+from PyQt6.QtGui import QFont, QTextCursor
 
 from ..utils import get_tasks
 import db as database

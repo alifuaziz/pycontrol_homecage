@@ -30,12 +30,12 @@ def check_module(module_name):
 
 
 # Depedencies for application
-check_module("PyQt5")
+check_module("PyQt6")
 check_module("pyqtgraph")
 check_module("serial")
 check_module("pandas")
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from source.gui.MainGUI import MainGUI
 from source.utils import get_path, custom_excepthook
 
@@ -63,4 +63,4 @@ if __name__ == "__main__":
     initialise_excepthook()
 
     app = main()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

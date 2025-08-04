@@ -2,9 +2,10 @@ import time
 from functools import partial
 from serial import SerialException
 import pandas as pd
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import (
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import (
     QTableWidget,
+    QAbstractItemView,
     QTableWidgetItem,
     QPushButton,
 )
@@ -47,7 +48,7 @@ class SetupTable(QTableWidget):
         self.tab = tab
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
         self.select_column_idx = self.header_names.index("Select")
         self.connect_column_idx = self.header_names.index("Connection")  # column index of connect button
@@ -87,8 +88,8 @@ class SetupTable(QTableWidget):
         self.setCellWidget(row_index, self.pycontrol_test_column_idx, pycontrol_test_button)
 
         chkBoxItem = QTableWidgetItem()
-        chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-        chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
+        chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
+        chkBoxItem.setCheckState(QtCore.Qt.CheckState.Unchecked)
         self.setItem(row_index, self.select_column_idx, chkBoxItem)
 
     def populate_cells_from_database(self, row_index: int, row: pd.Series):
@@ -119,10 +120,10 @@ class SetupTable(QTableWidget):
         setup_id, com_, comAC_ = self.sender().name
         try:
             dialog = CalibrationDialog(access_control_pyboard=database.controllers[setup_id].AC)
-            dialog.exec_()
+            dialog.exec()
         except KeyError:
             info = InformationDialog(info_text="The setup has not been connected yet so can not be tested")
-            info.exec_()
+            info.exec()
 
     def _build_pycontrol_test_button(self, row: pd.Series) -> QPushButton:
         """Initialise pycontrol_Test button"""
@@ -138,13 +139,13 @@ class SetupTable(QTableWidget):
         try:
             # if protocol.endswith(".prot"):
             #     dialog = DirectProtocolDialog(setup_id=setup_id)
-            #     dialog.exec_()
+            #     dialog.exec()
             # else:
             dialog = DirectPyboardDialog(setup_id=setup_id)
-            dialog.exec_()
+            dialog.exec()
         except KeyError:
             info = InformationDialog(info_text="The setup has not been connected yet so can not be tested")
-            info.exec_()
+            info.exec()
 
     #### Connect button
 
@@ -193,7 +194,7 @@ class SetupTable(QTableWidget):
             time.sleep(0.05)
             self.tab.callibrate_dialog = CalibrationDialog(access_control_pyboard=access_control_board)
             # database.print_consumers[MessageRecipient.calibrate_dialog] = self.tab.callibrate_dialog.print_msg
-            self.tab.callibrate_dialog.exec_()
+            self.tab.callibrate_dialog.exec()
             # del database.print_consumers[MessageRecipient.calibrate_dialog]
 
             self.sender().setEnabled(False)
@@ -210,15 +211,15 @@ class SetupTable(QTableWidget):
                 \n- 'Could not instantiate access control': Some problem with the hardware (e.g. the RFID reader handshake) causing the instantiation to fail. \
                 \n- Hard resetting the pyboard (Some weird problem with the flash storage)"
             )
-            info.exec_()
+            info.exec()
             print(e, flush=True)
             print("Failed to connect", flush=True)
 
     def _fill_setup_df_row(self, sender_name: list[str]) -> None:
         _, com_, _ = sender_name
-        database.setup_df["connected"].loc[database.setup_df["COM"] == com_] = True # Connected to AC board
-        database.setup_df["in_use"].loc[database.setup_df["COM"] == com_] = False # Setup not in use on init
-        database.setup_df["n_mice"].loc[database.setup_df["COM"] == com_] = 0 # Number of mice in setup on init
+        database.setup_df["connected"].loc[database.setup_df["COM"] == com_] = True  # Connected to AC board
+        database.setup_df["in_use"].loc[database.setup_df["COM"] == com_] = False  # Setup not in use on init
+        database.setup_df["n_mice"].loc[database.setup_df["COM"] == com_] = 0  # Number of mice in setup on init
 
     def _refresh(self):
         """Refresh the table.

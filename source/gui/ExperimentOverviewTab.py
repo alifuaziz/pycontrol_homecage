@@ -10,7 +10,7 @@ A lot of these functions are making sure the state of the experiment is correctl
 from typing import List, Optional
 
 import pandas as pd
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 
 from source.tables import ExperimentOverviewTable
@@ -67,7 +67,7 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
             sure = AreYouSureDialog(
                 question_text=f"Are you sure you want to restart experiment: {selected_experiment}?"
             )
-            sure.exec_()
+            sure.exec()
             if sure.GO:
                 # Get the selected experiment row
                 exp_row = database.exp_df.loc[database.exp_df["Name"] == selected_experiment]
@@ -91,7 +91,7 @@ class ExperimentOverviewTab(QtWidgets.QWidget):
         # cannot abort multiple experiments simultaneously
         if selected_experiment:
             sure = AreYouSureDialog(question_text=f"Are you sure you want to stop experiment: {selected_experiment}?")
-            sure.exec_()
+            sure.exec()
             if sure.GO:
                 # Update the experiment df to deactivate it
                 exp_row = database.exp_df.loc[database.exp_df["Name"] == selected_experiment]

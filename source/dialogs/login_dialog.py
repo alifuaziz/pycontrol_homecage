@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QPushButton, QComboBox, QVBoxLayout, QApplication
+from PyQt6.QtWidgets import QDialog, QPushButton, QComboBox, QVBoxLayout, QApplication
 
 # from pyqtgraph.Qt import QtGui
 from source.utils import get_users

@@ -3,7 +3,7 @@ import time
 import pandas as pd
 import time
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from source.gui.MainGUI import MainGUI
 from source.utils import get_path, custom_excepthook
 

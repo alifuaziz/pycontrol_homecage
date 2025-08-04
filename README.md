@@ -1,4 +1,14 @@
-# Setup Notes
+# pyControl Homecage Software
+
+Important differences:
+
+- RFID driver software for the RWD_QT id is present
+- Upgraded pyControl v2.0.2
+  - Access Control Board interface uses `Pycboard`
+- Upgrade to PyQt6
+- Setup is slightly different.
+
+## Setup Notes
 
 Since i have change the repo a decent amount and simplified the code, the installation process is slighlty different to the original repo.
 

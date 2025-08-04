@@ -1,7 +1,7 @@
 import time
 from typing import List
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 import db as database
 from source.gui.settings import user_folder
 
@@ -34,7 +34,7 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
     def _set_headers(self):
         self.setHorizontalHeaderLabels(self.header_names)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.select_col_ix = self.header_names.index("Select")
 
     def fill_table(self):
@@ -61,8 +61,8 @@ class ExperimentOverviewTable(QtWidgets.QTableWidget):
                         pass
 
                 chkBoxItem = QtWidgets.QTableWidgetItem()
-                chkBoxItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-                chkBoxItem.setCheckState(QtCore.Qt.Unchecked)
+                chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
+                chkBoxItem.setCheckState(QtCore.Qt.CheckState.Unchecked)
                 self.setItem(row_index, self.select_col_ix, chkBoxItem)
                 row_index += 1
 

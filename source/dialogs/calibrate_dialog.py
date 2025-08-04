@@ -1,5 +1,5 @@
 # GUI
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QDialog,
     QPushButton,
     QLineEdit,
@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QGridLayout,
 )
-from PyQt5.QtGui import QFont, QTextCursor
+from PyQt6.QtGui import QFont, QTextCursor
 
 # repo
 import db as database
@@ -17,7 +17,7 @@ from source.communication.messages import MessageRecipient
 from source.communication.access_control import Access_control
 import sys
 from functools import partial
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 
 class CalibrationDialog(QDialog):

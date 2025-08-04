@@ -1,7 +1,7 @@
 import os
 
-from PyQt5.QtWidgets import QMainWindow, QTabWidget
-from PyQt5 import QtCore
+from PyQt6.QtWidgets import QMainWindow, QTabWidget
+from PyQt6 import QtCore
 
 from source.communication.messages import MessageRecipient
 from . import (
@@ -148,7 +148,7 @@ class MainGUI(QMainWindow):
         self.experiment_tab.setEnabled(False)
 
     def change_user(self) -> None:
-        self.login.exec_()
+        self.login.exec()
         self.active_user = self.login.userID
         if self.active_user:
             self.setWindowTitle("pyControlHomecage: logged in as {}".format(self.active_user))
@@ -164,7 +164,7 @@ class MainGUI(QMainWindow):
             self.system_tab.logout_button.setEnabled(True)
 
     def add_user_(self) -> None:
-        self.add_user.exec_()
+        self.add_user.exec()
         self.login = LoginDialog()
 
     def logout_user(self):

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QPushButton, QLabel, QHBoxLayout, QVBoxLayout
+from PyQt6.QtWidgets import QDialog, QPushButton, QLabel, QHBoxLayout, QVBoxLayout
 from source.utils import get_users
 
 

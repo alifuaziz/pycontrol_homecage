@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView, QPushButton
+from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView, QPushButton, QAbstractItemView
 import pandas as pd
 from functools import partial
 
@@ -28,12 +28,12 @@ class ProtocolTable(QTableWidget):
             "Delete",
         ]
         self.setHorizontalHeaderLabels(self.header_names)
-        self.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.set_resizemode_for_headers()
 
     def set_resizemode_for_headers(self):
         for h_ix in range(len(self.header_names) - 1):
-            self.horizontalHeader().setSectionResizeMode(h_ix, QHeaderView.Stretch)
+            self.horizontalHeader().setSectionResizeMode(h_ix, QHeaderView.ResizeMode.Stretch)
 
     def fill_table(self, protocol_df: pd.DataFrame):
         """Here pass prot_dict"""
@@ -42,9 +42,9 @@ class ProtocolTable(QTableWidget):
 
         self.clear()
         self.setHorizontalHeaderLabels(self.header_names)
-        self.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         for i in range(1, len(self.header_names) - 1):
-            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
 
         if self.nRows:
             self.setRowCount(self.nRows)
@@ -106,7 +106,7 @@ class ProtocolTable(QTableWidget):
     def reset_(self):
         self.clear()
         self.setHorizontalHeaderLabels(self.header_names)
-        self.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
         for i in range(1, len(self.header_names) - 1):
             self.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)

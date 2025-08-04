@@ -1,6 +1,6 @@
 import os
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QTextEdit, QFileDialog
-from PyQt5.QtGui import QFont, QTextCursor
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QTextEdit, QFileDialog
+from PyQt6.QtGui import QFont, QTextCursor
 
 import db as database
 from source.gui.settings import user_folder

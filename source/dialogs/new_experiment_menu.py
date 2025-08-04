@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 import pandas as pd
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 from pyqtgraph import Qt
 from pyqtgraph.Qt import QtGui
 
@@ -101,7 +101,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
         self.btn_task_info = QtWidgets.QPushButton("I")
         self.btn_task_info.setToolTip("Task Info")
         self.btn_task_info.clicked.connect(
-            lambda: InformationDialog("Make Sure you have added your tasks to the `data/tasks/` directory").exec_()
+            lambda: InformationDialog("Make Sure you have added your tasks to the `data/tasks/` directory").exec()
         )
         self.btn_task_info.setMaximumWidth(self.btn_task_info.sizeHint().height())
 
@@ -394,7 +394,7 @@ class NewExperimentDialog(QtWidgets.QDialog):
             # self.CAT._update_exp_params(self.set_protocol,self.set_experiment_name)
         else:
             info = InformationDialog("Name not valid")
-            info.exec_()
+            info.exec()
 
     def add_cage(self):
         if self.setup_combo.currentIndex() != 0:
@@ -502,4 +502,4 @@ class NewExperimentDialog(QtWidgets.QDialog):
             msg = QtGui.QMessageBox()
             msg.setIcon(QtGui.QMessageBox.Warning)
             msg.setText("This experiment already exists you need a unique experiment")
-            msg.exec_()
+            msg.exec()
