@@ -1,1 +1,1 @@
-This folder contains files that run on the pyboard microcontroller
+This folder contains files that run on the pyboard microcontroller to run the access control logic.  
