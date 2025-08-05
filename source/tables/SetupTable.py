@@ -3,12 +3,7 @@ from functools import partial
 from serial import SerialException
 import pandas as pd
 from PyQt6 import QtCore
-from PyQt6.QtWidgets import (
-    QTableWidget,
-    QAbstractItemView,
-    QTableWidgetItem,
-    QPushButton,
-)
+from PyQt6.QtWidgets import QTableWidget, QAbstractItemView, QTableWidgetItem, QPushButton
 
 from source.communication.access_control import Access_control
 from source.communication.pycboard import PyboardError, Pycboard

@@ -25,7 +25,7 @@ class Run_task_tab(QtWidgets.QWidget):
         # Variables.
         self.GUI_main = self.parent()
         self.pyboard = None  # Pycboard class instance.
-        self.acboard = None # AccessControl class instance
+        self.acboard = None  # AccessControl class instance
         self.task = None  # Task currently uploaded on pyboard.
         self.task_hash = None  # Used to check if file has changed.
         self.data_dir = None  # Folder to save data files.
@@ -368,7 +368,7 @@ class Run_task_tab(QtWidgets.QWidget):
     def ac_connect(self):
         # Connect to AC board
         pass
-    
+
     def ac_disconnect(self):
         # Disconnect to AC board
         pass

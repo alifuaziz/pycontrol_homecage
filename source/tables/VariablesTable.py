@@ -1,13 +1,7 @@
 from functools import partial
 from typing import List
 
-from PyQt6.QtWidgets import (
-    QTableWidget,
-    QHeaderView,
-    QPushButton,
-    QComboBox,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import QTableWidget, QHeaderView, QPushButton, QComboBox, QTableWidgetItem
 from PyQt6.QtCore import QPersistentModelIndex
 
 from ..utils import (
