@@ -4,7 +4,6 @@ Important differences:
 
 - Upgraded pyControl v2.0.2
 - Access Control Board interface uses `Pycboard` instead of `Pyboard` and resuses appropriate functions
-- Access Control drivers include drift corrector as extra class.
 - Upgrade to PyQt6
 - Setup is slightly different.
 - RFID driver software for the RWD_QT is also present (funtional with appropriate RFID tags)
