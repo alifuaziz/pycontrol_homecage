@@ -18,4 +18,5 @@ Installation different to orginial:
    - The GUI requires that there is a properly initialised data folder where it can store the information about the setups and mice.
 2. You need to install the dependancies for the of the GUI
    - Using `pip install -r requirements.txt`
-3. Run `pyControlHomecage.pyw` to startup
+3. Duplicate `example_config.json` file and rename it `config.json`.Then replace `"DATA_DIR" : "path/for/data/to/be/saved"` with the correct path within this config file. This file is used to find where the data folder is saved. The email and password are the email that is used to send update emails about the status of the homecage.
+4. Run `pyControlHomecage.pyw` to startup
