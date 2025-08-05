@@ -77,6 +77,6 @@ class DirectPyboardDialog(QDialog):
 
     def print_msg(self, msg: str):
         """Function to accept data from the system handler"""
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
         self.log_textbox.insertPlainText(str(msg) + "\n")
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)

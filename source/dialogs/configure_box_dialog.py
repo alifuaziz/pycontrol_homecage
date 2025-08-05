@@ -15,24 +15,23 @@ class ConfigureBoxDialog(QDialog):
         self.setGeometry(10, 30, 500, 200)  # Left, top, width, height.
         layoutH = QHBoxLayout(self)
 
+        self.setup_id = setup_id
+        self.ac = database.controllers[self.setup_id].AC
+        self.reject = self._done
+        # Load buttons
         self.load_framework_button = QPushButton("Load Pycontrol \nframework", self)
-        self.load_framework_button.clicked.connect(self.load_framework)
-
+        self.load_framework_button.clicked.connect(self.load_pyc_framework)
         self.load_ac_framework_button = QPushButton("Load Access control \nframework", self)
         self.load_ac_framework_button.clicked.connect(self.load_access_control_framework)
         self.load_hardware_definition_button = QPushButton("Load hardware definition", self)
         self.load_hardware_definition_button.clicked.connect(self.load_hardware_definition)
         self.disable_flashdrive_button = QPushButton("Disable flashdrive")
+        # Load buttons layout
         layout2 = QVBoxLayout(self)
         layout2.addWidget(self.load_framework_button)
         layout2.addWidget(self.load_hardware_definition_button)
         layout2.addWidget(self.disable_flashdrive_button)
         layout2.addWidget(self.load_ac_framework_button)
-
-        self.setup_id = setup_id
-        self.ac = database.controllers[self.setup_id].AC
-        self.reject = self._done
-
         # self.setGeometry(10, 30, 400, 200) # Left, top, width, height.
         self.buttonDone = QPushButton("Done")
         self.buttonDone.clicked.connect(self._done)
@@ -46,13 +45,14 @@ class ConfigureBoxDialog(QDialog):
         self.log_textbox = QTextEdit()
         self.log_textbox.setFont(QFont("Courier", 9))
         self.log_textbox.setReadOnly(True)
+        # AC buttons layout
         layout = QVBoxLayout()
         layout.addWidget(self.buttonWeigh)
         layout.addWidget(self.buttonTare)
         layout.addWidget(self.calibration_weight)
         layout.addWidget(self.buttonCal)
         layout.addWidget(self.buttonDone)
-
+        # Overall Layout
         layoutH.addLayout(layout2)
         layoutH.addLayout(layout)
         layoutH.addWidget(self.log_textbox)
@@ -63,17 +63,16 @@ class ConfigureBoxDialog(QDialog):
     # ------------------------------------
 
     def load_access_control_framework(self):
-
         self.log_textbox.insertPlainText("Loading access control framework...")
         database.controllers[self.setup_id].AC.reset()
         database.controllers[self.setup_id].AC.load_framework()
         self.log_textbox.insertPlainText("done!")
 
-    def load_framework(self):
+    def load_pyc_framework(self):
         self.log_textbox.insertPlainText("Loading framework...")
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
         self.log_textbox.insertPlainText("done!")
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
     def disable_flashdrive(self):
         database.controllers[self.setup_id].board.disable_flashdrive()
@@ -88,7 +87,7 @@ class ConfigureBoxDialog(QDialog):
         )[0]
 
         self.log_textbox.insertPlainText("uploading hardware definition...")
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
         database.controllers[self.setup_id].board.load_hardware_definition(hwd_path)
         self.log_textbox.insertPlainText("done!")
@@ -104,9 +103,9 @@ class ConfigureBoxDialog(QDialog):
         str_ = "calibrate:" + cw
         self.ac.serial.write(str_.encode())
 
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
         self.log_textbox.insertPlainText("Target calibration weight: " + str(cw) + "g\n")
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
     def weigh(self):
         self.ac.serial.write(b"weigh")
@@ -121,7 +120,7 @@ class ConfigureBoxDialog(QDialog):
 
     def print_msg(self, msg: str):
         "print weighing messages"
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
         if "calT" in msg:
             self.log_textbox.insertPlainText("Weight after Tare: " + msg.replace("calT:", "") + "g\n")
@@ -129,4 +128,4 @@ class ConfigureBoxDialog(QDialog):
             self.log_textbox.insertPlainText("Weight: " + msg.replace("calW:", "") + "g\n")
         if "calC" in msg:
             self.log_textbox.insertPlainText("Measured post-calibration weight: " + msg.replace("calC:", "") + "g\n")
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)

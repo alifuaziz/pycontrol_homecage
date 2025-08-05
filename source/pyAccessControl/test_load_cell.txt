@@ -1,0 +1,15 @@
+from pyAccessControl.hx711_gpio import HX711_drift_corrected 
+from pyAccessControl.hx711_gpio import HX711
+import time
+
+loadcell = HX711_drift_corrected(data_pin="X7", clock_pin="X8", gain=128, alpha=1, thres=10)
+# loadcell = HX711(data_pin="X7", clock_pin="X8", gain=128, )
+# Tare loadcell
+loadcell.tare()
+
+# Calibrate
+loadcell.calibrate(1.2)
+
+while True: 
+    loadcell.weigh()
+    time.sleep(1)
