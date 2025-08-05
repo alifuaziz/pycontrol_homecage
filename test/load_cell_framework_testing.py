@@ -1,6 +1,7 @@
 import pandas as pd
-import time
+import sys
 
+sys.path.append(r"C:\Program Files\pycontrol_homecage")
 from PyQt6.QtWidgets import QApplication
 from source.gui.MainGUI import MainGUI
 from source.utils import get_path, custom_excepthook

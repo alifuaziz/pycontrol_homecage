@@ -159,9 +159,9 @@ class CalibrationDialog(QDialog):
 
     def write_to_log_textbox(self, text: str = None) -> None:
         """write to log"""
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
         self.log_textbox.insertPlainText(text)
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
     def weigh(self) -> None:
         self.access_control.serial.write(b"weigh")
@@ -193,7 +193,7 @@ class CalibrationDialog(QDialog):
 
     def print_msg(self, msg: str) -> None:
         """Print the messages from the access control serial port to the cal dialog box"""
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
         if "calT" in msg:
             self.log_textbox.insertPlainText("Weight after Tare: " + msg.replace("calT:", "") + "g\n")
@@ -205,7 +205,7 @@ class CalibrationDialog(QDialog):
             self.log_textbox.insertPlainText("Measure RFID: " + msg.replace("RFID:"))
         if "mag" in msg:
             self.log_textbox.insertPlainText("Door info: " + msg.replace("mag", ""))
-        self.log_textbox.moveCursor(QTextCursor.End)
+        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
 
 if __name__ == "__main__":

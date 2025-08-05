@@ -233,14 +233,14 @@ class SystemOverviewTab(QWidget):
         if self.log_active.isChecked():
             if type(msg) is str:
                 if "Wbase" not in msg:
-                    self.log_textbox.moveCursor(QTextCursor.End)
+                    self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
                     self.log_textbox.insertPlainText(msg + "\n")
-                    self.log_textbox.moveCursor(QTextCursor.End)
+                    self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
             elif type(msg) is list:
                 for msg_ in msg:
                     if "Wbase" not in msg:
-                        self.log_textbox.moveCursor(QTextCursor.End)
+                        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
                         self.log_textbox.insertPlainText(str(msg_) + "\n")
-                        self.log_textbox.moveCursor(QTextCursor.End)
+                        self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
         else:
             pass
