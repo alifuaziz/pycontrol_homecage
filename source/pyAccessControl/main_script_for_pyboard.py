@@ -83,6 +83,7 @@ class handler:
                 # Update baseline every second
                 if pyb.elapsed_millis(last_check) >= 1000:
                     AC_handler.loadcell.update_baseline()
+                    com.write(build_msg("weight:" + str(AC_handler.loadcell.weigh())))
                     last_check = micros.counter()
 
                 if state == "allow_entry":

@@ -99,7 +99,7 @@ class SetupTable(QTableWidget):
             except KeyError:
                 pass
 
-    #### Integration test button
+    #### Build Buttons
 
     def _build_access_control_test_button(self, row: pd.Series) -> QPushButton:
         """
@@ -110,6 +110,30 @@ class SetupTable(QTableWidget):
         button.clicked.connect(self.start_access_control_test)
         return button
 
+    def _build_pycontrol_test_button(self, row: pd.Series) -> QPushButton:
+        """Initialise pycontrol_Test button"""
+        button = QPushButton("Task Testing")
+        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"], row["Protocol"]]
+        button.clicked.connect(self.start_pycontrol_test)
+        return button
+
+    def _build_connect_button(self, row: pd.Series) -> QPushButton:
+        """
+        Set properties of button that allows you to connect to the serial ports
+        controlling one of the setups
+        """
+        if row["connected"]:
+            buttonText = "Connected"
+        else:
+            buttonText = "Connect"
+
+        button = QPushButton(buttonText)
+        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
+        button.clicked.connect(self.connect)
+        return button
+
+    # Test funcitons
+
     def start_access_control_test(self):
         """Integration testing dialgog"""
         setup_id, com_, comAC_ = self.sender().name
@@ -119,13 +143,6 @@ class SetupTable(QTableWidget):
         except KeyError:
             info = InformationDialog(info_text="The setup has not been connected yet so can not be tested")
             info.exec()
-
-    def _build_pycontrol_test_button(self, row: pd.Series) -> QPushButton:
-        """Initialise pycontrol_Test button"""
-        button = QPushButton("Task Testing")
-        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"], row["Protocol"]]
-        button.clicked.connect(self.start_pycontrol_test)
-        return button
 
     def start_pycontrol_test(self):
         """If the Protocol Column contains an entry which ends in a .prot file extension, you know that it is a protocol. So open a protocol dialog instead of the direct access control one."""
@@ -144,21 +161,6 @@ class SetupTable(QTableWidget):
 
     #### Connect button
 
-    def _build_connect_button(self, row: pd.Series) -> QPushButton:
-        """
-        Set properties of button that allows you to connect to the serial ports
-        controlling one of the setups
-        """
-        if row["connected"]:
-            buttonText = "Connected"
-        else:
-            buttonText = "Connect"
-
-        button = QPushButton(buttonText)
-        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
-        button.clicked.connect(self.connect)
-        return button
-
     def connect(self):
         """
         Connect to the to pyboards for the access control and the task control pyboards.
@@ -172,7 +174,6 @@ class SetupTable(QTableWidget):
             setup_id, com_, comAC_ = self.sender().name
 
             print_func = partial(print, flush=True)
-
             print_func("Connecting to com:", com_)
 
             pycontrol_board = Pycboard(serial_port=com_, print_func=print_func)
@@ -199,6 +200,20 @@ class SetupTable(QTableWidget):
             database.update_table_queue.append("system_tab.list_of_setups")
 
         except (PyboardError, SerialException) as e:
+            # Attempt to disconnect any partially connected boards
+            try:
+                if "pycontrol_board" in locals() and pycontrol_board is not None:
+                    print("Closing connection to pyControl board...")
+                    pycontrol_board.close()
+            except Exception as disconnect_error:
+                print(f"Error disconnecting pycontrol_board: {disconnect_error}", flush=True)
+            try:
+                if "access_control_board" in locals() and access_control_board is not None:
+                    print("Closing connection to Access Control board...")
+                    access_control_board.close()
+            except Exception as disconnect_error:
+                print(f"Error disconnecting access_control_board: {disconnect_error}", flush=True)
+
             info = InformationDialog(
                 info_text="Failed to connect to pyboard. \
                 \nConsider the following causes for a failed connection: \
