@@ -86,58 +86,27 @@ class HX711:
 
 
 class HX711_drift_corrected(HX711):
-    """
-    HX711_drift_corrected: Drift-corrected weight measurements using HX711.
+    """ """
 
-    - Extends HX711 with baseline drift correction via DriftCorrector.
-    - Useful for stable, accurate animal weighing over time.
-
-    Attributes:
-    - drift_corrector: Handles baseline drift correction.
-
-    Args:
-    - data_pin (int): HX711 data GPIO (default: 22)
-    - clock_pin (int): HX711 clock GPIO (default: 21)
-    - gain (int): HX711 gain (default: 128)
-    - tau (float): Drift corrector time constant (default: 20)
-    - animal_weight (float): Expected animal weight in grams (default: 10)
-
-    Methods:
-    - weigh(times=3, timestamp=None, rfid_read=False): Returns drift-corrected weight.
-    """
-
-    def __init__(self, data_pin=22, clock_pin=21, gain=128, tau=1 / 1000000, animal_weight=10):
+    def __init__(self, data_pin=22, clock_pin=21, gain=128, alpha=1 / 1000000, thres=10):
         super().__init__(data_pin=data_pin, clock_pin=clock_pin, gain=gain)
-        self.drift_corrector = DriftCorrector(loadcell=self, tau=tau, initial_baseline=0, animal_weight=animal_weight)
+        self.alpha = alpha  # learning rate
+        self.thres = thres  # weight threshold
 
     def weigh(self, times=3, timestamp=None, rfid_read=False):
-        """
-        Drift-corrected weight measurement.
-        :param times: number of readings to average
-        :param timestamp: either time.time() or RTC().datetime()
-        :param rfid_read: if an RFID read confirms animal presence
-        :return: drift-corrected weight in grams
-        """
+        """Returns corrected value"""
         self.raw_weight = super().weigh(times)
+        return self.OFFSET - self.raw_weight
 
-        # Get current time if not passed
-        if timestamp is None:
-            timestamp = time.time()
-
-        baseline, corrected_weight, animal_in_cage = self.drift_corrector.update(
-            timestamp=timestamp, measurement=self.raw_weight, rfid_read=rfid_read
-        )
-        return corrected_weight
-
-    def tare(self, times=15):
-        super().tare(times)
-        self.drift_corrector.baseline = 0  # Should set the value to 0 since the loadcell has been tared
+    def update_baseline(self):
+        """Update the moving average is there isnt an animal in the cage
+        Needs to be called at a constant rate"""
+        if self.weigh() < self.thres:
+            self.OFFSET = (1 - self.alpha) * self.OFFSET + self.alpha * self.read_average()
 
     def calibrate(self, weight=1, times=15, timestamp=None, rfid_read=False):
         super().calibrate(weight=weight, times=times)
         corrected_weight = self.weigh(times=times, timestamp=timestamp, rfid_read=rfid_read)
-        # After calibration, set the drift corrector's baseline estimate to the current corrected weight
-        # self.drift_corrector.baseline_estimate = corrected_weight
 
     def get_time(self):
         return time.localtime()

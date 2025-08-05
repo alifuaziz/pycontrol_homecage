@@ -79,6 +79,12 @@ class handler:
         num_times_checked_for_error = 0  # first check is a variable that basically ensures that a mouse must be stuck for 2 sets of scale readings before an error state is raised
         try:
             while True:
+
+                # Update baseline every second
+                if pyb.elapsed_millis(last_check) >= 1000:
+                    AC_handler.loadcell.update_baseline()
+                    last_check = micros.counter()
+
                 if state == "allow_entry":
                     # last_weight = self.baseline_alpha*AC_handler.loadcell.weigh(times=1) + (1-self.baseline_alpha)*last_weight
                     if NEWSTATE:
