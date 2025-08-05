@@ -61,6 +61,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     initialise_excepthook()
-
     app = main()
     sys.exit(app.exec())
