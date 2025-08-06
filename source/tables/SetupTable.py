@@ -24,8 +24,6 @@ class SetupTable(QTableWidget):
             "Select",
             "Setup_ID",
             "Connection",
-            "Access Control Test",
-            "pyControl Test",
             "Experiment",
             "Protocol",
             "Mouse_training",
@@ -48,8 +46,6 @@ class SetupTable(QTableWidget):
 
         self.select_column_idx = self.header_names.index("Select")
         self.connect_column_idx = self.header_names.index("Connection")  # column index of connect button
-        self.integration_test_colum_idx = self.header_names.index("Access Control Test")
-        self.pycontrol_test_column_idx = self.header_names.index("pyControl Test")
 
         self.fill_table()
 
@@ -72,16 +68,6 @@ class SetupTable(QTableWidget):
         if self.tab is None:  # if this is the table in system overview
             connect_button.setEnabled(False)
         self.setCellWidget(row_index, self.connect_column_idx, connect_button)
-
-        # Access Control Test Button
-        access_control_test_button = self._build_access_control_test_button(row)
-        self.buttons.append(access_control_test_button)
-        self.setCellWidget(row_index, self.integration_test_colum_idx, access_control_test_button)
-
-        # pyControl test button
-        pycontrol_test_button = self._build_pycontrol_test_button(row)
-        self.buttons.append(pycontrol_test_button)
-        self.setCellWidget(row_index, self.pycontrol_test_column_idx, pycontrol_test_button)
 
         chkBoxItem = QTableWidgetItem()
         chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
@@ -143,6 +129,9 @@ class SetupTable(QTableWidget):
         menu = QMenu()
         refresh_action = menu.addAction("Refresh Connection")
         disconnect_action = menu.addAction("Disconnect")
+        calibration_action = menu.addAction("Open Calibration Dialog")
+        pycontrol_test_action = menu.addAction("PyControl Test")
+        access_control_test_action = menu.addAction("Access Control Test")
 
         action = menu.exec(self.sender().mapToGlobal(pos))
         setup_id = row["Setup_ID"]
@@ -155,18 +144,27 @@ class SetupTable(QTableWidget):
                 del database.controllers[setup_id]
                 database.setup_df.loc[database.setup_df["Setup_ID"] == setup_id, "connected"] = False
                 self.fill_table()
+        elif action == calibration_action:
+            if setup_id not in database.controllers:
+                info = InformationDialog(info_text="The setup has not been connected yet so cannot be tested")
+                info.exec()
+            else:
+                dialog = CalibrationDialog(access_control_pyboard=database.controllers[setup_id].AC)
+                dialog.exec()
+        elif action == pycontrol_test_action:
+            if setup_id not in database.controllers:
+                info = InformationDialog(info_text="The setup has not been connected yet so cannot be tested")
+                info.exec()
+            else:
+                self.start_pycontrol_test()
+        elif action == access_control_test_action:
+            if setup_id not in database.controllers:
+                info = InformationDialog(info_text="The setup has not been connected yet so cannot be tested")
+                info.exec()
+            else:
+                self.start_access_control_test()
 
     # Test funcitons
-
-    def start_access_control_test(self):
-        """Integration testing dialgog"""
-        setup_id, com_, comAC_ = self.sender().name
-        try:
-            dialog = CalibrationDialog(access_control_pyboard=database.controllers[setup_id].AC)
-            dialog.exec()
-        except KeyError:
-            info = InformationDialog(info_text="The setup has not been connected yet so can not be tested")
-            info.exec()
 
     def start_pycontrol_test(self):
         """If the Protocol Column contains an entry which ends in a .prot file extension, you know that it is a protocol. So open a protocol dialog instead of the direct access control one."""
@@ -178,6 +176,16 @@ class SetupTable(QTableWidget):
             #     dialog.exec()
             # else:
             dialog = DirectPyboardDialog(setup_id=setup_id)
+            dialog.exec()
+        except KeyError:
+            info = InformationDialog(info_text="The setup has not been connected yet so can not be tested")
+            info.exec()
+
+    def start_access_control_test(self):
+        """Integration testing dialgog"""
+        setup_id, com_, comAC_ = self.sender().name
+        try:
+            dialog = CalibrationDialog(access_control_pyboard=database.controllers[setup_id].AC)
             dialog.exec()
         except KeyError:
             info = InformationDialog(info_text="The setup has not been connected yet so can not be tested")
