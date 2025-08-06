@@ -63,7 +63,15 @@ class SetupTable(QTableWidget):
         self.populate_cells_from_database(row_index, row)
 
         # Connect Button
-        connect_button = self._build_connect_button(row)
+        if row["connected"]:
+            buttonText = "Connected"
+        else:
+            buttonText = "Connect"
+        connect_button = QPushButton(buttonText)
+        connect_button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
+        connect_button.clicked.connect(self.connect)
+        connect_button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        connect_button.customContextMenuRequested.connect(partial(self._show_connect_button_menu, row))
         self.buttons.append(connect_button)
         if self.tab is None:  # if this is the table in system overview
             connect_button.setEnabled(False)
@@ -87,39 +95,6 @@ class SetupTable(QTableWidget):
                 pass
 
     #### Build Buttons
-
-    def _build_access_control_test_button(self, row: pd.Series) -> QPushButton:
-        """
-        Intantiate AccessControlIntegrationTestDialog
-        """
-        button = QPushButton("Access Control Test")
-        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
-        button.clicked.connect(self.start_access_control_test)
-        return button
-
-    def _build_pycontrol_test_button(self, row: pd.Series) -> QPushButton:
-        """Initialise pycontrol_Test button"""
-        button = QPushButton("Task Testing")
-        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"], row["Protocol"]]
-        button.clicked.connect(self.start_pycontrol_test)
-        return button
-
-    def _build_connect_button(self, row: pd.Series) -> QPushButton:
-        """
-        Set properties of button that allows you to connect to the serial ports
-        controlling one of the setups
-        """
-        if row["connected"]:
-            buttonText = "Connected"
-        else:
-            buttonText = "Connect"
-
-        button = QPushButton(buttonText)
-        button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
-        button.clicked.connect(self.connect)
-        button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
-        button.customContextMenuRequested.connect(partial(self._show_connect_button_menu, row))
-        return button
 
     def _show_connect_button_menu(self, row, pos):
         """
