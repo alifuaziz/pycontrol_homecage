@@ -1,3 +1,7 @@
+## Mapping between doors and list of magnet pins
+## 0,       1,      2,      3,
+## MAGs[0], MAGs[1],MAGs[2],MAGs[3],
+
 
 import pyb
 from pyb import Pin
@@ -38,3 +42,6 @@ P_mag_ex2 = magnet_pin(highside_pins[3], lowside_pins[3])
 MAGs = [P_mag_en1, P_mag_en2, P_mag_ex1, P_mag_ex2]
 
 com = pyb.USB_VCP()
+
+for mag in MAGs: 
+    mag.value(1)

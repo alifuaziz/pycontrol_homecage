@@ -1,5 +1,4 @@
 import pyb
-from pyb import Pin
 from pyAccessControl.access_control_1_0 import Access_control_upy
 import time
 from pyAccessControl.pin_classes import signal_pin, magnet_pin
@@ -69,6 +68,7 @@ class handler:
         self.baseline_alpha = 0.3
         self.forced_delay = 500
         last_check = micros.counter()
+        baseline_counter = micros.counter()
         mean = lambda x: float(sum(x)) / float(len(x))
 
         state = "allow_entry"
@@ -81,10 +81,11 @@ class handler:
             while True:
 
                 # Update baseline every second
-                if pyb.elapsed_millis(last_check) >= 1000:
+                if pyb.elapsed_millis(baseline_counter) >= 1000:
                     AC_handler.loadcell.update_baseline()
                     com.write(build_msg("weight:" + str(AC_handler.loadcell.weigh())))
-                    last_check = micros.counter()
+                    com.write(build_msg("baseline_esitimate:" + str(AC_handler.loadcell.baseline)))
+                    baseline_counter = micros.counter()
 
                 if state == "allow_entry":
                     # last_weight = self.baseline_alpha*AC_handler.loadcell.weigh(times=1) + (1-self.baseline_alpha)*last_weight

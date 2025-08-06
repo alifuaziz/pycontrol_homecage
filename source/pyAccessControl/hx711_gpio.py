@@ -100,8 +100,13 @@ class HX711_drift_corrected(HX711):
             self.baseline = baseline
 
     def tare(self):
-        super().tare()  # run default tare function
-        self.baseline = super().weigh()
+        super().tare()
+        self.baseline = 0
+
+    def calibrate(self, weight):
+        """This function should be called after taring scale"""
+        super().calibrate(weight)
+        self.baseline = self.weigh() - weight
 
     def weigh(self, times=3, timestamp=None, raw=False):
         """Returns corrected value if raw=False"""
@@ -114,5 +119,5 @@ class HX711_drift_corrected(HX711):
     def update_baseline(self):
         """Update the moving average is there isnt an animal in the cage
         Needs to be called at a constant rate"""
-        if self.weigh() < self.thres:
+        if self.weigh() < self.thres and self.weigh() > 0:
             self.baseline = (1 - self.tau) * self.baseline + self.tau * super().weigh()

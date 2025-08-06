@@ -46,53 +46,44 @@ class SetupTable(QTableWidget):
 
         self.select_column_idx = self.header_names.index("Select")
         self.connect_column_idx = self.header_names.index("Connection")  # column index of connect button
-
         self.fill_table()
 
-        #### Functions for populating the table
-
-    def fill_table(self) -> None:
+    def fill_table(self):
+        # Fill table
         self.clearContents()
         self.setRowCount(len(database.setup_df))
-
         self.buttons = []
         for row_index, row in database.setup_df.iterrows():
-            self.fill_table_row(row_index=row_index, row=row)
-
-    def fill_table_row(self, row_index, row) -> None:
-        self.populate_cells_from_database(row_index, row)
-
-        # Connect Button
-        if row["connected"]:
-            buttonText = "Connected"
-        else:
-            buttonText = "Connect"
-        connect_button = QPushButton(buttonText)
-        connect_button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
-        connect_button.clicked.connect(self.connect)
-        connect_button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
-        connect_button.customContextMenuRequested.connect(partial(self._show_connect_button_menu, row))
-        self.buttons.append(connect_button)
-        if self.tab is None:  # if this is the table in system overview
-            connect_button.setEnabled(False)
-        self.setCellWidget(row_index, self.connect_column_idx, connect_button)
-
-        chkBoxItem = QTableWidgetItem()
-        chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
-        chkBoxItem.setCheckState(QtCore.Qt.CheckState.Unchecked)
-        self.setItem(row_index, self.select_column_idx, chkBoxItem)
-
-    def populate_cells_from_database(self, row_index: int, row: pd.Series):
-        for col_index in range(self.columnCount()):
-            try:
-                cHeader = self.header_names[col_index]
-                self.setItem(
-                    row_index,
-                    col_index,
-                    QTableWidgetItem(str(row[cHeader])),
-                )
-            except KeyError:
-                pass
+            # Set header names
+            for col_index in range(self.columnCount()):
+                try:
+                    cHeader = self.header_names[col_index]
+                    self.setItem(
+                        row_index,
+                        col_index,
+                        QTableWidgetItem(str(row[cHeader])),
+                    )
+                except KeyError:
+                    pass
+            # Create Connect Button
+            if row["connected"]:
+                buttonText = "Connected"
+            else:
+                buttonText = "Connect"
+            connect_button = QPushButton(buttonText)
+            connect_button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
+            connect_button.clicked.connect(self.connect)
+            connect_button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+            connect_button.customContextMenuRequested.connect(partial(self._show_connect_button_menu, row))
+            self.buttons.append(connect_button)
+            if self.tab is None:  # if this is the table in system overview
+                connect_button.setEnabled(False)
+            self.setCellWidget(row_index, self.connect_column_idx, connect_button)
+            # Create Checkbox button
+            chkBoxItem = QTableWidgetItem()
+            chkBoxItem.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
+            chkBoxItem.setCheckState(QtCore.Qt.CheckState.Unchecked)
+            self.setItem(row_index, self.select_column_idx, chkBoxItem)
 
     #### Build Buttons
 
