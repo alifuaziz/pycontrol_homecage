@@ -12,6 +12,7 @@ from source.dialogs import CalibrationDialog, InformationDialog, DirectPyboardDi
 
 from ..utils import find_pyboards
 import db as database
+from PyQt6.QtWidgets import QMenu
 
 
 class SetupTable(QTableWidget):
@@ -130,7 +131,30 @@ class SetupTable(QTableWidget):
         button = QPushButton(buttonText)
         button.name = [row["Setup_ID"], row["COM"], row["COM_AC"]]
         button.clicked.connect(self.connect)
+        button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        button.customContextMenuRequested.connect(partial(self._show_connect_button_menu, row))
         return button
+
+    def _show_connect_button_menu(self, row, pos):
+        """
+        Show a context menu for the connect button with additional actions.
+        """
+
+        menu = QMenu()
+        refresh_action = menu.addAction("Refresh Connection")
+        disconnect_action = menu.addAction("Disconnect")
+
+        action = menu.exec(self.sender().mapToGlobal(pos))
+        setup_id = row["Setup_ID"]
+
+        if action == refresh_action:
+            self.connect()
+        elif action == disconnect_action:
+            if setup_id in database.controllers:
+                database.controllers[setup_id].disconnect()
+                del database.controllers[setup_id]
+                database.setup_df.loc[database.setup_df["Setup_ID"] == setup_id, "connected"] = False
+                self.fill_table()
 
     # Test funcitons
 
