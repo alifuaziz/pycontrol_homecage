@@ -18,11 +18,6 @@ class AddMouseDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.mouse_info_layout = QVBoxLayout()
-        self.initUI()
-
-        self.pageLayout()
-
-    def initUI(self):
         self.setWindowTitle("Add a new mouse!")
         self.setGeometry(100, 100, 600, 400)
 
@@ -63,6 +58,11 @@ class AddMouseDialog(QDialog):
         self.add_mouse_button.clicked.connect(self.add_mouse)
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.close)
+        # Set layout
+        self.dialog_layout = QVBoxLayout(self)
+        self.dialog_layout.addWidget(self.mouse_groupbox)
+        self.dialog_layout.addWidget(self.cancel_button)
+        self.setLayout(self.dialog_layout)
 
     def add_mouse(self):
         """Add mouse, taking infomation from this page. This function will look very similar to the
@@ -70,12 +70,6 @@ class AddMouseDialog(QDialog):
         """
         pass
 
-    def pageLayout(self):
-        # Set layout
-        self.dialog_layout = QVBoxLayout(self)
-        self.dialog_layout.addWidget(self.mouse_groupbox)
-        self.dialog_layout.addWidget(self.cancel_button)
-        self.setLayout(self.dialog_layout)
 
 
 if __name__ == "__main__":

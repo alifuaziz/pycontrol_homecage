@@ -17,9 +17,6 @@ class AreYouSureDialog(QDialog):
 
         self.Question = QLabel()
         self.Question.setText(question_text)
-        self._set_dialog_layout()
-
-    def _set_dialog_layout(self) -> None:
         self.buttonLayout = QHBoxLayout()
         self.buttonLayout.addWidget(self.noButton)
         self.buttonLayout.addWidget(self.yesButton)

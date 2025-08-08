@@ -4,7 +4,6 @@ from PyQt6 import QtCore, QtWidgets
 from source.communication.pycboard import _djb2_file
 from ..utils import get_tasks
 
-# import db as database
 
 
 class NewExperimentSetupTable(QtWidgets.QTableWidget):
