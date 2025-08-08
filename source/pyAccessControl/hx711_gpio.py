@@ -90,7 +90,7 @@ class HX711_drift_corrected(HX711):
     thres: threshold weight for not updating the baseline estimate
     baseline: initial value for the baseline estimate"""
 
-    def __init__(self, data_pin=22, clock_pin=21, gain=128, tau=0.003, thres=10, baseline=None):
+    def __init__(self, data_pin=22, clock_pin=21, gain=128, tau=1/100, thres=10, baseline=None):
         super().__init__(data_pin=data_pin, clock_pin=clock_pin, gain=gain)
         self.tau = tau  # learning rate
         self.thres = thres  # weight threshold
@@ -106,9 +106,8 @@ class HX711_drift_corrected(HX711):
     def calibrate(self, weight):
         """This function should be called after taring scale"""
         super().calibrate(weight)
-        self.baseline = self.weigh() - weight
 
-    def weigh(self, times=3, timestamp=None, raw=False):
+    def weigh(self, times=3, raw=False):
         """Returns corrected value if raw=False"""
         self.raw_weight = super().weigh(times)
         if raw:
@@ -119,5 +118,5 @@ class HX711_drift_corrected(HX711):
     def update_baseline(self):
         """Update the moving average is there isnt an animal in the cage
         Needs to be called at a constant rate"""
-        if self.weigh() < self.thres and self.weigh() > 0:
+        if super().weigh() < self.thres:
             self.baseline = (1 - self.tau) * self.baseline + self.tau * super().weigh()

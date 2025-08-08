@@ -1,7 +1,6 @@
 import time
 from functools import partial
 from serial import SerialException
-import pandas as pd
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QTableWidget, QAbstractItemView, QTableWidgetItem, QPushButton
 
@@ -75,6 +74,7 @@ class SetupTable(QTableWidget):
             connect_button.clicked.connect(self.connect)
             connect_button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
             connect_button.customContextMenuRequested.connect(partial(self._show_connect_button_menu, row))
+            connect_button.setToolTip("Right-click for more options")
             self.buttons.append(connect_button)
             if self.tab is None:  # if this is the table in system overview
                 connect_button.setEnabled(False)
@@ -92,21 +92,19 @@ class SetupTable(QTableWidget):
         Show a context menu for the connect button with additional actions.
         """
 
-        menu = QMenu()
-        refresh_action = menu.addAction("Refresh Connection")
-        disconnect_action = menu.addAction("Disconnect")
-        calibration_action = menu.addAction("Open Calibration Dialog")
-        pycontrol_test_action = menu.addAction("PyControl Test")
-        access_control_test_action = menu.addAction("Access Control Test")
+        connect_button_menu = QMenu()
+        disconnect_action = connect_button_menu.addAction("Disconnect")
+        calibration_action = connect_button_menu.addAction("Open Calibration Dialog")
+        pycontrol_test_action = connect_button_menu.addAction("pyControl Test")
+        access_control_test_action = connect_button_menu.addAction("Access Control Test")
 
-        action = menu.exec(self.sender().mapToGlobal(pos))
+        action = connect_button_menu.exec(self.sender().mapToGlobal(pos))
         setup_id = row["Setup_ID"]
 
-        if action == refresh_action:
-            self.connect()
-        elif action == disconnect_action:
+        if action == disconnect_action:
             if setup_id in database.controllers:
                 database.controllers[setup_id].disconnect()
+                print(f"Disconnected from Setup {setup_id}")
                 del database.controllers[setup_id]
                 database.setup_df.loc[database.setup_df["Setup_ID"] == setup_id, "connected"] = False
                 self.fill_table()
@@ -217,7 +215,7 @@ class SetupTable(QTableWidget):
                 \nConsider the following causes for a failed connection: \
                 \n- 'Access Denied' The board can only be accessed by one program at a time. If a different REPL is connect it will block pyControlHomecage from connecting. \
                 \n- 'Could not instantiate access control': Some problem with the hardware (e.g. the RFID reader handshake) causing the instantiation to fail. \
-                \n- Hard resetting the pyboard (Some weird problem with the flash storage)"
+                \n- Hard resetting the pyboard (Some problem with the flash storage)"
             )
             info.exec()
             print(e, flush=True)

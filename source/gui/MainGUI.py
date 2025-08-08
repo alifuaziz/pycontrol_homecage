@@ -63,11 +63,11 @@ class MainGUI(QMainWindow):
         self.setCentralWidget(self.tab_widget)
         self.show()
 
-        self._init_timer()
+        self._initialize_refresh_timer()
 
     # Refresh Logic --------------------------------------------------------------------
 
-    def _init_timer(self) -> None:
+    def _initialize_refresh_timer(self) -> None:
         # Timer to regularly call refresh() when not running.
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.refresh)

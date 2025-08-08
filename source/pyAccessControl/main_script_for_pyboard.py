@@ -9,9 +9,8 @@ class handler:
         self.init = True
 
     def run(self):
-        myled = pyb.LED(1)
-        myled2 = pyb.LED(2)
-        myled.on()
+        r_led = pyb.LED(1)  # Red LED on if run function has started.
+        r_led.on()
         micros = pyb.Timer(2, prescaler=83, period=0x3FFFFFFF)  # Microsecond timer
 
         # -------- Loadcell Operations --------
@@ -63,7 +62,7 @@ class handler:
         for mag in [0, 1, 2, 3]:
             MAGs[mag].value(0)  # this should be 0
 
-        myled.off()
+        r_led.off()
         self.baseline_read = 0.0
         self.baseline_alpha = 0.3
         self.forced_delay = 500
@@ -84,6 +83,7 @@ class handler:
                 if pyb.elapsed_millis(baseline_counter) >= 1000:
                     AC_handler.loadcell.update_baseline()
                     com.write(build_msg("weight:" + str(AC_handler.loadcell.weigh())))
+                    com.write(build_msg("raw_weigh:" + str(AC_handler.loadcell.weigh(raw=True))))
                     com.write(build_msg("baseline_esitimate:" + str(AC_handler.loadcell.baseline)))
                     baseline_counter = micros.counter()
 
@@ -338,7 +338,7 @@ class handler:
                     for mag in range(4):
                         MAGs[mag].value(0)
 
-                # ------------ Debugging signals from host -----------------
+                # ------------ Process command signals from host -----------------
                 sent_data = com.readline()
                 if sent_data is not None:
                     sent_data = sent_data.decode("utf8")
@@ -368,19 +368,13 @@ class handler:
                                 break
                         else:
                             com.write(build_msg("RFID:" + str(None)))
-                    # Test case
-                    if "door" in sent_data:
-                        door, action = sent_data.split("_")
-                        door_num = int(door[-1]) - 1
-                        MAGs[door_num].value(1 if action == "open" else 0)
-                        com.write(build_msg("mag" + sent_data))
-                        pyb.delay(1000)
         except Exception as e:
             for mag in range(4):
                 MAGs[mag].value(0)  # Open all doors by default
             state = "error_state"
             com.write(build_msg("state:" + str(state)))
             com.write(build_msg(str(e)))
+            r_led.off()
 
 
 if __name__ == "__main__":

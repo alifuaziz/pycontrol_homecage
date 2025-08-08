@@ -32,7 +32,7 @@ class CalibrationDialog(QDialog):
         self.access_control = access_control_pyboard
         self.reject = self._done
         # Window parameters
-        self.setGeometry(10, 30, 500, 200)  # Left, top, width, height.
+        self.setGeometry(10, 30, 700, 200)  # Left, top, width, height.
         self.setWindowTitle(f"Load Cell Calibration Dialog for Access Control: {self.access_control.serial_port}")
         self.setWhatsThis(
             "This is a dialog box that is currently connected to the access control.\nThe buttons below directly inteface with the loadcell on the pyboard.\n You should calibrate the scales so that your measurement units are correct!"
@@ -85,56 +85,33 @@ class CalibrationDialog(QDialog):
 
     ####### Button Function calls ######
 
-    def tare(self) -> None:
-        """Tell access control module to tare the scales"""
+    def tare(self):
         self.access_control.serial.write(b"tare")
 
-    def weigh(self) -> None:
+    def weigh(self):
         self.access_control.serial.write(b"weigh")
 
-    def callibrate(self) -> None:
-        """Tell access control module to callibrate the scales. Defines what a unit of measurement is"""
+    def rfid_scan(self):
+        self.access_control.serial.write(b"read_tag")
 
-        # Get text from the calibration textbox a
+    def callibrate(self):
+        """Tell access control module to callibrate the scales. Defines what a unit of measurement is"""
         cw = self.calibration_weight.text()
-        # "calibrate" keyword calles the pycontrol's loadcell.calibrate() function to be called.
-        str_ = "calibrate:" + cw
-        # Write the calibration weight to serial port.
-        self.access_control.serial.write(str_.encode())
+        str_ = "calibrate:" + cw  # "calibrate" keyword calls loadcell.calibrate()
+        self.access_control.serial.write(str_.encode())  # Write command to serial
         self.write_to_log_textbox(text="Target calibration weight: " + str(cw) + "g\n")
 
-    def write_to_log_textbox(self, text: str = None) -> None:
+    def write_to_log_textbox(self, text: str = None):
         """write to log"""
         self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
         self.log_textbox.insertPlainText(text)
         self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
-    def door_magnets(self, door_idx: int = None, state: str = None):
-        """Checking the locking and unlocking of the doors
-        Two tests required:
-        1. Should activate magnet_pin for each of the doors
-        2. Should be able to read the signal pins for each of the doors.
-        """
-        # Construct message
-        msg = f"door{door_idx}_{str(state)}"
-        # write encoded message
-        self.access_control.serial.write(msg.encode())
-
-    def rfid_scan(self):
-        """Does it scan the correct RFID correctly?
-
-        CODE CALLED from the access control
-        ============
-        rfid = AC_handler.rfid.read_tag()
-        pyb.delay(50)
-        """
-        self.access_control.serial.write(b"read_tag")
-
-    def _done(self) -> None:
+    def _done(self):
         del database.print_consumers[MessageRecipient.calibrate_dialog]
         self.accept()
 
-    def print_msg(self, msg: str) -> None:
+    def print_msg(self, msg: str):
         """Print the messages from the access control serial port to the cal dialog box"""
         self.log_textbox.moveCursor(QTextCursor.MoveOperation.End)
 
